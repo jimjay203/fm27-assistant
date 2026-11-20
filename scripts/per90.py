@@ -27,9 +27,12 @@ CORE_COLS = [
     "name",
     "club",
     "league",
+    "club_country",
     "position",
     "age",
     "wage",
+    "wage_min",
+    "wage_max",
     "value",
     "contract_end",
     "loan_end",
@@ -97,7 +100,9 @@ def percentile_in_groups(df: pd.DataFrame, col: str, pool: pd.Series, min_group:
     out = pd.Series(np.nan, index=df.index)
     sub = df[pool].copy()
     pos = sub["position"].fillna("?").astype(str).str.split(r"[,/]").str[0].str.split().str[0]
-    keys = [pos, sub["league"].fillna("?")]
+    # Liga + Land des Vereins: "Bundesliga" gibt es in Deutschland und Österreich.
+    country = sub["club_country"].fillna("?") if "club_country" in sub else "?"
+    keys = [pos, sub["league"].fillna("?"), country]
     grp = sub.groupby(keys, dropna=False)[col]
     pct = grp.rank(pct=True) * 100
     size = grp.transform("count")
@@ -165,7 +170,7 @@ def compute_per90(
 
 def format_table(df: pd.DataFrame, kpis: list[str], threshold: int) -> pd.DataFrame:
     cols = (
-        ["name", "club", "league", "position", "age", "minutes"]
+        ["name", "club", "league", "club_country", "position", "age", "minutes"]
         + [c for k in kpis for c in (k, f"{k}_pctl")]
         + ["n_klein", "poss_fehlt"]
     )

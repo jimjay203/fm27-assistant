@@ -146,6 +146,13 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
             "Gehaltsspalte gemappt, aber gehalt.periode in spalten.yaml fehlt "
             "(woche|monat|jahr) – offener Punkt 6."
         )
+    present = {c.casefold(): c for c in df.columns}
+    for key in mp.specs:
+        if key.endswith(".1") and key not in present and key[:-2] in present:
+            warn(
+                f"Spalte '{present[key[:-2]]}' kommt nur einmal vor, spalten.yaml erwartet auch "
+                f"'{key}' – Zuordnung prüfen (z. B. Stat oder Attribut?)"
+            )
     dec = mp.decimal
     spec = lambda i: mp.by_internal.get(i, {})  # noqa: E731
     kind = {i: spec(i).get("typ") for i in mapped}
@@ -202,10 +209,13 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
                 f"Gehalt '{wage_raw}' ist je {period}, spalten.yaml sagt gehalt.periode="
                 f"{mp.wage_period} (Faktor-Fehler vermeiden)."
             )
-        wage = fmparse.to_annual(
-            fmparse.parse_money(wage_raw, spec("wage").get("dezimal", dec)),
-            mp.wage_period or "jahr",
+        wrange = fmparse.parse_money_range(wage_raw, spec("wage").get("dezimal", dec))
+        wmin, wmax = (
+            tuple(fmparse.to_annual(x, mp.wage_period or "jahr") for x in wrange)
+            if wrange
+            else (None, None)
         )
+        wage = (wmin + wmax) / 2 if wrange else None  # Spanne bei nicht gescouteten Spielern
         if wage is None and not fmparse.is_null(wage_raw):
             bad[mapped["wage"]] = bad.get(mapped["wage"], 0) + 1
         value_raw = g.get("value")
@@ -216,7 +226,8 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
         conn.execute(
             "INSERT OR REPLACE INTO players(snapshot_id, player_uid, name, club, league, position, "
             "age, wage, value, contract_end, minutes, birthdate, team_possession, value_min, "
-            "value_max, loan_end) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "value_max, loan_end, wage_min, wage_max, club_country) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 sid,
                 uid,
@@ -234,10 +245,16 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
                 vmin,
                 vmax,
                 date("loan_end", g.get("loan_end")) if "loan_end" in g else None,
+                wmin,
+                wmax,
+                _text(g.get("club_country")),
             ),
         )
         for i, col in text_cols.items():
-            val = date(i, rec[col]) if kind[i] == "date" else _text(rec[col])
+            if kind[i] == "date":
+                val = date(i, rec[col])
+            else:  # '-', '–', '?' = leer -> kein Eintrag
+                val = None if fmparse.is_null(rec[col]) else _text(rec[col])
             if val:
                 info[i] = val
         for field, val in info.items():
@@ -262,9 +279,10 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
             conn.execute("INSERT OR REPLACE INTO player_stats VALUES(?,?,?,?)", (sid, uid, stat, v))
         for attr, col in attr_cols.items():
             v, masked = fmparse.parse_attribute(rec[col], dec)
+            lo, hi = fmparse.parse_attribute_range(rec[col], dec) or (None, None)
             conn.execute(
-                "INSERT OR REPLACE INTO player_attributes VALUES(?,?,?,?,?)",
-                (sid, uid, attr, v, int(masked)),
+                "INSERT OR REPLACE INTO player_attributes VALUES(?,?,?,?,?,?,?)",
+                (sid, uid, attr, v, int(masked), lo, hi),
             )
         for col in unknown:
             conn.execute(

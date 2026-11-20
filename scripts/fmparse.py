@@ -127,6 +127,19 @@ def parse_attribute(s, decimal: str = ".") -> tuple[float | None, bool]:
     return (v, False) if v is not None else (None, True)
 
 
+def parse_attribute_range(s, decimal: str = ".") -> tuple[float, float] | None:
+    """Scouting-Spanne '14-18' -> (14, 18); exakter Wert '12' -> (12, 12); '-' -> None."""
+    t = _clean(s)
+    if t is None:
+        return None
+    m = re.fullmatch(r"(\d+)\s*[-–]\s*(\d+)", t)
+    if m:
+        lo, hi = sorted((float(m.group(1)), float(m.group(2))))
+        return lo, hi
+    v = parse_number(t, decimal)
+    return (v, v) if v is not None else None
+
+
 def parse_date(s) -> str | None:
     t = _clean(s)
     if t is None:

@@ -4,7 +4,7 @@ Claude Code als Assistent für Football Manager 27: Subagents (`taktik`, `entwic
 `analyst`), SQLite-Snapshots der Spieldaten und Python-Skripte für Moneyball-Auswertungen.
 Regeln und aktiver Save stehen in [CLAUDE.md](CLAUDE.md).
 
-**Stand:** `config/spalten.yaml` ist für die Kader-Ansicht (Export vom 2026-11-20, 135 Spalten) befüllt
+**Stand:** `config/spalten.yaml` ist für die Kader-Ansicht (Export vom 2026-11-20, 142 Spalten) befüllt
 und gegen einen echten Ausschnitt getestet (`tests/fixtures/echt/`). Team-/Spiel-Ansichten und die
 Spielersuche haben noch keinen echten Export (`TODO(export)`).
 

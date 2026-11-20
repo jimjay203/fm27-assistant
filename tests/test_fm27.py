@@ -135,13 +135,13 @@ def test_wage_period_required(tmp_path):
         fm_import.import_file(c, "test", FIX / "2027-01-15_kader_test.csv", cfg, sep=";")
 
 
-def _import_echt(cfg=None):
+def _import_echt(cfg=None, datei="2026-10-11_kader.csv"):
     c = common.connect(":memory:")
     warnings: list[str] = []
     res = fm_import.import_file(
         c,
         "test",
-        FIX / "echt" / "2026-10-11_kader.csv",
+        FIX / "echt" / datei if isinstance(datei, str) else datei,
         cfg or common.load_yaml("spalten.yaml"),
         warn=warnings.append,
     )
@@ -201,6 +201,86 @@ def test_echter_export_werte():
     assert info("verletzungsrisiko", f) == "Gering"
 
 
+SUCHE = "2026-10-11_suche_stuermer.csv"  # Spielersuche: andere Spalten, Scouting-Spannen
+
+
+def test_suche_vollstaendig_gemappt():
+    c, res, warnings = _import_echt(datei=SUCHE)
+    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (3, 0, 0)
+    assert warnings == []
+    assert count(c, "player_attributes") == 3 * 47
+
+
+def test_suche_spannen_und_texte():
+    c, _, _ = _import_echt(datei=SUCHE)
+
+    def one(sql):
+        row = c.execute(sql).fetchone()
+        return row[0] if row else None
+
+    def attr(uid, name):
+        return c.execute(
+            f"SELECT value, masked, lo, hi FROM player_attributes "
+            f"WHERE player_uid='{uid}' AND attribute='{name}'"
+        ).fetchone()
+
+    cabral, egg, braith = "19266403", "91143690", "27013113"
+    # Gehalts- und Wertspanne ("456K € – 742K € /J.")
+    w = c.execute(f"SELECT wage, wage_min, wage_max FROM players WHERE player_uid='{cabral}'")
+    assert w.fetchone() == pytest.approx((599_000, 456_000, 742_000))
+    # Scouting-Spanne: Wert NULL, Grenzen bleiben erhalten; "-" = völlig verdeckt
+    assert attr(cabral, "Abschluss") == (None, 1, 11.0, 15.0)
+    assert attr(cabral, "Weite Einwürfe") == (None, 1, None, None)
+    # gescoutet: exakter Wert, lo = hi
+    assert attr(egg, "Abschluss") == (14.0, 0, 14.0, 14.0)
+    # doppelte Header auch bei geänderter Attribut-Reihenfolge: Stat vs. Attribut
+    assert attr(egg, "Freistöße")[0] == 10
+    assert one(
+        f"SELECT value FROM player_stats WHERE player_uid='{egg}' AND stat='freistoesse'"
+    ) == 0
+    # neue Textspalten; '–' (Ablöseforderung) = leer -> kein Eintrag
+    info = lambda f, u: one(f"SELECT text FROM player_info WHERE player_uid='{u}' AND field='{f}'")  # noqa: E731
+    assert info("geburtsland", braith) == "Dänemark" and info("vertragsart", braith) == "Vollzeitvertrag"
+    assert info("abloeseforderung", braith) is None
+    assert info("eigengewaechs", cabral) is None and info("eigengewaechs", egg) is not None
+    assert info("value", braith) == "Steht nicht zum Verkauf"
+    assert one(f"SELECT value FROM players WHERE player_uid='{braith}'") is None
+    # Land des Vereins ("Ansässig in") trennt die österreichische von der deutschen Bundesliga
+    club = lambda u: c.execute(  # noqa: E731
+        f"SELECT league, club_country FROM players WHERE player_uid='{u}'"
+    ).fetchone()
+    assert club(egg) == ("Bundesliga", "Österreich") and club(cabral)[1] == "Brasilien"
+
+
+def test_doppelter_header_nur_einmal_warnt(tmp_path):
+    text = (FIX / "echt" / "2026-10-11_kader.csv").read_text(encoding="utf-8")
+    head, rest = text.split("\n", 1)
+    head = ",Freistöße,".join(head.split(",Freistöße,")[:-1]) + ",Fremd," + head.rsplit(
+        ",Freistöße,", 1
+    )[1]
+    f = tmp_path / "2026-10-11_kader.csv"
+    f.write_text(head + "\n" + rest, encoding="utf-8")
+    _, res, warnings = _import_echt(datei=f)
+    assert any("kommt nur einmal vor" in w and "Freistöße" in w for w in warnings)
+    assert res["unmapped"] == 1  # 'Fremd'
+
+
+def test_migration_alter_db(tmp_path):
+    p = tmp_path / "alt.sqlite"
+    raw = sqlite3.connect(p)
+    raw.execute(
+        "CREATE TABLE player_attributes(snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, "
+        "attribute TEXT NOT NULL, value REAL, masked INTEGER NOT NULL DEFAULT 0, "
+        "PRIMARY KEY(snapshot_id, player_uid, attribute))"
+    )
+    raw.commit()
+    raw.close()
+    c = common.connect(p)
+    cols = {r[1] for r in c.execute("PRAGMA table_info(player_attributes)")}
+    assert {"lo", "hi"} <= cols
+    assert {"wage_min", "wage_max"} <= {r[1] for r in c.execute("PRAGMA table_info(players)")}
+
+
 def test_echter_export_schutzchecks():
     cfg = common.load_yaml("spalten.yaml")
     cfg["gehalt"]["periode"] = "woche"  # Export sagt €/J. -> kein stilles ×52
@@ -223,6 +303,20 @@ def test_per90_threshold_and_percentiles(conn):
     assert p.between(0, 100).all()
     first = df.iloc[0]
     assert first["npxg_p90"] == pytest.approx(first["npxg"] / first["minutes"] * 90)
+
+
+def test_percentile_groups_split_by_club_country():
+    df = pd.DataFrame(
+        {
+            "position": ["ST"] * 4,
+            "league": ["Bundesliga"] * 4,
+            "club_country": ["Deutschland", "Deutschland", "Österreich", "Österreich"],
+            "x": [1.0, 2.0, 3.0, 4.0],
+        }
+    )
+    pool = pd.Series(True, index=df.index)
+    got = per90.percentile_in_groups(df, "x", pool, min_group=2)
+    assert got.tolist() == [50.0, 100.0, 50.0, 100.0]  # nicht 25/50/75/100 über beide Länder
 
 
 def test_possession_adjustment(conn):

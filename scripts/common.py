@@ -24,6 +24,7 @@ PLAYER_CORE = (
     "birthdate",
     "club",
     "league",
+    "club_country",  # "Ansässig in": Land des Vereins; macht gleichnamige Ligen eindeutig
     "position",
     "age",
     "wage",
@@ -59,6 +60,8 @@ CREATE TABLE IF NOT EXISTS players(
   value REAL,           -- Transferwert; bei Spannen der Mittelwert (Grenzen in value_min/value_max)
   contract_end TEXT, minutes INTEGER, birthdate TEXT, team_possession REAL,
   value_min REAL, value_max REAL, loan_end TEXT,
+  wage_min REAL, wage_max REAL,   -- Jahresgehalt-Spanne bei nicht gescouteten Spielern
+  club_country TEXT,
   PRIMARY KEY(snapshot_id, player_uid));
 CREATE TABLE IF NOT EXISTS player_info(     -- Text-/Datumsfelder (typ: text|date in spalten.yaml)
   snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, field TEXT NOT NULL, text TEXT,
@@ -68,7 +71,8 @@ CREATE TABLE IF NOT EXISTS player_stats(
   PRIMARY KEY(snapshot_id, player_uid, stat));
 CREATE TABLE IF NOT EXISTS player_attributes(
   snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, attribute TEXT NOT NULL,
-  value REAL, masked INTEGER NOT NULL DEFAULT 0,
+  value REAL,           -- exakter Wert; bei Scouting-Spannen NULL (masked=1), Grenzen in lo/hi
+  masked INTEGER NOT NULL DEFAULT 0, lo REAL, hi REAL,
   PRIMARY KEY(snapshot_id, player_uid, attribute));
 CREATE TABLE IF NOT EXISTS player_raw(      -- unbekannte (nicht gemappte) Spalten, unverändert
   snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, column_name TEXT NOT NULL, raw_value TEXT,
@@ -123,12 +127,28 @@ def load_yaml(name: str, config_dir: Path | None = None) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
+# Spalten, die nach dem ersten Schema dazukamen (CREATE IF NOT EXISTS ergänzt sie nicht).
+_ADDED_COLUMNS = {
+    "players": {"wage_min": "REAL", "wage_max": "REAL", "club_country": "TEXT"},
+    "player_attributes": {"lo": "REAL", "hi": "REAL"},
+}
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, cols in _ADDED_COLUMNS.items():
+        have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+        for col, typ in cols.items():
+            if col not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
+
+
 def connect(db_path: Path | str | None = None) -> sqlite3.Connection:
     path = Path(db_path or os.environ.get("FM27_DB") or ROOT / "db" / "fm27.sqlite")
     if str(path) != ":memory:":
         path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path)
     conn.executescript(SCHEMA)
+    _migrate(conn)
     return conn
 
 

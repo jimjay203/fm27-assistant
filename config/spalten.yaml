@@ -22,6 +22,7 @@ spalten:
   "Alter": age
   "Verein": club
   "Liga": league
+  "Ansässig in": club_country    # Land des Vereins (Spielersuche; "Bundesliga" gibt es in DE und AT)
   "Position": position
   "Gehalt": wage
   "Transferwert": value          # Spanne -> value_min/value_max, value = Mittelwert
@@ -36,6 +37,9 @@ spalten:
   "Medienumgang": {name: medienumgang, typ: text}
   "Persönlichkeit": {name: persoenlichkeit, typ: text}
   "Nation": {name: nation, typ: text}
+  "Geburtsland": {name: geburtsland, typ: text}     # Spielersuche statt "Nation"
+  "Vertragsart": {name: vertragsart, typ: text}     # Spielersuche, bisher nur "Vollzeitvertrag" gesehen
+  "Ablöseforderung": {name: abloeseforderung, typ: text}  # bisher nur "–"; Format bei Wert unbekannt
   "Status Eigengewächs": {name: eigengewaechs, typ: text}
   "Vertragsbeginn": {name: vertragsbeginn, typ: date}
   "Vertragsstatus": {name: vertragsstatus, typ: text}

@@ -36,7 +36,7 @@ def attribute_score(
     df: pd.DataFrame, attrs: pd.DataFrame, prior: dict[str, float], pool: pd.Series, min_group: int
 ) -> pd.Series:
     """Gewichtetes Mittel der Attribut-Perzentile (maskierte Werte zählen nicht mit)."""
-    merged = df[["player_uid", "snapshot_id", "position", "league"]].merge(
+    merged = df[["player_uid", "snapshot_id", "position", "league", "club_country"]].merge(
         attrs, on=["snapshot_id", "player_uid"], how="left"
     )
     merged.index = df.index
@@ -81,6 +81,7 @@ def candidates(
     max_alter=None,
     max_kosten=None,
     liga=None,
+    land=None,
     min_minuten=None,
     attr_gewicht=None,
     leagues: dict | None = None,
@@ -131,6 +132,8 @@ def candidates(
         df = df[df["kosten_saison"] <= max_kosten]
     if liga:
         df = df[df["league"] == liga]
+    if land:
+        df = df[df["club_country"] == land]
     df = df.copy()
     ratio = df["rollen_score"] / (df["kosten_saison"].where(df["kosten_saison"] > 0) / 1e6)
     df["value_pctl"] = ratio.rank(pct=True) * 100
@@ -148,6 +151,7 @@ def main(argv=None) -> None:
     ap.add_argument("--max-alter", type=int)
     ap.add_argument("--max-kosten", type=float, help="Kosten pro Saison in Euro")
     ap.add_argument("--liga")
+    ap.add_argument("--land", help="Land des Vereins (Spalte 'Ansässig in'), z. B. 'Österreich'")
     ap.add_argument("--min-minuten", type=int)
     ap.add_argument(
         "--attr-gewicht", type=float, help="Anteil Attribut-Prior 0..1 (Default: rollen.yaml)"
@@ -183,6 +187,7 @@ def main(argv=None) -> None:
         max_alter=a.max_alter,
         max_kosten=a.max_kosten,
         liga=a.liga,
+        land=a.land,
         min_minuten=a.min_minuten,
         attr_gewicht=a.attr_gewicht,
         leagues=leagues,
@@ -194,6 +199,7 @@ def main(argv=None) -> None:
             "name",
             "club",
             "league",
+            "club_country",
             "position",
             "age",
             "minutes",
