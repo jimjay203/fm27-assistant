@@ -75,6 +75,7 @@ def test_parse_mixed_number_formats():
 def test_parse_money_export_formats():
     assert fmparse.parse_money("2,49Mio. €/J.", decimal=",") == pytest.approx(2_490_000)
     assert fmparse.parse_money("997K €/J.", decimal=",") == 997_000
+    assert fmparse.parse_money("2,76Mio. €/J.", decimal=",") == pytest.approx(2_760_000)  # NBSP
     assert fmparse.money_period("997K €/J.") == "jahr"
     assert fmparse.money_period("€20K p/w") == "woche"
     assert fmparse.money_period("€1.5M") is None
@@ -150,9 +151,9 @@ def _import_echt(cfg=None, datei="2026-10-11_kader.csv"):
 
 def test_echter_export_vollstaendig_gemappt():
     c, res, warnings = _import_echt()
-    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (3, 0, 0)
-    assert warnings == []
-    assert count(c, "player_attributes") == 3 * 47
+    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (6, 0, 0)
+    assert warnings == []  # auch: einzelnes "Endet" (Kader) löst keine Doppel-Header-Warnung aus
+    assert count(c, "player_attributes") == 6 * 47
     assert c.execute("SELECT COUNT(*) FROM player_attributes WHERE masked=1").fetchone()[0] == 0
 
 
@@ -177,11 +178,27 @@ def test_echter_export_werte():
         f"SELECT value_min, value_max, value, age FROM players WHERE player_uid='{f}'"
     ).fetchone()
     assert nums == pytest.approx((9e6, 11.5e6, 10.25e6, 33))
+    assert one(f"SELECT club_country FROM players WHERE player_uid='{f}'") == "Deutschland"
     dates = c.execute(
-        f"SELECT contract_end, loan_end FROM players WHERE player_uid='{f}'"
+        f"SELECT contract_end, loan_start, loan_end FROM players WHERE player_uid='{f}'"
     ).fetchone()
-    assert dates == ("2028-06-30", "2027-06-30")
-    assert one(f"SELECT loan_end FROM players WHERE player_uid='{h}'") is None  # "?"
+    assert dates == ("2028-06-30", "2026-07-06", "2027-06-30")  # Leihdauer "6.7.26 - 30.6.27"
+    assert info("ausgeliehen_von", f) == "West Ham"
+    assert one(f"SELECT loan_end FROM players WHERE player_uid='{h}'") is None  # Leihdauer "-"
+    assert info("ausgeliehen_von", h) is None
+    # an Münster verliehen: Verein/Liga sind die des Leihvereins, Stammverein = Werder
+    adeh = c.execute(
+        "SELECT club, league, loan_start, loan_end FROM players WHERE player_uid='2000327143'"
+    ).fetchone()
+    assert adeh == ("Münster", "3. Liga", "2026-07-01", "2027-06-30")
+    assert info("ausgeliehen_von", "2000327143") == "Werder Bremen"
+    assert info("rolle", "2000327143") == "Verliehen"
+    # Jugendvertrag: Gehalt 3,3K, Transferwert-Spanne ab 0 €
+    jung = c.execute(
+        "SELECT wage, value_min, value_max FROM players WHERE player_uid='2000475076'"
+    ).fetchone()
+    assert jung == pytest.approx((3300, 0, 24000))
+    assert info("vertragsstatus", "2000475076") == "Jugendvertrag"
     assert one(f"SELECT value FROM players WHERE player_uid='{b}'") is None
     assert info("value", b) == "Steht nicht zum Verkauf"
     # gemischte Dezimalzeichen
@@ -206,9 +223,24 @@ SUCHE = "2026-10-11_suche_stuermer.csv"  # Spielersuche: andere Spalten, Scoutin
 
 def test_suche_vollstaendig_gemappt():
     c, res, warnings = _import_echt(datei=SUCHE)
-    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (3, 0, 0)
+    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (4, 0, 0)
     assert warnings == []
-    assert count(c, "player_attributes") == 3 * 47
+    assert count(c, "player_attributes") == 4 * 47
+
+
+def test_suche_leihe_endet_und_stammverein():
+    c, _, _ = _import_echt(datei=SUCHE)
+    row = c.execute(
+        "SELECT p.club, p.contract_end, p.loan_start, p.loan_end, i.text FROM players p "
+        "JOIN player_info i ON i.player_uid=p.player_uid AND i.field='ausgeliehen_von' "
+        "WHERE p.player_uid='19112560'"
+    ).fetchone()
+    # Suche: 2. "Endet" = Leihende, keine Leihdauer -> loan_start leer
+    assert row == ("Bahia", "2026-12-31", None, "2026-12-31", "Fluminense")
+    # kein Leihspieler -> weder Leihende noch Stammverein
+    assert c.execute(
+        "SELECT loan_end FROM players WHERE player_uid='19266403'"
+    ).fetchone() == (None,)
 
 
 def test_suche_spannen_und_texte():
@@ -250,6 +282,65 @@ def test_suche_spannen_und_texte():
         f"SELECT league, club_country FROM players WHERE player_uid='{u}'"
     ).fetchone()
     assert club(egg) == ("Bundesliga", "Österreich") and club(cabral)[1] == "Brasilien"
+
+
+def test_liga_ranking_nach_liga_und_land():
+    c = common.connect(":memory:")
+    cfg = common.load_yaml("ligen.yaml")
+    n_strength, n_ranking = fm_import.load_leagues(c, cfg)
+    assert n_ranking == len(cfg["ranking"]) > 74 and n_strength == 0
+    # Stufen steigen in Listenreihenfolge monoton (Herausragend ... Durchschnittlich)
+    stufen = list(dict.fromkeys(e["ansehen"] for e in cfg["ranking"]))
+    assert stufen[:5] == ["Herausragend", "Exzellent", "Beeindruckend", "Gut", "Recht gut"]
+    assert stufen == sorted(stufen, key=stufen.index)  # jede Stufe bildet einen zusammenhängenden Block
+    assert [e["ansehen"] for e in cfg["ranking"]] == sorted(
+        (e["ansehen"] for e in cfg["ranking"]), key=stufen.index
+    )
+
+    def rang(liga, land):
+        row = c.execute(
+            "SELECT rang, ansehen FROM league_ranking WHERE league=? AND country=?", (liga, land)
+        ).fetchone()
+        return row
+
+    # gleichnamige Ligen sind getrennt
+    assert rang("Bundesliga", "Deutschland") == (4, "Exzellent")
+    assert rang("Bundesliga", "Österreich") == (21, "Beeindruckend")
+    assert rang("Super League", "Griechenland")[0] < rang("Super League", "Schweiz")[0]
+    assert rang("3. Liga", "Deutschland")[1] == "Brauchbar"
+    assert rang("2. Bundesliga", "Deutschland")[0] < rang("3. Liga", "Deutschland")[0]
+    # Neuladen ersetzt statt zu verdoppeln
+    fm_import.load_leagues(c, cfg)
+    assert count(c, "league_ranking") == n_ranking
+
+
+def test_liga_ranking_doppelt_bricht_ab():
+    c = common.connect(":memory:")
+    e = {"liga": "X", "land": "Y"}
+    with pytest.raises(SystemExit):
+        fm_import.load_leagues(c, {"ranking": [e, dict(e)]})
+
+
+def test_ranking_join_und_warnung():
+    c = common.connect(":memory:")
+    fm_import.load_leagues(c, common.load_yaml("ligen.yaml"))
+    cfg, warnings = common.load_yaml("spalten.yaml"), []
+    for f in ("2026-10-11_kader.csv", SUCHE):
+        fm_import.import_file(c, "test", FIX / "echt" / f, cfg, warn=warnings.append)
+    # Kader enthält "RL Nord", das nicht in der Ranking-Liste steht (dort nur "Regionalliga"); die Suche passt
+    assert len(warnings) == 1
+    assert "RL Nord (Deutschland)" in warnings[0]
+    assert "3. Liga" not in warnings[0] and "Bundesliga" not in warnings[0]
+    players, _ = per90.load_wide(c, "test")
+    r = players.set_index("name")[["liga_rang", "liga_ansehen"]]
+    assert tuple(r.loc["Niclas Füllkrug"]) == (4, "Exzellent")  # Bundesliga Deutschland
+    assert tuple(r.loc["Johannes Eggestein"]) == (21, "Beeindruckend")  # Bundesliga Österreich
+    assert "liga_rang_p90" not in players  # Kernspalte, kein Stat
+    # Liga fehlt im Ranking -> Warnung
+    c.execute("DELETE FROM league_ranking WHERE league='Brasileirão'")
+    w2: list[str] = []
+    fm_import.import_file(c, "test", FIX / "echt" / SUCHE, cfg, warn=w2.append)
+    assert any("Brasileirão (Brasilien)" in w for w in w2)
 
 
 def test_doppelter_header_nur_einmal_warnt(tmp_path):

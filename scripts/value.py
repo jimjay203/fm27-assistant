@@ -200,6 +200,7 @@ def main(argv=None) -> None:
             "club",
             "league",
             "club_country",
+            "liga_rang",
             "position",
             "age",
             "minutes",

@@ -28,6 +28,8 @@ CORE_COLS = [
     "club",
     "league",
     "club_country",
+    "liga_rang",
+    "liga_ansehen",
     "position",
     "age",
     "wage",
@@ -36,6 +38,7 @@ CORE_COLS = [
     "value",
     "contract_end",
     "loan_end",
+    "loan_start",
     "value_min",
     "value_max",
     "minutes",
@@ -49,8 +52,10 @@ CORE_COLS = [
 def load_wide(conn, save: str, view: str | None = None):
     """Neuester Snapshot je Spieler. -> (players+Stats-Spalten, Attribute-Spalten `attr_*`)."""
     q = (
-        "SELECT p.*, s.ingame_date, s.view_type FROM players p "
-        "JOIN snapshots s ON s.id = p.snapshot_id WHERE s.save = ?"
+        "SELECT p.*, s.ingame_date, s.view_type, lr.rang AS liga_rang, lr.ansehen AS liga_ansehen "
+        "FROM players p JOIN snapshots s ON s.id = p.snapshot_id "
+        "LEFT JOIN league_ranking lr ON lr.league = p.league AND lr.country = p.club_country "
+        "WHERE s.save = ?"
     )
     args: list = [save]
     if view:

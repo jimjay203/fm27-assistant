@@ -27,7 +27,9 @@ spalten:
   "Gehalt": wage
   "Transferwert": value          # Spanne -> value_min/value_max, value = Mittelwert
   "Endet": contract_end
-  "Endet.1": loan_end            # Leihende (Jimmy, 2026-11-20); "?" = keine Leihe
+  "Endet.1": loan_end            # Leihende (Jimmy, 2026-11-20) in der Spielersuche; "?" = keine Leihe
+  "Leihdauer": {name: leihdauer, typ: zeitraum}   # Kader: "6.7.26 - 30.6.27" -> loan_start/loan_end
+  "Ausgeliehen von": {name: ausgeliehen_von, typ: text}  # Stammverein; bei Verliehenen = Werder Bremen
   "Minuten": minutes
 
   # --- Text-/Datumsfelder (player_info) ---

@@ -30,7 +30,8 @@ PLAYER_CORE = (
     "wage",
     "value",
     "contract_end",
-    "loan_end",  # 2. "Endet"-Spalte im Export = Leihende (pandas-Name "Endet.1")
+    "loan_end",  # Leihende: 2. "Endet"-Spalte (pandas "Endet.1", Suche) bzw. Ende von "Leihdauer"
+    "loan_start",  # Beginn aus "Leihdauer" (Kader)
     "minutes",
     "team_possession",  # TODO(export): Ballbesitz des Teams (%), für Defensiv-Bereinigung
 )
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS players(
   contract_end TEXT, minutes INTEGER, birthdate TEXT, team_possession REAL,
   value_min REAL, value_max REAL, loan_end TEXT,
   wage_min REAL, wage_max REAL,   -- Jahresgehalt-Spanne bei nicht gescouteten Spielern
-  club_country TEXT,
+  club_country TEXT, loan_start TEXT,
   PRIMARY KEY(snapshot_id, player_uid));
 CREATE TABLE IF NOT EXISTS player_info(     -- Text-/Datumsfelder (typ: text|date in spalten.yaml)
   snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, field TEXT NOT NULL, text TEXT,
@@ -88,6 +89,9 @@ CREATE TABLE IF NOT EXISTS team_match_stats(
   match_id INTEGER NOT NULL REFERENCES team_matches(id), stat TEXT NOT NULL, value REAL,
   PRIMARY KEY(match_id, stat));
 CREATE TABLE IF NOT EXISTS leagues(league TEXT PRIMARY KEY, reputation_or_strength REAL);
+CREATE TABLE IF NOT EXISTS league_ranking(  -- config/ligen.yaml: rang = Listenposition (1 = oben)
+  league TEXT NOT NULL, country TEXT NOT NULL, rang INTEGER NOT NULL, ansehen TEXT, pos INTEGER,
+  PRIMARY KEY(league, country));
 """
 
 
@@ -129,7 +133,8 @@ def load_yaml(name: str, config_dir: Path | None = None) -> dict:
 
 # Spalten, die nach dem ersten Schema dazukamen (CREATE IF NOT EXISTS ergänzt sie nicht).
 _ADDED_COLUMNS = {
-    "players": {"wage_min": "REAL", "wage_max": "REAL", "club_country": "TEXT"},
+    "players": {"wage_min": "REAL", "wage_max": "REAL", "club_country": "TEXT",
+                "loan_start": "TEXT"},
     "player_attributes": {"lo": "REAL", "hi": "REAL"},
 }
 

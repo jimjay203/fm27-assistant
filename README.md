@@ -49,6 +49,15 @@ Alle Skripte kennen `--db` und `--config-dir` (Tests nutzen `tests/fixtures/conf
   nie stilles Falschparsen. Text-/Datumsfelder (`typ: text|date`) landen in `player_info`.
 - Doppelte Header heißen wie bei pandas: `Endet` (Vertragsende), `Endet.1` (Leihende), `Freistöße`
   (Stat) / `Freistöße.1` (Attribut). Unlesbare Datumswerte brechen den Import ab (falsche Spaltenfolge).
+- Leihe: Kader-Ansicht `Leihdauer` ("6.7.26 - 30.6.27") → `loan_start`/`loan_end`, `Ausgeliehen von` → Stammverein
+  (`player_info`). Verliehene Eigengewächse haben als `club`/`league` den Leihverein und `ausgeliehen_von` =
+  Werder Bremen; Leih-Zugänge haben `club` = Werder Bremen und den fremden Stammverein. Die Suche liefert
+  das Leihende stattdessen als zweites `Endet` (`Endet.1`).
+- Liga-Ranking: `config/ligen.yaml` (`ranking`, aus der FM-Ansicht abgetippt) → Tabelle `league_ranking`,
+  Schlüssel Liga + Land (`Ansässig in`). `per90.load_wide` hängt `liga_rang` (1 = oben) und `liga_ansehen`
+  an; der Import warnt bei Ligen ohne Eintrag. Perzentile laufen je Position + Liga + Land.
+- Scouting-Spannen: Attribute `14-18` → `lo`/`hi` (`value` NULL, `masked=1`); Gehalt/Transferwert-Spannen →
+  `wage_min`/`wage_max`, `value_min`/`value_max`.
 - Transferwert-Spannen: `value_min`/`value_max`, `value` = Mittelwert; „Steht nicht zum Verkauf“ → NULL.
 - Gehalt wird beim Import auf Jahreswerte umgerechnet (`gehalt.periode: jahr`; Import bricht ab, wenn
   der Export eine andere Periode zeigt).

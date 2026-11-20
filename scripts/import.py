@@ -69,7 +69,8 @@ class Mapping:
     """spalten.yaml: `"Spalte": name` oder `"Spalte": {name, dezimal?, einheit?, typ?}`.
 
     dezimal: überschreibt zahlenformat.dezimal für diese Spalte; einheit: Pflicht-Suffix ('km');
-    typ: text | date (-> player_info) | einsaetze ('6 (2)' -> Starts/Einwechslungen).
+    typ: text | date (-> player_info) | einsaetze ('6 (2)' -> Starts/Einwechslungen) |
+         zeitraum ('6.7.26 - 30.6.27' -> loan_start/loan_end).
     Doppelte Header heißen wie bei pandas: 'Endet', 'Endet.1'.
     """
 
@@ -147,8 +148,14 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
             "(woche|monat|jahr) – offener Punkt 6."
         )
     present = {c.casefold(): c for c in df.columns}
-    for key in mp.specs:
-        if key.endswith(".1") and key not in present and key[:-2] in present:
+    for key, sp in mp.specs.items():
+        # Nur bei Attributen kritisch: eine einzelne Spalte "Freistöße" könnte Stat oder Attribut sein.
+        if (
+            key.endswith(".1")
+            and str(sp["name"]).startswith("attr_")
+            and key not in present
+            and key[:-2] in present
+        ):
             warn(
                 f"Spalte '{present[key[:-2]]}' kommt nur einmal vor, spalten.yaml erwartet auch "
                 f"'{key}' – Zuordnung prüfen (z. B. Stat oder Attribut?)"
@@ -158,13 +165,14 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
     kind = {i: spec(i).get("typ") for i in mapped}
     text_cols = {i: c for i, c in mapped.items() if kind[i] in ("text", "date")}
     apps_col = next((c for i, c in mapped.items() if kind[i] == "einsaetze"), None)
+    period_i, period_col = next(((i, c) for i, c in mapped.items() if kind[i] == "zeitraum"), (None, None))
     stat_cols = {
         i: c
         for i, c in mapped.items()
         if i not in common.PLAYER_CORE
         and not i.startswith("attr_")
         and i not in text_cols
-        and kind[i] != "einsaetze"
+        and kind[i] not in ("einsaetze", "zeitraum")
     }
     attr_cols = {i[5:]: c for i, c in mapped.items() if i.startswith("attr_")}
     n_fallback = n_name_only = n_dup = 0
@@ -218,6 +226,14 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
         wage = (wmin + wmax) / 2 if wrange else None  # Spanne bei nicht gescouteten Spielern
         if wage is None and not fmparse.is_null(wage_raw):
             bad[mapped["wage"]] = bad.get(mapped["wage"], 0) + 1
+        loan_start = loan_end = None
+        if period_col and not fmparse.is_null(rec[period_col]):  # "6.7.26 - 30.6.27"
+            m = re.fullmatch(r"(.+?)\s+[-–]\s+(.+)", rec[period_col].strip())
+            if m:
+                loan_start, loan_end = date(period_i, m.group(1)), date(period_i, m.group(2))
+            else:
+                bad[period_col] = bad.get(period_col, 0) + 1
+                bad_dates.add(period_col)
         value_raw = g.get("value")
         vrange = fmparse.parse_money_range(value_raw, spec("value").get("dezimal", dec))
         vmin, vmax = vrange or (None, None)
@@ -226,8 +242,8 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
         conn.execute(
             "INSERT OR REPLACE INTO players(snapshot_id, player_uid, name, club, league, position, "
             "age, wage, value, contract_end, minutes, birthdate, team_possession, value_min, "
-            "value_max, loan_end, wage_min, wage_max, club_country) "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "value_max, loan_end, wage_min, wage_max, club_country, loan_start) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 sid,
                 uid,
@@ -244,10 +260,11 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
                 num("team_possession", g.get("team_possession")) if "team_possession" in g else None,
                 vmin,
                 vmax,
-                date("loan_end", g.get("loan_end")) if "loan_end" in g else None,
+                (date("loan_end", g.get("loan_end")) if "loan_end" in g else None) or loan_end,
                 wmin,
                 wmax,
                 _text(g.get("club_country")),
+                loan_start,
             ),
         )
         for i, col in text_cols.items():
@@ -383,16 +400,44 @@ def import_file(
         sid = _replace_snapshot(conn, save, path.name, date, view)
         if view in common.PLAYER_VIEWS:
             res = import_players(conn, sid, df, mp, warn)
+            _warn_unranked(conn, sid, warn)
         else:
             res = import_team(conn, sid, save, date, df, mp, warn)
     return {"file": path.name, "view": view, "date": date, "snapshot": sid, **res}
 
 
-def load_leagues(conn, ligen_cfg: dict) -> int:
+def load_leagues(conn, ligen_cfg: dict) -> tuple[int, int]:
+    """-> (Anzahl numerische Stärken `leagues`, Anzahl Ranking-Einträge `league_ranking`)."""
     rows = list((ligen_cfg.get("ligen") or {}).items())
+    ranking, seen = [], set()
+    for rang, e in enumerate(ligen_cfg.get("ranking") or [], start=1):
+        key = (e["liga"], e["land"])
+        if key in seen:
+            common.die(f"ligen.yaml: '{e['liga']}' ({e['land']}) kommt doppelt vor.")
+        seen.add(key)
+        ranking.append((e["liga"], e["land"], rang, e.get("ansehen"), e.get("pos")))
     with conn:
         conn.executemany("INSERT OR REPLACE INTO leagues VALUES(?,?)", rows)
-    return len(rows)
+        conn.execute("DELETE FROM league_ranking")
+        conn.executemany("INSERT INTO league_ranking VALUES(?,?,?,?,?)", ranking)
+    return len(rows), len(ranking)
+
+
+def _warn_unranked(conn, sid: int, warn) -> None:
+    """Meldet Liga/Land-Kombinationen des Snapshots, die nicht in league_ranking stehen."""
+    if not conn.execute("SELECT 1 FROM league_ranking LIMIT 1").fetchone():
+        return
+    missing = conn.execute(
+        "SELECT DISTINCT p.league, p.club_country FROM players p LEFT JOIN league_ranking lr "
+        "ON lr.league = p.league AND lr.country = p.club_country "
+        "WHERE p.snapshot_id = ? AND p.league IS NOT NULL AND lr.league IS NULL",
+        (sid,),
+    ).fetchall()
+    if missing:
+        warn(
+            "Liga ohne Eintrag in config/ligen.yaml (Land fehlt oder abweichend geschrieben?): "
+            + ", ".join(f"{lg} ({land or 'Land fehlt'})" for lg, land in missing)
+        )
 
 
 def main(argv=None) -> None:
@@ -413,7 +458,7 @@ def main(argv=None) -> None:
     cfg = common.load_yaml("spalten.yaml", a.config_dir)
     files = a.file or sorted((a.raw_dir or common.save_dir(save) / "data" / "raw").glob("*"))
     conn = common.connect(a.db)
-    n_leagues = load_leagues(conn, common.load_yaml("ligen.yaml", a.config_dir))
+    n_strength, n_ranking = load_leagues(conn, common.load_yaml("ligen.yaml", a.config_dir))
 
     results = []
     for f in files:
@@ -432,7 +477,8 @@ def main(argv=None) -> None:
     if results:
         print(pd.DataFrame(results).to_string(index=False))
     print(
-        f"Save={save}  Dateien importiert: {len(results)}  Ligen in config/ligen.yaml: {n_leagues}"
+        f"Save={save}  Dateien importiert: {len(results)}  "
+        f"Liga-Ranking: {n_ranking}  Liga-Stärken (--liga-norm): {n_strength}"
     )
 
 

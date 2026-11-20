@@ -1,5 +1,231 @@
-# Liga-Stärke für optionale Normalisierung (value.py --liga-norm). Wird bei jedem Import
-# in die Tabelle `leagues` geladen.
-# TODO(offener Punkt 5): Quelle klären (FM-Liga-Reputation oder eigene Einstufung).
+# Liga-Ranking aus der FM27-Ansicht der Wettbewerbe (3 Screenshots, abgetippt von Claude, Stand 2026-11-20).
+#
+# ranking: Reihenfolge = Reihenfolge der Ansicht (Rang 1 = oben); wird beim Import in `league_ranking`
+#   geladen. Annahme (nicht belegt): die Ansicht ist nach Liga-Reputation sortiert – die Stufen
+#   (ansehen) steigen darin monoton, `pos` nicht.
+#   liga + land sind der Schlüssel (Namen wiederholen sich: Bundesliga DE/AT, Super League GR/CH ...);
+#   sie müssen wie im Export geschrieben sein (Spalten "Liga" und "Ansässig in").
+#   pos = "Pos." der Ansicht, vermutlich Rang im Kontinentalverband (Europa 1-49, Südamerika 1-11 ...).
+# TODO: Die Liste endet bei "Nationaldivisioun" (Luxemburg, Stufe "Durchschnittlich"); weitere Ligen
+#   darunter bei Bedarf nachtragen. Export-Ligen ohne Eintrag meldet der Import (z. B. "RL Nord").
+#
+# ligen: numerische Stärke für value.py --liga-norm (Tabelle `leagues`); bewusst leer – die Ansicht
+#   liefert nur Reihenfolge und Stufe, keine Zahl. Kein Schlüssel-Kollisionsschutz (nur Liga-Name).
+
+ranking:
+  # --- Herausragend ---
+  - {liga: "Premier League", land: England, ansehen: Herausragend, pos: 1}
+  - {liga: "Serie A", land: Italien, ansehen: Herausragend, pos: 2}
+  - {liga: "LaLiga", land: Spanien, ansehen: Herausragend, pos: 3}
+  # --- Exzellent ---
+  - {liga: "Bundesliga", land: Deutschland, ansehen: Exzellent, pos: 4}
+  - {liga: "Ligue 1", land: Frankreich, ansehen: Exzellent, pos: 5}
+  - {liga: "Liga Portugal", land: Portugal, ansehen: Exzellent, pos: 6}
+  - {liga: "Eredivisie", land: Niederlande, ansehen: Exzellent, pos: 7}
+  - {liga: "Jupiler Pro League", land: Belgien, ansehen: Exzellent, pos: 8}
+  # --- Beeindruckend ---
+  - {liga: "Brasileirão", land: Brasilien, ansehen: Beeindruckend, pos: 1}
+  - {liga: "Süper Lig", land: Türkei, ansehen: Beeindruckend, pos: 9}
+  - {liga: "Super League", land: Griechenland, ansehen: Beeindruckend, pos: 10}
+  - {liga: "1. ČFL", land: Tschechien, ansehen: Beeindruckend, pos: 11}
+  - {liga: "Ekstraklasa", land: Polen, ansehen: Beeindruckend, pos: 12}
+  - {liga: "Superliga", land: Dänemark, ansehen: Beeindruckend, pos: 13}
+  - {liga: "Eliteserien", land: Norwegen, ansehen: Beeindruckend, pos: 14}
+  - {liga: "Liga Profesional", land: Argentinien, ansehen: Beeindruckend, pos: 2}
+  - {liga: "Liga MX", land: Mexiko, ansehen: Beeindruckend, pos: 1}
+  - {liga: "A' Katigorías", land: Zypern, ansehen: Beeindruckend, pos: 15}
+  - {liga: "Super League", land: Schweiz, ansehen: Beeindruckend, pos: 16}
+  - {liga: "MLS", land: "United States", ansehen: Beeindruckend, pos: 2}
+  - {liga: "Bundesliga", land: Österreich, ansehen: Beeindruckend, pos: 17}
+  # --- Gut ---
+  - {liga: "Scottish Premiership", land: Schottland, ansehen: Gut, pos: 18}
+  - {liga: "EFL Championship", land: England, ansehen: Gut, pos: 19}
+  - {liga: "HNL", land: Kroatien, ansehen: Gut, pos: 20}
+  - {liga: "Allsvenskan", land: Schweden, ansehen: Gut, pos: 21}
+  - {liga: "Primera A", land: Kolumbien, ansehen: Gut, pos: 3}
+  - {liga: "NB I", land: Ungarn, ansehen: Gut, pos: 22}
+  - {liga: "Ligat Ha'Al", land: Israel, ansehen: Gut, pos: 23}
+  - {liga: "Saudi Pro League", land: Saudi-Arabien, ansehen: Gut, pos: 1}
+  - {liga: "Serie A de Ecuador", land: Ecuador, ansehen: Gut, pos: 4}
+  - {liga: "Super liga Srbije", land: Serbien, ansehen: Gut, pos: 24}
+  - {liga: "UPL", land: Ukraine, ansehen: Gut, pos: 25}
+  - {liga: "Liga I", land: Rumänien, ansehen: Gut, pos: 26}
+  - {liga: "Primera División", land: Paraguay, ansehen: Gut, pos: 5}
+  - {liga: "2. Bundesliga", land: Deutschland, ansehen: Gut, pos: 27}
+  - {liga: "J1 League", land: Japan, ansehen: Gut, pos: 2}
+  - {liga: "Premyer Liqası", land: Aserbaidschan, ansehen: Gut, pos: 28}
+  - {liga: "LaLiga 2", land: Spanien, ansehen: Gut, pos: 29}
+  - {liga: "RPL", land: Russland, ansehen: Gut, pos: 30}
+  - {liga: "I. liga", land: Slowakei, ansehen: Gut, pos: 31}
+  - {liga: "Parva Liga", land: Bulgarien, ansehen: Gut, pos: 32}
+  - {liga: "1. SNL", land: Slowenien, ansehen: Gut, pos: 33}
+  - {liga: "Ligue 2", land: Frankreich, ansehen: Gut, pos: 34}
+  - {liga: "Serie B", land: Italien, ansehen: Gut, pos: 35}
+  - {liga: "1ª División", land: Uruguay, ansehen: Gut, pos: 6}
+  - {liga: "K League 1", land: Südkorea, ansehen: Gut, pos: 3}
+  - {liga: "Liga de Primera", land: Chile, ansehen: Gut, pos: 7}
+  # --- Recht gut ---
+  - {liga: "Besta deild karla", land: Island, ansehen: "Recht gut", pos: 36}
+  - {liga: "EPL", land: Ägypten, ansehen: "Recht gut", pos: 1}
+  - {liga: "Brasileirão Série B", land: Brasilien, ansehen: "Recht gut", pos: 8}
+  - {liga: "1. divisjon", land: Norwegen, ansehen: "Recht gut", pos: 37}
+  - {liga: "UAE Pro League", land: UAE, ansehen: "Recht gut", pos: 4}
+  - {liga: "Premiyer Liga", land: Armenien, ansehen: "Recht gut", pos: 38}
+  - {liga: "Super Liga", land: "Republik Moldau", ansehen: "Recht gut", pos: 39}
+  - {liga: "Liga 1", land: Peru, ansehen: "Recht gut", pos: 9}
+  - {liga: "Veikkausliiga", land: Finnland, ansehen: "Recht gut", pos: 40}
+  - {liga: "Premijer Liga BiH", land: "Bosnien und Herzegowina", ansehen: "Recht gut", pos: 41}
+  - {liga: "Botola D1", land: Marokko, ansehen: "Recht gut", pos: 2}
+  - {liga: "Premer-liga", land: Kasachstan, ansehen: "Recht gut", pos: 42}
+  - {liga: "Eerste Divisie", land: Niederlande, ansehen: "Recht gut", pos: 43}
+  - {liga: "Primera Nacional", land: Argentinien, ansehen: "Recht gut", pos: 10}
+  - {liga: "1. Lig", land: Türkei, ansehen: "Recht gut", pos: 44}
+  - {liga: "Persian Gulf League", land: Iran, ansehen: "Recht gut", pos: 5}
+  - {liga: "Qatar Stars League", land: Katar, ansehen: "Recht gut", pos: 6}
+  - {liga: "Liga Portugal 2", land: Portugal, ansehen: "Recht gut", pos: 45}
+  - {liga: "Ligue 1", land: Algerien, ansehen: "Recht gut", pos: 3}
+  - {liga: "Liga FPD", land: "Costa Rica", ansehen: "Recht gut", pos: 3}
+  - {liga: "PSL", land: Südafrika, ansehen: "Recht gut", pos: 4}
+  - {liga: "1. Liga", land: Polen, ansehen: "Recht gut", pos: 46}
+  - {liga: "EFL League One", land: England, ansehen: "Recht gut", pos: 47}
+  - {liga: "2. ČFL", land: Tschechien, ansehen: "Recht gut", pos: 48}
+  - {liga: "Superliga", land: Usbekistan, ansehen: "Recht gut", pos: 7}
+  - {liga: "División Profesional", land: Bolivien, ansehen: "Recht gut", pos: 11}
+  - {liga: "Super League 2", land: Griechenland, ansehen: "Recht gut", pos: 49}
+  # Ab hier aus den Screenshots 4-8 (Stand 2026-11-20). Zwischen "Super League 2" und "Challenger Pro League"
+  # überlappen sich die Screenshots nicht; dort könnten Zeilen fehlen. Pos. von "Challenger Pro League"
+  # war abgeschnitten (50 aus der Reihenfolge ergänzt).
+  - {liga: "Challenger Pro League", land: Belgien, ansehen: "Recht gut", pos: 50}
+  - {liga: "Challenge League", land: Schweiz, ansehen: "Recht gut", pos: 51}
+  - {liga: "Men's Premier Division", land: Irland, ansehen: "Recht gut", pos: 52}
+  - {liga: "A-League Men", land: Australien, ansehen: "Recht gut", pos: 9}
+  - {liga: "Liga FUTVE", land: Venezuela, ansehen: "Recht gut", pos: 12}
+  - {liga: "CSL", land: China, ansehen: "Recht gut", pos: 10}
+  - {liga: "Superettan", land: Schweden, ansehen: "Recht gut", pos: 53}
+  - {liga: "Liga Super", land: Malaysia, ansehen: "Recht gut", pos: 11}
+  - {liga: "Kategoria Superiore", land: Albanien, ansehen: "Recht gut", pos: 54}
+  - {liga: "V.League 1", land: Vietnam, ansehen: "Recht gut", pos: 12}
+  - {liga: "Ligue 1", land: Tunesien, ansehen: "Recht gut", pos: 5}
+  - {liga: "Liga 3", land: Portugal, ansehen: "Recht gut", pos: 55}
+  # --- Brauchbar ---
+  - {liga: "1. MFL", land: Nordmazedonien, ansehen: Brauchbar, pos: 56}
+  - {liga: "Liga Nacional Honduras", land: Honduras, ansehen: Brauchbar, pos: 4}
+  - {liga: "1. Division", land: Dänemark, ansehen: Brauchbar, pos: 57}
+  - {liga: "1. NL", land: Kroatien, ansehen: Brauchbar, pos: 58}
+  - {liga: "Ykkösliiga", land: Finnland, ansehen: Brauchbar, pos: 59}
+  - {liga: "Jordan Pro League", land: Jordanien, ansehen: Brauchbar, pos: 13}
+  - {liga: "Brasileirão Série C", land: Brasilien, ansehen: Brauchbar, pos: 13}
+  - {liga: "Iraqi Premier League", land: Irak, ansehen: Brauchbar, pos: 14}
+  - {liga: "3. Liga", land: Deutschland, ansehen: Brauchbar, pos: 60}
+  - {liga: "2. Liga", land: Österreich, ansehen: Brauchbar, pos: 61}
+  - {liga: "Primera B", land: Kolumbien, ansehen: Brauchbar, pos: 14}
+  - {liga: "1. CFL", land: Montenegro, ansehen: Brauchbar, pos: 62}
+  - {liga: "Vysheyshaya Liha", land: Belarus, ansehen: Brauchbar, pos: 63}
+  - {liga: "CanPL", land: Kanada, ansehen: Brauchbar, pos: 5}
+  - {liga: "Superliga", land: Kosovo, ansehen: Brauchbar, pos: 64}
+  - {liga: "Tercera División", land: Argentinien, ansehen: Brauchbar, pos: 15}
+  - {liga: "Campeonatos Estaduais", land: Brasilien, ansehen: Brauchbar, pos: -1}
+  - {liga: "J2 League", land: Japan, ansehen: Brauchbar, pos: 15}
+  - {liga: "NB II", land: Ungarn, ansehen: Brauchbar, pos: 65}
+  - {liga: "Liga Leumit", land: Israel, ansehen: Brauchbar, pos: 66}
+  - {liga: "Eerste nationale", land: Belgien, ansehen: Brauchbar, pos: 67}
+  - {liga: "Bahraini Premier League", land: Bahrain, ansehen: Brauchbar, pos: 16}
+  - {liga: "Virslīga", land: Lettland, ansehen: Brauchbar, pos: 68}
+  - {liga: "Omantel League", land: Oman, ansehen: Brauchbar, pos: 17}
+  - {liga: "Scottish Championship", land: Schottland, ansehen: Brauchbar, pos: 69}
+  - {liga: "Liga de Ascenso", land: Chile, ansehen: Brauchbar, pos: 16}
+  - {liga: "Prva liga Srbije", land: Serbien, ansehen: Brauchbar, pos: 70}
+  - {liga: "Liga de Expansión MX", land: Mexiko, ansehen: Brauchbar, pos: 6}
+  - {liga: "Ligue 3", land: Frankreich, ansehen: Brauchbar, pos: 71}
+  - {liga: "2. Lig", land: Türkei, ansehen: Brauchbar, pos: 72}
+  - {liga: "Campeonato de Portugal", land: Portugal, ansehen: Brauchbar, pos: 73}
+  - {liga: "SPL", land: Singapur, ansehen: Brauchbar, pos: 18}
+  - {liga: "Premier League", land: Kuwait, ansehen: Brauchbar, pos: 19}
+  - {liga: "2. SNL", land: Slowenien, ansehen: Brauchbar, pos: 74}
+  - {liga: "PostNord-ligaen", land: Norwegen, ansehen: Brauchbar, pos: 75}
+  - {liga: "Primera Federación", land: Spanien, ansehen: Brauchbar, pos: 76}
+  - {liga: "Vodacom Premier League", land: Tansania, ansehen: Brauchbar, pos: 6}
+  - {liga: "LPF", land: Panama, ansehen: Brauchbar, pos: 7}
+  - {liga: "Liga Nacional Guatemala", land: Guatemala, ansehen: Brauchbar, pos: 8}
+  - {liga: "La Liga Mayor", land: "El Salvador", ansehen: Brauchbar, pos: 9}
+  - {liga: "Ykkönen", land: Finnland, ansehen: Brauchbar, pos: 77}
+  - {liga: "Liga II", land: Rumänien, ansehen: Brauchbar, pos: 78}
+  - {liga: "Saudi 1st Division", land: Saudi-Arabien, ansehen: Brauchbar, pos: 20}
+  - {liga: "G' Ethniki", land: Griechenland, ansehen: Brauchbar, pos: 79}
+  - {liga: "Regionalliga", land: Deutschland, ansehen: Brauchbar, pos: 80}
+  - {liga: "Ýokary Liga", land: Turkmenistan, ansehen: Brauchbar, pos: 21}
+  - {liga: "Indian Super League", land: Indien, ansehen: Brauchbar, pos: 22}
+  - {liga: "K League 2", land: Südkorea, ansehen: Brauchbar, pos: 23}
+  - {liga: "EFL League Two", land: England, ansehen: Brauchbar, pos: 81}
+  - {liga: "Hong Kong Premier League", land: "Hong Kong", ansehen: Brauchbar, pos: 24}
+  - {liga: "Jogorku liga", land: Kirgisistan, ansehen: Brauchbar, pos: 25}
+  - {liga: "USLC", land: "United States", ansehen: Brauchbar, pos: 10}
+  - {liga: "NPFL", land: Nigeria, ansehen: Brauchbar, pos: 7}
+  - {liga: "Indonesiens Super League", land: Indonesien, ansehen: Brauchbar, pos: 26}
+  - {liga: "Botola D2", land: Marokko, ansehen: Brauchbar, pos: 8}
+  - {liga: "Brasileirão Série D", land: Brasilien, ansehen: Brauchbar, pos: 17}
+  - {liga: "Sudani Premier League", land: Sudan, ansehen: Brauchbar, pos: 9}
+  - {liga: "Jamaica Premier League", land: Jamaika, ansehen: Brauchbar, pos: 11}
+  - {liga: "NFD", land: Südafrika, ansehen: Brauchbar, pos: 10}
+  - {liga: "T2", land: Thailand, ansehen: Brauchbar, pos: 27}
+  - {liga: "Cuarta División", land: Argentinien, ansehen: Brauchbar, pos: 18}
+  - {liga: "1. deild karla", land: Island, ansehen: Brauchbar, pos: 82}
+  - {liga: "Serie C", land: Italien, ansehen: Brauchbar, pos: 83}
+  - {liga: "Lebanese Premier League", land: Libanon, ansehen: Brauchbar, pos: 28}
+  - {liga: "Liga Mayor", land: "Dominikanische Republik", ansehen: Brauchbar, pos: 12}
+  - {liga: "Vtora Liga", land: Bulgarien, ansehen: Brauchbar, pos: 84}
+  - {liga: "II. liga", land: Slowakei, ansehen: Brauchbar, pos: 85}
+  - {liga: "2. Division", land: Dänemark, ansehen: Brauchbar, pos: 86}
+  - {liga: "Meistaradeildin menn", land: Färöer, ansehen: Brauchbar, pos: 87}
+  - {liga: "Tochikiston Vyschaya Liga", land: Tadschikistan, ansehen: Brauchbar, pos: 29}
+  - {liga: "Primera Nicaragua", land: Nicaragua, ansehen: Brauchbar, pos: 13}
+  - {liga: "Serie B de Ecuador", land: Ecuador, ansehen: Brauchbar, pos: 19}
+  - {liga: "Prva Liga BiH", land: "Bosnien und Herzegowina", ansehen: Brauchbar, pos: 88}
+  - {liga: "TT Pro League", land: "Trinidad und Tobago", ansehen: Brauchbar, pos: 14}
+  - {liga: "Men's National League", land: Neuseeland, ansehen: Brauchbar, pos: 1}
+  - {liga: "FNL", land: Russland, ansehen: Brauchbar, pos: 89}
+  - {liga: "PFL", land: Ukraine, ansehen: Brauchbar, pos: 90}
+  - {liga: "2. Liga", land: Polen, ansehen: Brauchbar, pos: 91}
+  - {liga: "Men's National League Championship", land: Neuseeland, ansehen: Brauchbar, pos: 2}
+  # --- Durchschnittlich ---
+  - {liga: "Malta Premier", land: Malta, ansehen: Durchschnittlich, pos: 92}
+  - {liga: "Segunda Division", land: "Costa Rica", ansehen: Durchschnittlich, pos: 15}
+  - {liga: "Miesten Kakkonen", land: Finnland, ansehen: Durchschnittlich, pos: 93}
+  - {liga: "National League", land: England, ansehen: Durchschnittlich, pos: 94}
+  - {liga: "Kat. e Parë", land: Albanien, ansehen: Durchschnittlich, pos: 95}
+  - {liga: "3. NL", land: Kroatien, ansehen: Durchschnittlich, pos: 96}
+  - {liga: "Nitol Tata League", land: Bangladesch, ansehen: Durchschnittlich, pos: 30}
+  - {liga: "Meistriliiga", land: Estland, ansehen: Durchschnittlich, pos: 97}
+  - {liga: "Libyana Premier League", land: Libyen, ansehen: Durchschnittlich, pos: 11}
+  - {liga: "C-League", land: Kambodscha, ansehen: Durchschnittlich, pos: 31}
+  - {liga: "Egyptian Second Division", land: Ägypten, ansehen: Durchschnittlich, pos: 12}
+  - {liga: "Ägyptens Second Division", land: Ägypten, ansehen: Durchschnittlich, pos: 13}
+  - {liga: "Proliga", land: Usbekistan, ansehen: Durchschnittlich, pos: 32}
+  - {liga: "2. NL", land: Kroatien, ansehen: Durchschnittlich, pos: 98}
+  - {liga: "Girabola", land: Angola, ansehen: Durchschnittlich, pos: 14}
+  - {liga: "Vodacom Ligue 1", land: "DR Kongo", ansehen: Durchschnittlich, pos: 15}
+  - {liga: "PFL", land: Philippinen, ansehen: Durchschnittlich, pos: 33}
+  - {liga: "Digicel D1", land: Haiti, ansehen: Durchschnittlich, pos: 16}
+  - {liga: "Toplyga", land: Litauen, ansehen: Durchschnittlich, pos: 99}
+  - {liga: "Premier League", land: Syrien, ansehen: Durchschnittlich, pos: 34}
+  - {liga: "Azadegan League", land: Iran, ansehen: Durchschnittlich, pos: 35}
+  - {liga: "J3 League", land: Japan, ansehen: Durchschnittlich, pos: 36}
+  - {liga: "Tweede Divisie", land: Niederlande, ansehen: Durchschnittlich, pos: 100}
+  - {liga: "3. Lig", land: Türkei, ansehen: Durchschnittlich, pos: 101}
+  - {liga: "Oberliga", land: Deutschland, ansehen: Durchschnittlich, pos: 102}
+  - {liga: "NIFL Premiership", land: Nordirland, ansehen: Durchschnittlich, pos: 103}
+  - {liga: "Hoofdklasse", land: Suriname, ansehen: Durchschnittlich, pos: 17}
+  - {liga: "Ligue 2", land: Tunesien, ansehen: Durchschnittlich, pos: 16}
+  - {liga: "Liga FUTVE 2", land: Venezuela, ansehen: Durchschnittlich, pos: 20}
+  - {liga: "Regionalliga", land: Österreich, ansehen: Durchschnittlich, pos: 104}
+  - {liga: "GFL", land: Gibraltar, ansehen: Durchschnittlich, pos: 105}
+  - {liga: "2ª División", land: Uruguay, ansehen: Durchschnittlich, pos: 21}
+  - {liga: "Segunda Nicaragua", land: Nicaragua, ansehen: Durchschnittlich, pos: 18}
+  - {liga: "Primera de Ascenso A", land: Guatemala, ansehen: Durchschnittlich, pos: 19}
+  - {liga: "2-FNL A", land: Russland, ansehen: Durchschnittlich, pos: 106}
+  - {liga: "National 1", land: Frankreich, ansehen: Durchschnittlich, pos: 107}
+  - {liga: "Nationaldivisioun", land: Luxemburg, ansehen: Durchschnittlich, pos: 108}
+  # Die Liste läuft in der Ansicht weiter (letzte Zeile war abgeschnitten, Stufe "Durchschnittlich").
+
 ligen: {}
   # "<Liga-Name wie im Export>": 100
