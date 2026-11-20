@@ -66,20 +66,32 @@ def read_table(path: Path, sep: str | None = None, encoding: str = "utf-8-sig") 
 
 
 class Mapping:
+    """spalten.yaml: `"Spalte": name` oder `"Spalte": {name, dezimal?, einheit?, typ?}`.
+
+    dezimal: überschreibt zahlenformat.dezimal für diese Spalte; einheit: Pflicht-Suffix ('km');
+    typ: text | date (-> player_info) | einsaetze ('6 (2)' -> Starts/Einwechslungen).
+    Doppelte Header heißen wie bei pandas: 'Endet', 'Endet.1'.
+    """
+
     def __init__(self, cfg: dict):
-        self.lookup = {str(k).strip().casefold(): v for k, v in (cfg.get("spalten") or {}).items()}
+        self.specs: dict[str, dict] = {}
+        for col, v in (cfg.get("spalten") or {}).items():
+            self.specs[str(col).strip().casefold()] = {"name": v} if isinstance(v, str) else dict(v)
         self.decimal = (cfg.get("zahlenformat") or {}).get("dezimal", ".")
         self.wage_period = (cfg.get("gehalt") or {}).get("periode")
+        self.derived = cfg.get("abgeleitet") or {}  # name: [zähler, nenner] -> Quote in %
+        self.by_internal: dict[str, dict] = {}
 
     def split(self, columns) -> tuple[dict[str, str], list[str]]:
         """-> ({interner Name: Spaltenname}, [unbekannte Spalten])"""
         mapped, unknown = {}, []
         for col in columns:
-            internal = self.lookup.get(col.casefold())
-            if internal is None:
+            spec = self.specs.get(col.casefold())
+            if spec is None:
                 unknown.append(col)
             else:
-                mapped[internal] = col
+                mapped[spec["name"]] = col
+                self.by_internal[spec["name"]] = spec
         return mapped, unknown
 
 
@@ -104,7 +116,14 @@ def _replace_snapshot(conn, save: str, source_file: str, date: str, view_type: s
             (sid,),
         )
         conn.execute("DELETE FROM team_matches WHERE snapshot_id=?", (sid,))
-        for t in ("players", "player_stats", "player_attributes", "player_raw", "unmapped_columns"):
+        for t in (
+            "players",
+            "player_stats",
+            "player_attributes",
+            "player_info",
+            "player_raw",
+            "unmapped_columns",
+        ):
             conn.execute(f"DELETE FROM {t} WHERE snapshot_id=?", (sid,))
         conn.execute("DELETE FROM snapshots WHERE id=?", (sid,))
     cur = conn.execute(
@@ -128,15 +147,42 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
             "(woche|monat|jahr) – offener Punkt 6."
         )
     dec = mp.decimal
+    spec = lambda i: mp.by_internal.get(i, {})  # noqa: E731
+    kind = {i: spec(i).get("typ") for i in mapped}
+    text_cols = {i: c for i, c in mapped.items() if kind[i] in ("text", "date")}
+    apps_col = next((c for i, c in mapped.items() if kind[i] == "einsaetze"), None)
     stat_cols = {
-        i: c for i, c in mapped.items() if i not in common.PLAYER_CORE and not i.startswith("attr_")
+        i: c
+        for i, c in mapped.items()
+        if i not in common.PLAYER_CORE
+        and not i.startswith("attr_")
+        and i not in text_cols
+        and kind[i] != "einsaetze"
     }
     attr_cols = {i[5:]: c for i, c in mapped.items() if i.startswith("attr_")}
     n_fallback = n_name_only = n_dup = 0
     seen: set[str] = set()
+    bad: dict[str, int] = {}  # Spalte -> Anzahl nicht lesbarer, nicht leerer Zellen
+    bad_dates: set[str] = set()
+
+    def num(i: str, v) -> float | None:
+        s = spec(i)
+        r = fmparse.parse_number(v, s.get("dezimal", dec), s.get("einheit"))
+        if r is None and not fmparse.is_null(v):
+            bad[mapped[i]] = bad.get(mapped[i], 0) + 1
+        return r
+
+    def date(i: str, v) -> str | None:
+        r = fmparse.parse_date(v)
+        if r is None and not fmparse.is_null(v):
+            bad[mapped[i]] = bad.get(mapped[i], 0) + 1
+            bad_dates.add(mapped[i])
+        return r
+
     for rec in df.to_dict("records"):
         g = {i: rec[c] for i, c in mapped.items() if i in common.PLAYER_CORE}
-        bday = fmparse.parse_date(g.get("birthdate"))
+        info: dict[str, str] = {}
+        bday = date("birthdate", g.get("birthdate")) if "birthdate" in g else None
         uid = _text(g.get("uid"))
         if uid is None:
             name = _text(g.get("name"))
@@ -149,9 +195,28 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
         if uid in seen:
             n_dup += 1
         seen.add(uid)
-        wage = fmparse.to_annual(fmparse.parse_money(g.get("wage"), dec), mp.wage_period or "jahr")
+        wage_raw = g.get("wage")
+        period = fmparse.money_period(wage_raw)
+        if period and mp.wage_period and period != mp.wage_period:
+            common.die(
+                f"Gehalt '{wage_raw}' ist je {period}, spalten.yaml sagt gehalt.periode="
+                f"{mp.wage_period} (Faktor-Fehler vermeiden)."
+            )
+        wage = fmparse.to_annual(
+            fmparse.parse_money(wage_raw, spec("wage").get("dezimal", dec)),
+            mp.wage_period or "jahr",
+        )
+        if wage is None and not fmparse.is_null(wage_raw):
+            bad[mapped["wage"]] = bad.get(mapped["wage"], 0) + 1
+        value_raw = g.get("value")
+        vrange = fmparse.parse_money_range(value_raw, spec("value").get("dezimal", dec))
+        vmin, vmax = vrange or (None, None)
+        if vrange is None and not fmparse.is_null(value_raw):
+            info["value"] = _text(value_raw)  # z. B. 'Steht nicht zum Verkauf'
         conn.execute(
-            "INSERT OR REPLACE INTO players VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT OR REPLACE INTO players(snapshot_id, player_uid, name, club, league, position, "
+            "age, wage, value, contract_end, minutes, birthdate, team_possession, value_min, "
+            "value_max, loan_end) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 sid,
                 uid,
@@ -159,21 +224,42 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
                 _text(g.get("club")),
                 _text(g.get("league")),
                 _text(g.get("position")),
-                _int(fmparse.parse_number(g.get("age"), dec)),
+                _int(num("age", g.get("age"))) if "age" in g else None,
                 wage,
-                fmparse.parse_money(g.get("value"), dec),
-                fmparse.parse_date(g.get("contract_end")),
-                _int(fmparse.parse_number(g.get("minutes"), dec)),
+                (vmin + vmax) / 2 if vrange else None,
+                date("contract_end", g.get("contract_end")) if "contract_end" in g else None,
+                _int(num("minutes", g.get("minutes"))) if "minutes" in g else None,
                 bday,
-                fmparse.parse_number(g.get("team_possession"), dec),
+                num("team_possession", g.get("team_possession")) if "team_possession" in g else None,
+                vmin,
+                vmax,
+                date("loan_end", g.get("loan_end")) if "loan_end" in g else None,
             ),
         )
+        for i, col in text_cols.items():
+            val = date(i, rec[col]) if kind[i] == "date" else _text(rec[col])
+            if val:
+                info[i] = val
+        for field, val in info.items():
+            conn.execute(
+                "INSERT OR REPLACE INTO player_info VALUES(?,?,?,?)", (sid, uid, field, val)
+            )
+        vals: dict[str, float] = {}
+        if apps_col:
+            apps = fmparse.parse_apps(rec[apps_col])
+            if apps is None and not fmparse.is_null(rec[apps_col]):
+                bad[apps_col] = bad.get(apps_col, 0) + 1
+            if apps:
+                vals["einsaetze_start_n"], vals["einsaetze_ein_n"] = apps
         for stat, col in stat_cols.items():
-            v = fmparse.parse_number(rec[col], dec)
+            v = num(stat, rec[col])
             if v is not None:
-                conn.execute(
-                    "INSERT OR REPLACE INTO player_stats VALUES(?,?,?,?)", (sid, uid, stat, v)
-                )
+                vals[stat] = v
+        for name, (zaehler, nenner) in mp.derived.items():
+            if vals.get(nenner):
+                vals[name] = vals.get(zaehler, 0.0) / vals[nenner] * 100
+        for stat, v in vals.items():
+            conn.execute("INSERT OR REPLACE INTO player_stats VALUES(?,?,?,?)", (sid, uid, stat, v))
         for attr, col in attr_cols.items():
             v, masked = fmparse.parse_attribute(rec[col], dec)
             conn.execute(
@@ -197,7 +283,18 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
         warn(f"{n_name_only} davon ohne Geburtsdatum -> nur Name als ID (Verwechslungsgefahr)")
     if n_dup:
         warn(f"{n_dup} doppelte Spieler-IDs in der Datei (letzter Eintrag gewinnt)")
-    return {"rows": len(seen), "unmapped": len(unknown)}
+    if bad_dates:
+        common.die(
+            "Unlesbare Datumswerte in: "
+            + ", ".join(sorted(bad_dates))
+            + " (falsche Spaltenzuordnung? Doppelte Header = 'Endet', 'Endet.1')."
+        )
+    if bad:
+        warn(
+            "Nicht lesbare Werte (-> NULL; Dezimalzeichen/Einheit in spalten.yaml prüfen): "
+            + ", ".join(f"{c} ×{n}" for c, n in bad.items())
+        )
+    return {"rows": len(seen), "unmapped": len(unknown), "unlesbar": sum(bad.values())}
 
 
 def import_team(

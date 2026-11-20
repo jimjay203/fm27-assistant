@@ -4,8 +4,9 @@ Claude Code als Assistent für Football Manager 27: Subagents (`taktik`, `entwic
 `analyst`), SQLite-Snapshots der Spieldaten und Python-Skripte für Moneyball-Auswertungen.
 Regeln und aktiver Save stehen in [CLAUDE.md](CLAUDE.md).
 
-**Stand:** Gerüst fertig und mit synthetischen Daten getestet. `config/spalten.yaml` ist bewusst leer –
-es gibt noch keinen echten FM27-Export, also keine erfundenen Spaltennamen (`TODO(export)`).
+**Stand:** `config/spalten.yaml` ist für die Kader-Ansicht (Export vom 2026-11-20, 135 Spalten) befüllt
+und gegen einen echten Ausschnitt getestet (`tests/fixtures/echt/`). Team-/Spiel-Ansichten und die
+Spielersuche haben noch keinen echten Export (`TODO(export)`).
 
 ## Setup (nur uv)
 
@@ -41,9 +42,16 @@ Alle Skripte kennen `--db` und `--config-dir` (Tests nutzen `tests/fixtures/conf
 
 ## Wichtige Annahmen
 
-- Stat-Namen in `spalten.yaml`: Zählwert `x` → `x_p90`; `x_pct`/`x_p90` bleiben unverändert;
-  Attribute tragen das Präfix `attr_`.
-- Gehalt wird beim Import auf Jahreswerte umgerechnet (`gehalt.periode` ist Pflicht, offener Punkt 6).
+- Stat-Namen in `spalten.yaml`: Zählwert `x` → `x_p90`; `x_pct`/`x_p90`/`x_avg`/`x_n` bleiben
+  unverändert; Attribute tragen das Präfix `attr_`.
+- Der Export mischt Dezimalzeichen (`"7,07"` vs. `2.01`): Default in `zahlenformat.dezimal`, Ausnahmen
+  und Einheiten (`km`) pro Spalte (`{name, dezimal, einheit, typ}`). Nicht lesbare Werte → NULL + Warnung,
+  nie stilles Falschparsen. Text-/Datumsfelder (`typ: text|date`) landen in `player_info`.
+- Doppelte Header heißen wie bei pandas: `Endet` (Vertragsende), `Endet.1` (Leihende), `Freistöße`
+  (Stat) / `Freistöße.1` (Attribut). Unlesbare Datumswerte brechen den Import ab (falsche Spaltenfolge).
+- Transferwert-Spannen: `value_min`/`value_max`, `value` = Mittelwert; „Steht nicht zum Verkauf“ → NULL.
+- Gehalt wird beim Import auf Jahreswerte umgerechnet (`gehalt.periode: jahr`; Import bricht ab, wenn
+  der Export eine andere Periode zeigt).
 - Perzentile nur innerhalb Position + Liga, Mindestgruppe und Mindestminuten aus `rollen.yaml`.
 - Kosten/Saison = Jahresgehalt + Marktwert / Vertragsjahre (mind. 1 Jahr).
 - Platzhalter-Schwellen (`min_gruppe`, `xg_delta_flag_p90`) in `rollen.yaml` nach dem ersten Export kalibrieren.

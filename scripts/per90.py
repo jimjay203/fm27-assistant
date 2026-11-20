@@ -1,7 +1,8 @@
 """Per-90-Werte, Ballbesitzbereinigung und Perzentile (je Position + Liga).
 
-Namenskonvention der Stats (spalten.yaml): Zählstat `x` -> Spalte `x_p90`; `x_pct` (Rate) und
-`x_p90` (schon pro 90) bleiben unverändert. Perzentile erhalten das Suffix `_pctl`.
+Namenskonvention der Stats (spalten.yaml): Zählstat `x` -> Spalte `x_p90`; `x_pct` (Rate), `x_p90`
+(schon pro 90), `x_avg` (Durchschnitt) und `x_n` (Spielezähler) bleiben unverändert. Perzentile
+erhalten das Suffix `_pctl`.
 
 Aufruf:  uv run python scripts/per90.py --rolle stuermer_abschluss [--csv out.csv]
 """
@@ -18,6 +19,9 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
 
+# Stats mit diesen Suffixen werden nicht durch Minuten geteilt (Rate, Durchschnitt, Spielezähler).
+NOT_NORMALIZED = ("_pct", "_p90", "_avg", "_n")
+
 CORE_COLS = [
     "player_uid",
     "name",
@@ -28,6 +32,9 @@ CORE_COLS = [
     "wage",
     "value",
     "contract_end",
+    "loan_end",
+    "value_min",
+    "value_max",
     "minutes",
     "team_possession",
     "ingame_date",
@@ -136,7 +143,7 @@ def compute_per90(
     df["poss_fehlt"] = False
     kpis = []
     for c in stat_cols:
-        if c.endswith(("_pct", "_p90")):
+        if c.endswith(NOT_NORMALIZED):
             name, vals = c, df[c].astype(float)
         else:
             name = f"{c}_p90"
@@ -149,8 +156,8 @@ def compute_per90(
             df[name] = vals
         kpis.append(name)
     pool = ~df["n_klein"]
-    for k in kpis:
-        df[f"{k}_pctl"] = percentile_in_groups(df, k, pool, min_group)
+    pctl = {f"{k}_pctl": percentile_in_groups(df, k, pool, min_group) for k in kpis}
+    df = pd.concat([df, pd.DataFrame(pctl, index=df.index)], axis=1)
     df.attrs["kpis"] = kpis
     df.attrs["min_minuten"] = threshold
     return df

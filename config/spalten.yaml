@@ -1,24 +1,186 @@
-# Mapping FM27-Spaltenname -> interner Name.
-# TODO(export): Nach dem ersten echten FM27-Export gemeinsam befüllen. Keine Namen raten.
+# Mapping FM27-Spaltenname (deutscher Export, Kader-Ansicht) -> interner Name.
+# Basis: Export vom 2026-11-20 (In-Game 11.10.2026) + Tooltips von Jimmy.
 #
-# Interne Namen:
-#   Kernfelder Spieler: uid, name, birthdate, club, league, position, age, wage, value,
-#                       contract_end, minutes, team_possession
-#   Kernfelder Team (view_type team_stats/spiel): datum, opponent, home_away, tactic_slot,
-#                       xg_for, xg_against, goals_for, goals_against, possession,
-#                       shots_for, shots_against
-#   Attribute:          Präfix attr_   (z. B. attr_abschluss)
-#   Alles andere:       Stat (Zählwert, `_pct` = Rate, `_p90` = bereits pro 90)
+# Schreibweisen:
+#   "Spalte": name                                   # Zahl im Standardformat (zahlenformat.dezimal)
+#   "Spalte": {name: x, dezimal: ".", einheit: "km", typ: text}
+#     dezimal  überschreibt das Dezimalzeichen für diese Spalte (der Export mischt "," und ".")
+#     einheit  Pflicht-Suffix, wird abgeschnitten; Wert ohne Einheit -> NULL + Warnung
+#     typ      text | date  -> Tabelle player_info (kein Zahlenwert)
+#              einsaetze    -> "6 (2)" = einsaetze_start_n / einsaetze_ein_n
+# Doppelte Header benennt pandas: "Endet" / "Endet.1", "Freistöße" / "Freistöße.1".
 #
-# Nicht gemappte Spalten werden beim Import geloggt und unverändert in player_raw gespeichert.
+# Suffixe der internen Stat-Namen: ohne Suffix = Zählwert (-> _p90 in per90.py);
+#   _p90 schon pro 90, _pct Rate, _avg Durchschnitt, _n Spielezähler (nicht normiert).
+# Nicht gemappte Spalten werden geloggt und unverändert in player_raw gespeichert.
 
-spalten: {}
-  # Beispiel (Platzhalter, KEINE echten FM27-Spaltennamen):
-  # "<FM27-Spaltenname>": name
+spalten:
+  # --- Kern ---
+  "Unique ID": uid
+  "Spieler": name
+  "Geb.": birthdate
+  "Alter": age
+  "Verein": club
+  "Liga": league
+  "Position": position
+  "Gehalt": wage
+  "Transferwert": value          # Spanne -> value_min/value_max, value = Mittelwert
+  "Endet": contract_end
+  "Endet.1": loan_end            # Leihende (Jimmy, 2026-11-20); "?" = keine Leihe
+  "Minuten": minutes
+
+  # --- Text-/Datumsfelder (player_info) ---
+  "Größe": {name: groesse, typ: text}
+  "Linker Fuß": {name: fuss_links, typ: text}
+  "Rechter Fuß": {name: fuss_rechts, typ: text}
+  "Medienumgang": {name: medienumgang, typ: text}
+  "Persönlichkeit": {name: persoenlichkeit, typ: text}
+  "Nation": {name: nation, typ: text}
+  "Status Eigengewächs": {name: eigengewaechs, typ: text}
+  "Vertragsbeginn": {name: vertragsbeginn, typ: date}
+  "Vertragsstatus": {name: vertragsstatus, typ: text}
+  "Spielbelastung": {name: spielbelastung, typ: text}
+  "Verletzungsanfälligkeit": {name: verletzungsanfaelligkeit, typ: text}
+  "Trainingsbelastung": {name: trainingsbelastung, typ: text}
+  "Wiederkehrende Verletzung": {name: wiederkehrende_verletzung, typ: text}
+  "Verletzungsrisiko": {name: verletzungsrisiko, typ: text}
+  "Einsatzzeiten": {name: rolle, typ: text}
+  "Tatsächliche Einsatzzeiten": {name: rolle_tatsaechlich, typ: text}
+  "Zufriedenheit Einsätze": {name: zufriedenheit_einsaetze, typ: text}
+  "Zufriedenheit": {name: zufriedenheit, typ: text}
+  "Gesamtzufriedenheit": {name: gesamtzufriedenheit, typ: text}
+  "Idealpos": {name: idealpos, typ: text}
+
+  # --- Einsätze / Ergebnisse (Zähler, nicht normiert) ---
+  "Eins": {name: einsaetze, typ: einsaetze}      # Starts (Einwechslungen)
+  "Siege": siege_n
+  "Unentschieden": unentschieden_n
+  "Niederlagen": niederlagen_n
+  "Zu-Null-Spiele": zu_null_n
+  "Verpasste Spiele in Folge": verpasste_spiele_n
+  "Gegentore": gegentore_n
+  "Tore (Team)": team_tore_n
+  "MGeg": team_gegentore_n                       # Tooltip: Teamgegentore
+
+  # --- Offensiv ---
+  "Tore": tore
+  "Vorlagen": assists
+  "xG": {name: xg, dezimal: "."}
+  "xG-ohne11er": {name: npxg, dezimal: "."}
+  "xA": {name: xa, dezimal: "."}
+  "xG/Schuss": {name: xg_pro_schuss_avg, dezimal: ","}
+  "Schüsse": schuesse
+  "SchT": schuesse_aufs_tor
+  "Schüsse von außerhalb des Strafraums pro 90 Minuten": schuesse_fern_p90
+  "Tore von außerhalb des Strafraums": tore_fernschuss
+  "Freistöße": freistoesse                       # Stat: ausgeführte Freistöße (Jimmy)
+  "Elfer": elfer
+  "Elfer gesamt": elfer_gesamt
+  "Parierte Elfer": elfer_pariert
+  "11m-Tor": elfer_tore
+  "GCh": grosschancen                            # Tooltip: erspielte Großchance
+  "Drb": dribblings
+  "Gefoult worden": gefoult
+  "Abs": abseits
+  "Wertung": {name: wertung_avg, dezimal: ","}
+  "SdS": spieler_des_spiels
+
+  # --- Passspiel ---
+  "Pas V": paesse_versucht
+  "Ps A": paesse_angekommen
+  "PrP": progressive_paesse
+  "Entscheidend": schluesselpaesse
+  "EntP(S)/90": {name: entscheidende_paesse_spiel_p90, dezimal: ","}  # entscheidende Pässe aus dem Spiel pro 90
+  "Fla V": flanken_versucht
+  "Fla A": flanken_angekommen
+  "VeF": flanken_spiel_versucht
+  "AnF": flanken_spiel_angekommen
+
+  # --- Defensiv / Zweikämpfe ---
+  "Kopf V": kopfbaelle_versucht
+  "Kopf G": kopfbaelle_gewonnen
+  "Ent Kopf/90": {name: entscheidende_kopfbaelle_p90, dezimal: ","}
+  "Zwk Z": tacklings_versucht                    # Tooltip: Versuchte Tacklings
+  "Gew Zwk": tacklings_gewonnen                  # Tooltip: Gewonnene Zweikämpfe (Werte <= Zwk Z)
+  "Ent Zwk": tacklings_entscheidend              # Tooltip: Entscheidende Zweikämpfe
+  "Blk": geblockt
+  "Sgb": schuesse_geblockt
+  "Geklärte Bälle": klaerungen
+  "AbB": abgefangen
+  "PrsV": pressing_versucht
+  "PrsErf": pressing_erfolgreich
+  "Fouls": fouls
+  "Gelb": gelb
+  "Rot": rot
+  "FmT": fehler_torfolge
+
+  # --- Laufleistung ---
+  "Distanz": {name: distanz_km, einheit: "km", dezimal: ","}
+  "Sprints/90": {name: sprints_p90, dezimal: ","}
+
+  # --- Torhüter ---
+  "Sgh": tw_gehalten
+  "Spa": tw_pariert
+  "Sag": tw_abgelenkt
+  "Par %": par_pct
+  "xSv %": xsv_pct
+  "xGP": {name: xgp, dezimal: "."}               # expected goals prevented (Jimmy)
+
+  # --- Attribute (Name = DB-Name nach dem Präfix attr_) ---
+  "Aggressivität": attr_Aggressivität
+  "Antizipation": attr_Antizipation
+  "Mut": attr_Mut
+  "Nervenstärke": attr_Nervenstärke
+  "Konzentration": attr_Konzentration
+  "Entscheidungen": attr_Entscheidungen
+  "Zielstrebigkeit": attr_Zielstrebigkeit
+  "Kreativität": attr_Kreativität
+  "Führungsqualitäten": attr_Führungsqualitäten
+  "Ohne Ball": attr_Ohne Ball
+  "Stellungsspiel": attr_Stellungsspiel
+  "Teamwork": attr_Teamwork
+  "Übersicht": attr_Übersicht
+  "Einsatzfreude": attr_Einsatzfreude
+  "Ecken": attr_Ecken
+  "Flanken": attr_Flanken
+  "Dribbling": attr_Dribbling
+  "Abschluss": attr_Abschluss
+  "Ballannahme": attr_Ballannahme
+  "Freistöße.1": attr_Freistöße                  # Attribut (die 1. Spalte "Freistöße" ist der Stat)
+  "Kopfballtechnik": attr_Kopfballtechnik
+  "Weitschüsse": attr_Weitschüsse
+  "Weite Einwürfe": attr_Weite Einwürfe
+  "Deckung": attr_Deckung
+  "Passen": attr_Passen
+  "Elfmeter": attr_Elfmeter
+  "Tackling": attr_Tackling
+  "Technik": attr_Technik
+  "Antritt": attr_Antritt
+  "Beweglichkeit": attr_Beweglichkeit
+  "Balance": attr_Balance
+  "Sprunghöhe": attr_Sprunghöhe
+  "Grundfitness": attr_Grundfitness
+  "Schnelligkeit": attr_Schnelligkeit
+  "Ausdauer": attr_Ausdauer
+  "Kraft": attr_Kraft
+  "Abwurf": attr_Abwurf
+  "Herauslaufen (Tendenz)": attr_Herauslaufen (Tendenz)
+  "Reflexe": attr_Reflexe
+  "Fausten": attr_Fausten
+  "Eins gegen Eins": attr_Eins gegen Eins
+  "Abschlag": attr_Abschlag
+  "Halten": attr_Halten
+  "Exzentrizität": attr_Exzentrizität
+  "Kommunikation": attr_Kommunikation
+  "Strafraumkontrolle": attr_Strafraumkontrolle
+  "Hohe Bälle": attr_Hohe Bälle
+
+# Quoten aus zwei gemappten Stats: name: [zähler, nenner] -> zähler / nenner * 100 (NULL bei nenner 0)
+abgeleitet:
+  kopfballduelle_gewonnen_pct: [kopfbaelle_gewonnen, kopfbaelle_versucht]
 
 zahlenformat:
-  dezimal: "."        # TODO(export): "." oder "," im echten Export?
+  dezimal: ","        # Export mischt: xG/xA/xGP mit "." (oben per Spalte überschrieben), Rest ","
 
 gehalt:
-  periode: null       # TODO(export, offener Punkt 6): woche | monat | jahr  (Import bricht ab, wenn
-                      # eine Gehaltsspalte gemappt ist und das hier fehlt)
+  periode: jahr       # Export: "2,49Mio. €/J." (import.py bricht ab, wenn ein Wert etwas anderes sagt)

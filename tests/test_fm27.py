@@ -1,4 +1,5 @@
-"""Tests mit synthetischen Fixtures (tests/fixtures/). Keine echten FM27-Daten."""
+"""Tests mit synthetischen Fixtures (tests/fixtures/*.csv) und einem echten Export-Ausschnitt
+(tests/fixtures/echt/, 3 Zeilen) gegen die produktive config/spalten.yaml."""
 
 import importlib.util
 import sqlite3
@@ -59,6 +60,30 @@ def test_parse_date_and_annual():
     assert fmparse.to_annual(10, "woche") == 520
 
 
+def test_parse_mixed_number_formats():
+    assert fmparse.parse_number("2.01") == 2.01
+    assert fmparse.parse_number("2,01", decimal=",") == 2.01
+    assert fmparse.parse_number("2.01", decimal=",") is None  # nicht still zu 201 werden
+    assert fmparse.parse_number("1,5") is None  # kein gültiger Tausender
+    assert fmparse.parse_number("24,5km", decimal=",", einheit="km") == 24.5
+    assert fmparse.parse_number("24,5", decimal=",", einheit="km") is None
+    assert fmparse.parse_apps("6 (2)") == (6, 2)
+    assert fmparse.parse_apps("3") == (3, 0)
+    assert fmparse.parse_apps("-") is None
+
+
+def test_parse_money_export_formats():
+    assert fmparse.parse_money("2,49Mio. €/J.", decimal=",") == pytest.approx(2_490_000)
+    assert fmparse.parse_money("997K €/J.", decimal=",") == 997_000
+    assert fmparse.money_period("997K €/J.") == "jahr"
+    assert fmparse.money_period("€20K p/w") == "woche"
+    assert fmparse.money_period("€1.5M") is None
+    assert fmparse.parse_money_range("9Mio. € - 11,5Mio. €", ",") == pytest.approx((9e6, 11.5e6))
+    assert fmparse.parse_money_range("425K € - 4,3Mio. €", ",") == pytest.approx((425e3, 4.3e6))
+    assert fmparse.parse_money_range("3,7Mio. €", ",") == pytest.approx((3.7e6, 3.7e6))
+    assert fmparse.parse_money_range("Steht nicht zum Verkauf", ",") is None
+
+
 def test_filename_convention():
     assert fm_import.parse_filename(Path("2027-01-15_suche_stuermer.csv")) == (
         "2027-01-15",
@@ -108,6 +133,83 @@ def test_wage_period_required(tmp_path):
     cfg["gehalt"] = {"periode": None}
     with pytest.raises(SystemExit):
         fm_import.import_file(c, "test", FIX / "2027-01-15_kader_test.csv", cfg, sep=";")
+
+
+def _import_echt(cfg=None):
+    c = common.connect(":memory:")
+    warnings: list[str] = []
+    res = fm_import.import_file(
+        c,
+        "test",
+        FIX / "echt" / "2026-10-11_kader.csv",
+        cfg or common.load_yaml("spalten.yaml"),
+        warn=warnings.append,
+    )
+    return c, res, warnings
+
+
+def test_echter_export_vollstaendig_gemappt():
+    c, res, warnings = _import_echt()
+    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (3, 0, 0)
+    assert warnings == []
+    assert count(c, "player_attributes") == 3 * 47
+    assert c.execute("SELECT COUNT(*) FROM player_attributes WHERE masked=1").fetchone()[0] == 0
+
+
+def test_echter_export_werte():
+    c, _, _ = _import_echt()
+
+    def one(sql):
+        row = c.execute(sql).fetchone()
+        return row[0] if row else None
+
+    def stat(name, uid):
+        return one(f"SELECT value FROM player_stats WHERE player_uid='{uid}' AND stat='{name}'")
+
+    def info(field, uid):
+        return one(f"SELECT text FROM player_info WHERE player_uid='{uid}' AND field='{field}'")
+
+    f, h, b = "92018043", "28121290", "2000183044"
+    # Geld, Spannen, Daten
+    assert one(f"SELECT wage FROM players WHERE player_uid='{h}'") == 997_000
+    assert one(f"SELECT wage FROM players WHERE player_uid='{f}'") == pytest.approx(2_760_000)
+    nums = c.execute(
+        f"SELECT value_min, value_max, value, age FROM players WHERE player_uid='{f}'"
+    ).fetchone()
+    assert nums == pytest.approx((9e6, 11.5e6, 10.25e6, 33))
+    dates = c.execute(
+        f"SELECT contract_end, loan_end FROM players WHERE player_uid='{f}'"
+    ).fetchone()
+    assert dates == ("2028-06-30", "2027-06-30")
+    assert one(f"SELECT loan_end FROM players WHERE player_uid='{h}'") is None  # "?"
+    assert one(f"SELECT value FROM players WHERE player_uid='{b}'") is None
+    assert info("value", b) == "Steht nicht zum Verkauf"
+    # gemischte Dezimalzeichen
+    assert stat("xgp", h) == 2.01 and stat("xg", f) == 3.68 and stat("npxg", f) == 1.18
+    assert stat("wertung_avg", h) == 7.07 and stat("distanz_km", f) == 58.4
+    # Einsätze "6 (2)" / "0 (3)", Quote, doppelte Header
+    assert (stat("einsaetze_start_n", f), stat("einsaetze_ein_n", f)) == (6, 0)
+    assert (stat("einsaetze_start_n", b), stat("einsaetze_ein_n", b)) == (0, 3)
+    assert stat("kopfballduelle_gewonnen_pct", f) == pytest.approx(18 / 39 * 100)
+    assert stat("kopfballduelle_gewonnen_pct", h) is None  # 0 Kopfbälle -> keine Quote
+    assert stat("freistoesse", f) == 0
+    assert one(
+        f"SELECT value FROM player_attributes WHERE player_uid='{f}' AND attribute='Freistöße'"
+    ) == 11
+    # Text-/Datumsfelder
+    assert info("nation", f) == "Deutschland" and info("vertragsbeginn", f) == "2024-08-05"
+    assert info("verletzungsrisiko", f) == "Gering"
+
+
+def test_echter_export_schutzchecks():
+    cfg = common.load_yaml("spalten.yaml")
+    cfg["gehalt"]["periode"] = "woche"  # Export sagt €/J. -> kein stilles ×52
+    with pytest.raises(SystemExit):
+        _import_echt(cfg)
+    cfg = common.load_yaml("spalten.yaml")
+    cfg["spalten"]["Größe"] = "birthdate"  # Text in einer Datumsspalte -> Abbruch
+    with pytest.raises(SystemExit):
+        _import_echt(cfg)
 
 
 # --- per90 / value ----------------------------------------------------------------------------

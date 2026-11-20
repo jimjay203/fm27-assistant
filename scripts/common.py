@@ -29,6 +29,7 @@ PLAYER_CORE = (
     "wage",
     "value",
     "contract_end",
+    "loan_end",  # 2. "Endet"-Spalte im Export = Leihende (pandas-Name "Endet.1")
     "minutes",
     "team_possession",  # TODO(export): Ballbesitz des Teams (%), für Defensiv-Bereinigung
 )
@@ -55,8 +56,13 @@ CREATE TABLE IF NOT EXISTS players(
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id), player_uid TEXT NOT NULL,
   name TEXT, club TEXT, league TEXT, position TEXT, age INTEGER,
   wage REAL,            -- Jahresgehalt in Euro (beim Import aus Woche/Monat umgerechnet)
-  value REAL, contract_end TEXT, minutes INTEGER, birthdate TEXT, team_possession REAL,
+  value REAL,           -- Transferwert; bei Spannen der Mittelwert (Grenzen in value_min/value_max)
+  contract_end TEXT, minutes INTEGER, birthdate TEXT, team_possession REAL,
+  value_min REAL, value_max REAL, loan_end TEXT,
   PRIMARY KEY(snapshot_id, player_uid));
+CREATE TABLE IF NOT EXISTS player_info(     -- Text-/Datumsfelder (typ: text|date in spalten.yaml)
+  snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, field TEXT NOT NULL, text TEXT,
+  PRIMARY KEY(snapshot_id, player_uid, field));
 CREATE TABLE IF NOT EXISTS player_stats(
   snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, stat TEXT NOT NULL, value REAL,
   PRIMARY KEY(snapshot_id, player_uid, stat));
