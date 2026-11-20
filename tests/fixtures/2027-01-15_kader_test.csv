@@ -1,0 +1,11 @@
+fx_uid;fx_name;fx_geb;fx_verein;fx_liga;fx_pos;fx_alter;fx_gehalt;fx_wert;fx_vertrag;fx_min;fx_ballbesitz;fx_tore;fx_xg;fx_assists;fx_xa;fx_npxg;fx_schuesse;fx_kopf_pct;fx_pressing;fx_dribbling;fx_abschluss;fx_ohneball;fx_extra
+U0001;Test Spieler 01;03.02.1999;FC Test;Liga Nord;ST;29;€20K p/w;€1M;30.06.2029;2,100;49%;8;10.2;6;4.1;9.7;46;45%;185;16;-;18;x
+U0002;Test Spieler 02;22.08.2002;FC Test;Liga Nord;ST;19;€40K p/w;€0.5M;30.06.2030;450;46%;2;2.5;1;3.1;2.4;12;44%;48;9;12-15;12;x
+U0003;Test Spieler 03;06.08.1995;FC Test;Liga Nord;ST;27;€80K p/w;€0.5M;30.06.2027;2,100;43%;11;14.4;5;0.1;13.7;80;52%;259;45;12-15;15;x
+U0004;Test Spieler 04;26.05.1996;FC Test;Liga Nord;ST;34;€20K p/w;€1M;30.06.2029;2,500;54%;16;17.4;0;2.6;16.6;53;61%;235;37;12-15;13;x
+U0005;Test Spieler 05;10.08.2005;FC Test;Liga Nord;ST;28;€80K p/w;€0.5M;30.06.2027;2,100;56%;3;5.2;0;4.5;5.0;48;60%;197;64;18;8;x
+U0006;Test Spieler 06;28.02.1992;FC Test;Liga Nord;ST;32;€20K p/w;€10M;30.06.2030;1,800;61%;6;3.8;3;3.7;3.6;39;52%;199;41;12-15;11;x
+U0007;Test Spieler 07;02.03.1993;FC Test;Liga Nord;CB;21;€5K p/w;€2.5M;30.06.2029;2,500;45%;19;16.4;1;4.7;15.6;84;60%;134;55;12;18;x
+U0008;Test Spieler 08;26.05.1997;FC Test;Liga Nord;CB;23;€10K p/w;€5M;30.06.2029;1,500;56%;4;4.2;5;0.3;4.0;34;60%;148;34;9;14;x
+U0009;Test Spieler 09;12.04.1996;FC Test;Liga Nord;CB;19;€40K p/w;€0.5M;30.06.2028;1,200;52%;1;4.4;0;2.9;4.2;37;58%;118;14;16;9;x
+U0010;Test Spieler 10;11.11.1997;FC Test;Liga Nord;CB;31;€40K p/w;€2.5M;30.06.2028;1,800;43%;14;10.1;0;1.7;9.6;56;50%;225;58;12-15;9;x

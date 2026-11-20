@@ -1,0 +1,24 @@
+# Mapping FM27-Spaltenname -> interner Name.
+# TODO(export): Nach dem ersten echten FM27-Export gemeinsam befüllen. Keine Namen raten.
+#
+# Interne Namen:
+#   Kernfelder Spieler: uid, name, birthdate, club, league, position, age, wage, value,
+#                       contract_end, minutes, team_possession
+#   Kernfelder Team (view_type team_stats/spiel): datum, opponent, home_away, tactic_slot,
+#                       xg_for, xg_against, goals_for, goals_against, possession,
+#                       shots_for, shots_against
+#   Attribute:          Präfix attr_   (z. B. attr_abschluss)
+#   Alles andere:       Stat (Zählwert, `_pct` = Rate, `_p90` = bereits pro 90)
+#
+# Nicht gemappte Spalten werden beim Import geloggt und unverändert in player_raw gespeichert.
+
+spalten: {}
+  # Beispiel (Platzhalter, KEINE echten FM27-Spaltennamen):
+  # "<FM27-Spaltenname>": name
+
+zahlenformat:
+  dezimal: "."        # TODO(export): "." oder "," im echten Export?
+
+gehalt:
+  periode: null       # TODO(export, offener Punkt 6): woche | monat | jahr  (Import bricht ab, wenn
+                      # eine Gehaltsspalte gemappt ist und das hier fehlt)

@@ -1,0 +1,131 @@
+"""Gemeinsame Helfer: Pfade, Config, Save-Auswahl, DB-Zugriff + Schema."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import sqlite3
+import sys
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_SAVE = "werder"
+PLAYER_VIEWS = ("kader", "suche", "scouting")
+TEAM_VIEWS = ("team_stats", "spiel")
+VIEW_TYPES = PLAYER_VIEWS + TEAM_VIEWS
+
+# Interne Kernfelder (fest). `attr_<name>` = Attribut, alles andere = Stat (long format).
+PLAYER_CORE = (
+    "uid",
+    "name",
+    "birthdate",
+    "club",
+    "league",
+    "position",
+    "age",
+    "wage",
+    "value",
+    "contract_end",
+    "minutes",
+    "team_possession",  # TODO(export): Ballbesitz des Teams (%), für Defensiv-Bereinigung
+)
+TEAM_CORE = (
+    "datum",
+    "opponent",
+    "home_away",
+    "tactic_slot",
+    "xg_for",
+    "xg_against",
+    "goals_for",
+    "goals_against",
+    "possession",
+    "shots_for",
+    "shots_against",  # TODO(export)
+)
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS snapshots(
+  id INTEGER PRIMARY KEY, save TEXT NOT NULL, ingame_date TEXT NOT NULL,
+  source_file TEXT NOT NULL, view_type TEXT NOT NULL, imported_at TEXT NOT NULL,
+  UNIQUE(save, source_file));
+CREATE TABLE IF NOT EXISTS players(
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id), player_uid TEXT NOT NULL,
+  name TEXT, club TEXT, league TEXT, position TEXT, age INTEGER,
+  wage REAL,            -- Jahresgehalt in Euro (beim Import aus Woche/Monat umgerechnet)
+  value REAL, contract_end TEXT, minutes INTEGER, birthdate TEXT, team_possession REAL,
+  PRIMARY KEY(snapshot_id, player_uid));
+CREATE TABLE IF NOT EXISTS player_stats(
+  snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, stat TEXT NOT NULL, value REAL,
+  PRIMARY KEY(snapshot_id, player_uid, stat));
+CREATE TABLE IF NOT EXISTS player_attributes(
+  snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, attribute TEXT NOT NULL,
+  value REAL, masked INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY(snapshot_id, player_uid, attribute));
+CREATE TABLE IF NOT EXISTS player_raw(      -- unbekannte (nicht gemappte) Spalten, unverändert
+  snapshot_id INTEGER NOT NULL, player_uid TEXT NOT NULL, column_name TEXT NOT NULL, raw_value TEXT,
+  PRIMARY KEY(snapshot_id, player_uid, column_name));
+CREATE TABLE IF NOT EXISTS unmapped_columns(
+  snapshot_id INTEGER NOT NULL, column_name TEXT NOT NULL, PRIMARY KEY(snapshot_id, column_name));
+CREATE TABLE IF NOT EXISTS team_matches(
+  id INTEGER PRIMARY KEY, snapshot_id INTEGER, save TEXT NOT NULL, ingame_date TEXT NOT NULL,
+  opponent TEXT NOT NULL, home_away TEXT, tactic_slot TEXT, xg_for REAL, xg_against REAL,
+  goals_for REAL, goals_against REAL, possession REAL, shots_for REAL, shots_against REAL,
+  UNIQUE(save, ingame_date, opponent));
+CREATE TABLE IF NOT EXISTS team_match_stats(
+  match_id INTEGER NOT NULL REFERENCES team_matches(id), stat TEXT NOT NULL, value REAL,
+  PRIMARY KEY(match_id, stat));
+CREATE TABLE IF NOT EXISTS leagues(league TEXT PRIMARY KEY, reputation_or_strength REAL);
+"""
+
+
+def setup_stdout() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+
+
+def add_common_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--save", help="Save-Name (Default: $FM27_SAVE, sonst CLAUDE.md, sonst werder)")
+    p.add_argument("--db", type=Path, help="Pfad zur SQLite-DB (Default: db/fm27.sqlite)")
+    p.add_argument("--config-dir", type=Path, help="Config-Ordner (Default: config/)")
+
+
+def resolve_save(arg: str | None = None) -> str:
+    if arg:
+        return arg
+    if os.environ.get("FM27_SAVE"):
+        return os.environ["FM27_SAVE"]
+    claude_md = ROOT / "CLAUDE.md"
+    if claude_md.exists():
+        m = re.search(r"Aktiver Save:\s*saves/([^/\s]+)/", claude_md.read_text(encoding="utf-8"))
+        if m:
+            return m.group(1)
+    return DEFAULT_SAVE
+
+
+def save_dir(save: str) -> Path:
+    return ROOT / "saves" / save
+
+
+def load_yaml(name: str, config_dir: Path | None = None) -> dict:
+    path = (config_dir or ROOT / "config") / name
+    if not path.exists():
+        return {}
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def connect(db_path: Path | str | None = None) -> sqlite3.Connection:
+    path = Path(db_path or os.environ.get("FM27_DB") or ROOT / "db" / "fm27.sqlite")
+    if str(path) != ":memory:":
+        path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
+    conn.executescript(SCHEMA)
+    return conn
+
+
+def die(msg: str) -> None:
+    print(f"FEHLER: {msg}", file=sys.stderr)
+    raise SystemExit(1)

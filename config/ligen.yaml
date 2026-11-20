@@ -1,0 +1,5 @@
+# Liga-Stärke für optionale Normalisierung (value.py --liga-norm). Wird bei jedem Import
+# in die Tabelle `leagues` geladen.
+# TODO(offener Punkt 5): Quelle klären (FM-Liga-Reputation oder eigene Einstufung).
+ligen: {}
+  # "<Liga-Name wie im Export>": 100

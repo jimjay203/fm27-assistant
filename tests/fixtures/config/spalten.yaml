@@ -1,0 +1,40 @@
+# SYNTHETISCH – nur für Tests, keine FM27-Spaltennamen
+spalten:
+  fx_uid: uid
+  fx_name: name
+  fx_geb: birthdate
+  fx_verein: club
+  fx_liga: league
+  fx_pos: position
+  fx_alter: age
+  fx_gehalt: wage
+  fx_wert: value
+  fx_vertrag: contract_end
+  fx_min: minutes
+  fx_ballbesitz: team_possession
+  fx_tore: tore
+  fx_xg: xg
+  fx_assists: assists
+  fx_xa: xa
+  fx_npxg: npxg
+  fx_schuesse: schuesse
+  fx_kopf_pct: kopfballduelle_gewonnen_pct
+  fx_pressing: pressing
+  fx_dribbling: dribblings
+  fx_abschluss: attr_Abschluss
+  fx_ohneball: attr_Ohne Ball
+  fx_datum: datum
+  fx_gegner: opponent
+  fx_ha: home_away
+  fx_slot: tactic_slot
+  fx_xgf: xg_for
+  fx_xga: xg_against
+  fx_tf: goals_for
+  fx_tg: goals_against
+  fx_bb: possession
+  fx_sf: shots_for
+  fx_sg: shots_against
+zahlenformat:
+  dezimal: "."
+gehalt:
+  periode: woche
