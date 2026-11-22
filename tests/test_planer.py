@@ -11,40 +11,66 @@ import numpy as np
 import pandas as pd
 import planer
 import pytest
+import rollen
 from conftest import mini_rk
 
 RK = common.load_yaml("rollen_kpis.yaml")
 FORM = common.load_yaml("formationen.yaml")
 SLOTS = common.load_yaml("taktik_slots.yaml")["slots"]
+POS = common.load_yaml("rollen_positionen.yaml")["positionen"]
 FIX = Path(__file__).parent / "fixtures" / "echt"
 
 
 # ------------------------------------------------------------------ Konfiguration
 
 
-def test_formationen_sind_vollstaendig_und_passen_zu_den_rollen():
+def test_formationen_sind_vollstaendig_und_passen_zu_den_positionen():
     assert FORM["standard"] in FORM["formationen"]
     for name, f in FORM["formationen"].items():
         slots = f["slots"]
         assert len(slots) == 11, name
-        assert sum(s["gruppen"] == ["tw"] for s in slots.values()) == 1, name
+        assert sum(s["position"] == "TW" for s in slots.values()) == 1, name
         for sn, s in slots.items():
-            for g in s["gruppen"]:
-                assert g in RK["positionsgruppen"], (name, sn, g)
-            opt = planer.rollen_optionen(RK, s["gruppen"])
+            assert s["position"] in POS, (name, sn)
+            opt = planer.slot_optionen(RK, POS, s)
             assert opt["mit"] and opt["ohne"], (name, sn)
             assert 0 <= s["x"] <= 100 and 0 <= s["y"] <= 100
 
 
+def test_rollen_je_position_existieren_und_passen_zur_phase():
+    for pos, e in POS.items():
+        assert e.get("quelle"), pos
+        for phase in ("mit", "ohne"):
+            assert len(e[phase]) == len(set(e[phase])), (pos, phase)
+            for n in e[phase]:
+                r = RK["rollen"].get(rollen.aufloesen(n, RK))
+                assert r, (pos, n)
+                assert r["phase"] in (phase, "std"), (pos, phase, n)
+
+
+def test_zm_hat_die_rollen_aus_fm27():
+    # Screenshot FM27, M (Z), mit Ball (Jimmy, 2026-11-22)
+    zm = POS["ZM"]["mit"]
+    for n in ("Offensiver Mittelfeldspieler", "Vorgeschobener Spielmacher", "Weiter Achter",
+              "Halbraumspieler", "Spielmacher"):  # fmt: skip
+        assert n in zm
+
+
 def test_vorbelegung_4231_kommt_aus_taktik_slots():
-    ctx = SimpleNamespace(rk=RK, formationen=FORM, slots_taktik=SLOTS)
+    ctx = SimpleNamespace(rk=RK, formationen=FORM, slots_taktik=SLOTS, positionen=POS)
     meta = planer.formationen_meta(ctx)
     slots = meta["4-2-3-1"]["slots"]
     assert set(slots) == set(SLOTS)
     for sn, s in SLOTS.items():
         assert (slots[sn]["mit"], slots[sn]["ohne"]) == (s["mit"], s["ohne"]), sn
-    # andere Formationen: Standardrolle (phase std) der Gruppe
+    # andere Formationen: erste Standardrolle (phase std) der Position
     assert meta["4-3-3"]["slots"]["ST"]["mit"] == "Mittelstürmer"
+    assert meta["4-3-3"]["slots"]["ZM r"]["mit"] == "Zentraler Mittelfeldspieler"
+
+
+def test_unbekannte_position_wird_gemeldet():
+    with pytest.raises(SystemExit, match="fehlt in config/rollen_positionen.yaml"):
+        planer.slot_optionen(RK, POS, {"position": "XY"})
 
 
 def test_rollenoptionen_nach_phase_und_mit_aliasnamen():
@@ -87,7 +113,9 @@ def test_filter_alter_und_marktwert_greifen(mini_ctx):
 
 
 def test_baustein_detail_und_aliasrolle(mini_ctx):
-    p = planer.plan(mini_ctx, "2er", {"ST r": {"mit": "Neuer Name", "ohne": "Ohne"}}, planer.Filter())
+    p = planer.plan(
+        mini_ctx, "2er", {"ST r": {"mit": "Neuer Name", "ohne": "Ohne"}}, planer.Filter()
+    )
     s = p["slots"]["ST r"]
     assert s["gewertet_als"]["mit"] == "Mit"
     z = s["eigene"][0]
@@ -105,7 +133,9 @@ def test_unpassende_rolle_und_formation_werden_abgelehnt(mini_ctx):
 
 def test_luecken_benennen_fehlende_statistik(mini_ctx):
     df = mini_ctx.df.drop(columns=["f"])
-    ctx = planer.kontext_bauen(df, mini_ctx.rk, mini_ctx.lg, {"min_minuten": 900}, mini_ctx.formationen)
+    ctx = planer.kontext_bauen(
+        df, mini_ctx.rk, mini_ctx.lg, {"min_minuten": 900}, mini_ctx.formationen
+    )
     assert ctx.luecken["st"]["statistiken"] == {"f": "fehlt in den Daten"}
     lu = planer.slot_luecken(ctx, "Mit", "Ohne")
     assert {"phase": "ohne", "rolle": "Ohne", "baustein": "fouls", "entfaellt": True,
@@ -145,7 +175,9 @@ def test_ligen_trennen_gleichnamige_ligen_ueber_das_land():
     assert de and at and lg.stufe_index(de) < lg.stufe_index(at)
     assert lg.stufe("Serie A (Italien)") is not None  # Exportname, kein Live-Alias nötig
     assert lg.stufe("Bundesliga") == de  # Live-Name über den Alias wie bisher
-    df = pd.DataFrame({"league": ["Bundesliga", "Bundesliga", None], "club_country": ["Österreich", None, "X"]})
+    df = pd.DataFrame(
+        {"league": ["Bundesliga", "Bundesliga", None], "club_country": ["Österreich", None, "X"]}
+    )
     out = ligen.mit_land(df)
     assert out[:2].tolist() == ["Bundesliga (Österreich)", "Bundesliga"] and pd.isna(out[2])
 
@@ -170,7 +202,9 @@ def test_benchmark_load_db_nutzt_liga_mit_land():
 
 
 def _fm_import():
-    spec = importlib.util.spec_from_file_location("fm_import", common.ROOT / "scripts" / "import.py")
+    spec = importlib.util.spec_from_file_location(
+        "fm_import", common.ROOT / "scripts" / "import.py"
+    )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

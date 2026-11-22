@@ -45,7 +45,9 @@ def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
     kader = per90.letzter_snapshot(conn, save, "kader")
     suche = per90.letzter_snapshot(conn, save, "suche")
     if not kader:
-        common.die(f"Kein Kader-Snapshot für Save '{save}'. Kader-Export importieren (scripts/import.py).")
+        common.die(
+            f"Kein Kader-Snapshot für Save '{save}'. Kader-Export importieren (scripts/import.py)."
+        )
     ids = [kader[0]] + ([suche[0]] if suche else [])
     players, _ = per90.load_wide(conn, save, snapshot_ids=ids)
     players = players.reset_index(drop=True)
@@ -59,7 +61,9 @@ def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
     # Ein Spieler im Kader und in der Suche: die Kader-Zeile gilt (load_wide behält eine Zeile je uid).
     players["in_suche"] = ~ist_kader
     players["quelle"] = np.where(ist_kader, "kader", "suche")
-    players["team"] = "Senior Team"  # Exporte haben kein Team-Feld; Jugend fällt über die Mindestminuten heraus
+    players["team"] = (
+        "Senior Team"  # Exporte haben kein Team-Feld; Jugend fällt über die Mindestminuten heraus
+    )
     players["datenbasis"] = b.datenbasis_spalte(players)
     players["league"] = ligen.mit_land(players)  # "Bundesliga (Österreich)" statt "Bundesliga"
     players = players.rename(columns={"player_uid": "uid"})
@@ -125,6 +129,8 @@ class Kontext:
     db_path: str | None = None  # None + db=False: kein DB-Zugriff (z. B. Tests)
     db: bool = False
     pools: dict = field(default_factory=dict)  # Vergleichspool je Positionsgruppe (Cache)
+    # rollen_positionen.yaml: wählbare Rollen je Position
+    positionen: dict = field(default_factory=dict)
 
 
 def kontext_bauen(
@@ -150,7 +156,9 @@ def kontext_bauen(
         for st in stats:
             if st in a["stats"]:
                 continue
-            fehlend[st] = "fehlt in den Daten" if st not in df else a["verworfen"].get(st, "verworfen")
+            fehlend[st] = (
+                "fehlt in den Daten" if st not in df else a["verworfen"].get(st, "verworfen")
+            )
         luecken[g] = {"n_pool": a["n_pool"], "statistiken": fehlend}
     stand = dict(df.attrs.get("stand") or {})
     stand.update(
@@ -176,7 +184,11 @@ def kontext_laden(
         common.die(f"Unbekannte Quelle '{quelle}' (db oder live).")
     conn = common.connect(db_path)
     try:
-        df = daten_live(url, conn, save, config_dir) if quelle == "live" else daten_db(conn, save, verein)
+        df = (
+            daten_live(url, conn, save, config_dir)
+            if quelle == "live"
+            else daten_db(conn, save, verein)
+        )
     finally:
         conn.close()
     lg = ligen.Ligen.laden(config_dir)
@@ -194,6 +206,7 @@ def kontext_laden(
     )
     ctx.stand["save"] = save
     ctx.save, ctx.db_path, ctx.db = save, db_path, True
+    ctx.positionen = common.load_yaml("rollen_positionen.yaml", config_dir).get("positionen") or {}
     return ctx
 
 
@@ -216,6 +229,23 @@ def rollen_optionen(rk: dict, gruppen: list[str]) -> dict[str, list[str]]:
     return out
 
 
+def slot_optionen(rk: dict, positionen: dict, slot: dict) -> dict[str, list[str]]:
+    """Wählbare Rollen eines Slots: Liste der FM-Position (rollen_positionen.yaml), sonst aus den Gruppen."""
+    if "position" not in slot:
+        return rollen_optionen(rk, slot["gruppen"])
+    pos = positionen.get(slot["position"])
+    if not pos:
+        common.die(f"Position '{slot['position']}' fehlt in config/rollen_positionen.yaml.")
+    for phase in ("mit", "ohne"):
+        for n in pos[phase]:
+            if rollen.aufloesen(n, rk) not in rk["rollen"]:
+                common.die(
+                    f"Rolle '{n}' (Position {slot['position']}) fehlt in config/rollen_kpis.yaml "
+                    "(auch nicht als alias_rollen)."
+                )
+    return {"mit": list(pos["mit"]), "ohne": list(pos["ohne"])}
+
+
 def _standardrolle(rk: dict, optionen: list[str]) -> str | None:
     """Erste Standardrolle (phase std) der Optionen, sonst die erste Option."""
     std = [n for n in optionen if rk["rollen"][rollen.aufloesen(n, rk)]["phase"] == "std"]
@@ -229,10 +259,10 @@ def formationen_meta(ctx: Kontext) -> dict:
         vorbel = ctx.slots_taktik if f.get("vorbelegung_aus") else {}
         slots = {}
         for sn, s in f["slots"].items():
-            opt = rollen_optionen(rk, s["gruppen"])
+            opt = slot_optionen(rk, ctx.positionen, s)
             v = vorbel.get(sn) or s.get("vorbelegung") or {}
             slots[sn] = {
-                "gruppen": s["gruppen"], "x": s["x"], "y": s["y"], "optionen": opt,
+                "position": s.get("position"), "x": s["x"], "y": s["y"], "optionen": opt,
                 "mit": v.get("mit") if v.get("mit") in opt["mit"] else _standardrolle(rk, opt["mit"]),
                 "ohne": v.get("ohne") if v.get("ohne") in opt["ohne"] else _standardrolle(rk, opt["ohne"]),
             }  # fmt: skip
@@ -261,13 +291,17 @@ def filter_pruefen(ctx: Kontext, f: Filter) -> None:
     if f.min_stufe and f.min_stufe not in ctx.lg.stufen:
         common.die(f"Unbekannte Liga-Stufe '{f.min_stufe}'. Möglich: {', '.join(ctx.lg.stufen)}")
     if f.gewichtung and f.gewichtung != "aus" and f.gewichtung not in ctx.lg.schemata():
-        common.die(f"Unbekannte Gewichtung '{f.gewichtung}'. Möglich: aus, {', '.join(ctx.lg.schemata())}")
+        common.die(
+            f"Unbekannte Gewichtung '{f.gewichtung}'. Möglich: aus, {', '.join(ctx.lg.schemata())}"
+        )
 
 
 def _rolle(ctx: Kontext, name: str) -> str:
     ziel = rollen.aufloesen(name, ctx.rk)
     if ziel not in ctx.rk["rollen"]:
-        common.die(f"Rolle '{name}' fehlt in config/rollen_kpis.yaml (auch nicht als alias_rollen).")
+        common.die(
+            f"Rolle '{name}' fehlt in config/rollen_kpis.yaml (auch nicht als alias_rollen)."
+        )
     return ziel
 
 

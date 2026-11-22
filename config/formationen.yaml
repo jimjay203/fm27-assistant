@@ -1,8 +1,8 @@
 # Formationen für den Kaderplaner (scripts/webapp.py).
 #
-# Je Slot: gruppen = Positionsgruppen aus rollen_kpis.yaml (bestimmen, welche Rollen wählbar sind und welche
-# Spieler in Frage kommen: Positionsfilter der Gruppe der Rolle mit Ball). x/y = Platz auf dem Spielfeld in
-# Prozent (x: 0 = links, 100 = rechts; y: 0 = gegnerisches Tor, 100 = eigenes Tor).
+# Je Slot: position = FM-Position aus rollen_positionen.yaml (bestimmt die wählbaren Rollen wie im Spiel).
+# Welche Spieler in Frage kommen, bestimmt die Gruppe der Rolle mit Ball (rollen_kpis.yaml).
+# x/y = Platz auf dem Spielfeld in Prozent (x: 0 = links, 100 = rechts; y: 0 = gegnerisches Tor, 100 = eigenes Tor).
 # vorbelegung: Rollenpaar (mit/ohne) beim ersten Öffnen; fehlt sie, gilt die erste passende Rolle der Gruppe.
 # Die 4-2-3-1 übernimmt ihre Vorbelegung aus taktik_slots.yaml (Werder-Standard, Kopie aus taktik.md).
 
@@ -12,112 +12,112 @@ formationen:
   "4-2-3-1":
     vorbelegung_aus: taktik_slots.yaml
     slots:
-      TW:            {gruppen: [tw], x: 50, y: 92}
-      RV:            {gruppen: [av, fv], x: 88, y: 72}
-      "IV r":        {gruppen: [iv], x: 63, y: 78}
-      "IV l":        {gruppen: [iv], x: 37, y: 78}
-      LV:            {gruppen: [av, fv], x: 12, y: 72}
-      "DM Lynen":    {gruppen: [dm], x: 62, y: 56}
-      "DM Svanberg": {gruppen: [dm], x: 38, y: 56}
-      "OM r":        {gruppen: [fluegel], x: 85, y: 32}
-      "OM z":        {gruppen: [om], x: 50, y: 34}
-      "OM l":        {gruppen: [fluegel], x: 15, y: 32}
-      ST:            {gruppen: [st], x: 50, y: 10}
+      TW:            {position: TW, x: 50, y: 92}
+      RV:            {position: AV, x: 88, y: 72}
+      "IV r":        {position: IV, x: 63, y: 78}
+      "IV l":        {position: IV, x: 37, y: 78}
+      LV:            {position: AV, x: 12, y: 72}
+      "DM Lynen":    {position: DM, x: 62, y: 56}
+      "DM Svanberg": {position: DM, x: 38, y: 56}
+      "OM r":        {position: FL, x: 85, y: 32}
+      "OM z":        {position: OM, x: 50, y: 34}
+      "OM l":        {position: FL, x: 15, y: 32}
+      ST:            {position: ST, x: 50, y: 10}
 
   "4-3-3":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      RV:     {gruppen: [av, fv], x: 88, y: 72}
-      "IV r": {gruppen: [iv], x: 63, y: 78}
-      "IV l": {gruppen: [iv], x: 37, y: 78}
-      LV:     {gruppen: [av, fv], x: 12, y: 72}
-      DM:     {gruppen: [dm], x: 50, y: 60}
-      "ZM r": {gruppen: [zm, zm_seite], x: 68, y: 44}
-      "ZM l": {gruppen: [zm, zm_seite], x: 32, y: 44}
-      "AS r": {gruppen: [fluegel], x: 85, y: 18}
-      "AS l": {gruppen: [fluegel], x: 15, y: 18}
-      ST:     {gruppen: [st], x: 50, y: 10}
+      TW:     {position: TW, x: 50, y: 92}
+      RV:     {position: AV, x: 88, y: 72}
+      "IV r": {position: IV, x: 63, y: 78}
+      "IV l": {position: IV, x: 37, y: 78}
+      LV:     {position: AV, x: 12, y: 72}
+      DM:     {position: DM, x: 50, y: 60}
+      "ZM r": {position: ZM, x: 68, y: 44}
+      "ZM l": {position: ZM, x: 32, y: 44}
+      "AS r": {position: FL, x: 85, y: 18}
+      "AS l": {position: FL, x: 15, y: 18}
+      ST:     {position: ST, x: 50, y: 10}
 
   "4-4-2":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      RV:     {gruppen: [av, fv], x: 88, y: 72}
-      "IV r": {gruppen: [iv], x: 63, y: 78}
-      "IV l": {gruppen: [iv], x: 37, y: 78}
-      LV:     {gruppen: [av, fv], x: 12, y: 72}
-      RM:     {gruppen: [fluegel], x: 88, y: 42}
-      "ZM r": {gruppen: [zm, zm_seite], x: 62, y: 48}
-      "ZM l": {gruppen: [zm, zm_seite], x: 38, y: 48}
-      LM:     {gruppen: [fluegel], x: 12, y: 42}
-      "ST r": {gruppen: [st], x: 62, y: 12}
-      "ST l": {gruppen: [st], x: 38, y: 12}
+      TW:     {position: TW, x: 50, y: 92}
+      RV:     {position: AV, x: 88, y: 72}
+      "IV r": {position: IV, x: 63, y: 78}
+      "IV l": {position: IV, x: 37, y: 78}
+      LV:     {position: AV, x: 12, y: 72}
+      RM:     {position: FL, x: 88, y: 42}
+      "ZM r": {position: ZM, x: 62, y: 48}
+      "ZM l": {position: ZM, x: 38, y: 48}
+      LM:     {position: FL, x: 12, y: 42}
+      "ST r": {position: ST, x: 62, y: 12}
+      "ST l": {position: ST, x: 38, y: 12}
 
   "4-1-4-1":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      RV:     {gruppen: [av, fv], x: 88, y: 72}
-      "IV r": {gruppen: [iv], x: 63, y: 78}
-      "IV l": {gruppen: [iv], x: 37, y: 78}
-      LV:     {gruppen: [av, fv], x: 12, y: 72}
-      DM:     {gruppen: [dm], x: 50, y: 60}
-      RM:     {gruppen: [fluegel], x: 88, y: 38}
-      "ZM r": {gruppen: [zm, zm_seite], x: 62, y: 42}
-      "ZM l": {gruppen: [zm, zm_seite], x: 38, y: 42}
-      LM:     {gruppen: [fluegel], x: 12, y: 38}
-      ST:     {gruppen: [st], x: 50, y: 10}
+      TW:     {position: TW, x: 50, y: 92}
+      RV:     {position: AV, x: 88, y: 72}
+      "IV r": {position: IV, x: 63, y: 78}
+      "IV l": {position: IV, x: 37, y: 78}
+      LV:     {position: AV, x: 12, y: 72}
+      DM:     {position: DM, x: 50, y: 60}
+      RM:     {position: FL, x: 88, y: 38}
+      "ZM r": {position: ZM, x: 62, y: 42}
+      "ZM l": {position: ZM, x: 38, y: 42}
+      LM:     {position: FL, x: 12, y: 38}
+      ST:     {position: ST, x: 50, y: 10}
 
   "4-3-1-2":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      RV:     {gruppen: [av, fv], x: 88, y: 72}
-      "IV r": {gruppen: [iv], x: 63, y: 78}
-      "IV l": {gruppen: [iv], x: 37, y: 78}
-      LV:     {gruppen: [av, fv], x: 12, y: 72}
-      DM:     {gruppen: [dm], x: 50, y: 60}
-      "ZM r": {gruppen: [zm, zm_seite], x: 70, y: 48}
-      "ZM l": {gruppen: [zm, zm_seite], x: 30, y: 48}
-      OM:     {gruppen: [om], x: 50, y: 32}
-      "ST r": {gruppen: [st], x: 62, y: 12}
-      "ST l": {gruppen: [st], x: 38, y: 12}
+      TW:     {position: TW, x: 50, y: 92}
+      RV:     {position: AV, x: 88, y: 72}
+      "IV r": {position: IV, x: 63, y: 78}
+      "IV l": {position: IV, x: 37, y: 78}
+      LV:     {position: AV, x: 12, y: 72}
+      DM:     {position: DM, x: 50, y: 60}
+      "ZM r": {position: ZM, x: 70, y: 48}
+      "ZM l": {position: ZM, x: 30, y: 48}
+      OM:     {position: OM, x: 50, y: 32}
+      "ST r": {position: ST, x: 62, y: 12}
+      "ST l": {position: ST, x: 38, y: 12}
 
   "3-5-2":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      "IV r": {gruppen: [iv], x: 72, y: 76}
-      "IV z": {gruppen: [iv], x: 50, y: 80}
-      "IV l": {gruppen: [iv], x: 28, y: 76}
-      FVR:    {gruppen: [fv], x: 90, y: 50}
-      FVL:    {gruppen: [fv], x: 10, y: 50}
-      DM:     {gruppen: [dm], x: 50, y: 58}
-      "ZM r": {gruppen: [zm, zm_seite], x: 68, y: 42}
-      "ZM l": {gruppen: [zm, zm_seite], x: 32, y: 42}
-      "ST r": {gruppen: [st], x: 62, y: 12}
-      "ST l": {gruppen: [st], x: 38, y: 12}
+      TW:     {position: TW, x: 50, y: 92}
+      "IV r": {position: IV, x: 72, y: 76}
+      "IV z": {position: IV, x: 50, y: 80}
+      "IV l": {position: IV, x: 28, y: 76}
+      FVR:    {position: FV, x: 90, y: 50}
+      FVL:    {position: FV, x: 10, y: 50}
+      DM:     {position: DM, x: 50, y: 58}
+      "ZM r": {position: ZM, x: 68, y: 42}
+      "ZM l": {position: ZM, x: 32, y: 42}
+      "ST r": {position: ST, x: 62, y: 12}
+      "ST l": {position: ST, x: 38, y: 12}
 
   "3-4-3":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      "IV r": {gruppen: [iv], x: 72, y: 76}
-      "IV z": {gruppen: [iv], x: 50, y: 80}
-      "IV l": {gruppen: [iv], x: 28, y: 76}
-      FVR:    {gruppen: [fv], x: 90, y: 50}
-      "ZM r": {gruppen: [zm, dm], x: 62, y: 52}
-      "ZM l": {gruppen: [zm, dm], x: 38, y: 52}
-      FVL:    {gruppen: [fv], x: 10, y: 50}
-      "AS r": {gruppen: [fluegel], x: 82, y: 20}
-      "AS l": {gruppen: [fluegel], x: 18, y: 20}
-      ST:     {gruppen: [st], x: 50, y: 10}
+      TW:     {position: TW, x: 50, y: 92}
+      "IV r": {position: IV, x: 72, y: 76}
+      "IV z": {position: IV, x: 50, y: 80}
+      "IV l": {position: IV, x: 28, y: 76}
+      FVR:    {position: FV, x: 90, y: 50}
+      "ZM r": {position: ZM, x: 62, y: 52}
+      "ZM l": {position: ZM, x: 38, y: 52}
+      FVL:    {position: FV, x: 10, y: 50}
+      "AS r": {position: FL, x: 82, y: 20}
+      "AS l": {position: FL, x: 18, y: 20}
+      ST:     {position: ST, x: 50, y: 10}
 
   "5-3-2":
     slots:
-      TW:     {gruppen: [tw], x: 50, y: 92}
-      FVR:    {gruppen: [fv], x: 90, y: 62}
-      "IV r": {gruppen: [iv], x: 70, y: 78}
-      "IV z": {gruppen: [iv], x: 50, y: 80}
-      "IV l": {gruppen: [iv], x: 30, y: 78}
-      FVL:    {gruppen: [fv], x: 10, y: 62}
-      "ZM r": {gruppen: [zm, zm_seite], x: 70, y: 44}
-      "ZM z": {gruppen: [zm, dm], x: 50, y: 50}
-      "ZM l": {gruppen: [zm, zm_seite], x: 30, y: 44}
-      "ST r": {gruppen: [st], x: 62, y: 12}
-      "ST l": {gruppen: [st], x: 38, y: 12}
+      TW:     {position: TW, x: 50, y: 92}
+      FVR:    {position: FV, x: 90, y: 62}
+      "IV r": {position: IV, x: 70, y: 78}
+      "IV z": {position: IV, x: 50, y: 80}
+      "IV l": {position: IV, x: 30, y: 78}
+      FVL:    {position: FV, x: 10, y: 62}
+      "ZM r": {position: ZM, x: 70, y: 44}
+      "ZM z": {position: ZM, x: 50, y: 50}
+      "ZM l": {position: ZM, x: 30, y: 44}
+      "ST r": {position: ST, x: 62, y: 12}
+      "ST l": {position: ST, x: 38, y: 12}
