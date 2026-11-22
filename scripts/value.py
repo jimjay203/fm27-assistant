@@ -6,7 +6,11 @@ Kosten/Saison = Jahresgehalt + Marktwert / Vertragsjahre (min. 1 Jahr). TODO: Ab
 Value-Score   = Perzentil von Rollen-Score / Kosten (in Mio) unter den gefilterten Kandidaten.
 xG-Delta      = Tore - xG bzw. Assists - xA (Stat-Namen `tore`, `xg`, `assists`, `xa`; TODO(export)).
 
+Fair Value (scripts/fairvalue.py): erwarteter FM-Marktwert für Leistung/Alter/Liga/Restlaufzeit;
+`fv_ratio` > 1 = FM bewertet den Spieler niedriger als im Pool üblich. R² und n stehen auf stderr.
+
 Aufruf:  uv run python scripts/value.py --rolle stuermer_abschluss --max-alter 31 --top 20
+         uv run python scripts/value.py --rolle gruppe_st --sort fv --nur-moneyball
 """
 
 from __future__ import annotations
@@ -20,16 +24,24 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
+import fairvalue
 import per90
 
 
-def role_score(df: pd.DataFrame, kpis: dict[str, float]) -> pd.Series:
-    """Gewichtete KPI-Perzentile; NaN, wenn ein KPI-Perzentil fehlt (strikt, keine stille Lücke)."""
+def role_score(df: pd.DataFrame, kpis: dict[str, float], min_cover: float = 1.0) -> pd.Series:
+    """Gewichtete KPI-Perzentile über die vorhandenen KPIs.
+
+    NaN, wenn weniger als `min_cover` des Gewichts vorliegt. Default 1.0 = strikt (jeder KPI muss
+    da sein, keine stille Lücke); kleinere Werte tolerieren fehlende KPIs (reduzierte Ligadaten)."""
     total = sum(kpis.values())
-    score = pd.Series(0.0, index=df.index)
+    num = pd.Series(0.0, index=df.index)
+    have = pd.Series(0.0, index=df.index)
     for k, w in kpis.items():
-        score = score + df[f"{k}_pctl"] * w
-    return score / total
+        pct = df[f"{k}_pctl"]
+        num = num + pct.fillna(0) * w
+        have = have + pct.notna() * w
+    score = num / have.where(have > 0)
+    return score.where(have >= min_cover * total - 1e-9)
 
 
 def attribute_score(
@@ -105,7 +117,8 @@ def candidates(
         file=sys.stderr,
     )
 
-    df["kpi_score"] = role_score(df, role["kpis"])
+    min_cover = role.get("min_abdeckung", defaults.get("min_abdeckung", 1.0))
+    df["kpi_score"] = role_score(df, role["kpis"], min_cover)
     g = defaults.get("attribut_gewicht", 0.0) if attr_gewicht is None else attr_gewicht
     df["attr_score"] = np.nan
     df["rollen_score"] = df["kpi_score"]
@@ -125,6 +138,13 @@ def candidates(
 
     df["kosten_saison"] = season_cost(df)
     df = pd.concat([df, xg_deltas(df, defaults.get("xg_delta_flag_p90", 0.10))], axis=1)
+    # Fair Value auf dem vollen Rollenpool, bevor Alter/Liga/Land filtern (sonst Fit auf Ausschnitt).
+    df, fv = fairvalue.add_fair_value(df, players, defaults)
+    print(
+        f"Fair Value ({rolle}): n={fv['n']}, "
+        + (f"R²={fv['r2']:.2f}, Streuung x{10 ** fv['rmse']:.1f}" if fv["ok"] else f"nicht berechnet ({fv['grund']})"),
+        file=sys.stderr,
+    )
 
     if max_alter is not None:
         df = df[df["age"] <= max_alter]
@@ -161,7 +181,12 @@ def main(argv=None) -> None:
         action="store_true",
         help="Rollen-Score mit Liga-Stärke skalieren (Tabelle leagues; Hypothese, ungeprüft)",
     )
-    ap.add_argument("--sort", choices=["value", "rolle"], default="value")
+    ap.add_argument("--sort", choices=["value", "rolle", "fv"], default="value")
+    ap.add_argument(
+        "--nur-moneyball",
+        action="store_true",
+        help="Nur Spieler über fv_ratio_min, fv_z_min und fv_min_fair (rollen.yaml)",
+    )
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--csv", type=Path)
     a = ap.parse_args(argv)
@@ -192,8 +217,12 @@ def main(argv=None) -> None:
         attr_gewicht=a.attr_gewicht,
         leagues=leagues,
     )
-    df = df.sort_values("value_pctl" if a.sort == "value" else "rollen_score", ascending=False)
+    if a.nur_moneyball:
+        df = df[df["moneyball"]]
+    sort_col = {"value": "value_pctl", "rolle": "rollen_score", "fv": "fv_ratio"}[a.sort]
+    df = df.sort_values(sort_col, ascending=False)
     df["kosten_mio"] = df["kosten_saison"] / 1e6
+    df["fair_value_mio"] = df["fair_value"] / 1e6
     out = df[
         [
             "name",
@@ -207,6 +236,10 @@ def main(argv=None) -> None:
             "rollen_score",
             "kosten_mio",
             "value_pctl",
+            "fair_value_mio",
+            "fv_ratio",
+            "fv_z",
+            "moneyball",
             "xg_delta",
             "xg_flag",
             "xa_delta",

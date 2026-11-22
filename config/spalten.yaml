@@ -8,6 +8,7 @@
 #     einheit  Pflicht-Suffix, wird abgeschnitten; Wert ohne Einheit -> NULL + Warnung
 #     typ      text | date  -> Tabelle player_info (kein Zahlenwert)
 #              einsaetze    -> "6 (2)" = einsaetze_start_n / einsaetze_ein_n
+#              dauer        -> "5 Wochen": Text in player_info + Stat <name>_tage_n
 # Doppelte Header benennt pandas: "Endet" / "Endet.1", "Freistöße" / "Freistöße.1".
 #
 # Suffixe der internen Stat-Namen: ohne Suffix = Zählwert (-> _p90 in per90.py);
@@ -56,6 +57,11 @@ spalten:
   "Zufriedenheit": {name: zufriedenheit, typ: text}
   "Gesamtzufriedenheit": {name: gesamtzufriedenheit, typ: text}
   "Idealpos": {name: idealpos, typ: text}
+  "Ausfallszeit": {name: ausfallszeit, typ: dauer}   # Ausfall gesamt Saison (Jimmy); Monat = 30 Tage (Näherung)
+  "Verletzung": {name: verletzung, typ: text}
+  "Verletzt am": {name: verletzt_am, typ: date}      # "Mittwoch, 30. Dezember 2026"
+  "Hierarchie": {name: hierarchie, typ: text}        # "N/V" = leer
+  "Gruppen": {name: gruppe, typ: text}               # "( Kerngruppe )" -> "Kerngruppe"
 
   # --- Einsätze / Ergebnisse (Zähler, nicht normiert) ---
   "Eins": {name: einsaetze, typ: einsaetze}      # Starts (Einwechslungen)
@@ -181,9 +187,53 @@ spalten:
   "Strafraumkontrolle": attr_Strafraumkontrolle
   "Hohe Bälle": attr_Hohe Bälle
 
+  # --- Teamdatei (view_type spiel / team_stats); Header bewusst eindeutig, kollidiert nicht mit Spielerspalten ---
+  "Datum": datum
+  "Gegner": opponent
+  "Heim/Auswärts": home_away
+  "Taktik-Slot": tactic_slot
+  "xG für": xg_for
+  "xG gegen": xg_against
+  "Tore für": goals_for
+  "Tore gegen": goals_against
+  "Ballbesitz %": possession
+  "Schüsse für": shots_for
+  "Schüsse gegen": shots_against
+  "Schüsse aufs Tor für": shots_on_target_for
+  "Schüsse aufs Tor gegen": shots_on_target_against
+  "Großchancen für": big_chances_for
+  "Großchancen gegen": big_chances_against
+  "Ecken für": corners_for
+  "Ecken gegen": corners_against
+  "Progressive Pässe für": prog_passes_for
+  "Progressive Pässe gegen": prog_passes_against
+  "Passquote für %": pass_pct_for
+  "Passquote gegen %": pass_pct_against
+  "Flankenquote für %": cross_pct_for
+  "Flankenquote gegen %": cross_pct_against
+  "PPDA für": ppda_for
+  "PPDA gegen": ppda_against
+  "Fouls für": fouls_for
+  "Fouls gegen": fouls_against
+  "Gelbe Karten für": yellow_for
+  "Gelbe Karten gegen": yellow_against
+  "Rote Karten für": red_for
+  "Rote Karten gegen": red_against
+  "Laufleistung für": distance_for
+  "Laufleistung gegen": distance_against
+  "Notenschnitt für": rating_for
+  "Notenschnitt gegen": rating_against
+
 # Quoten aus zwei gemappten Stats: name: [zähler, nenner] -> zähler / nenner * 100 (NULL bei nenner 0)
 abgeleitet:
   kopfballduelle_gewonnen_pct: [kopfbaelle_gewonnen, kopfbaelle_versucht]
+  schussgenauigkeit_pct: [schuesse_aufs_tor, schuesse]
+  passquote_pct: [paesse_angekommen, paesse_versucht]
+  tackling_pct: [tacklings_gewonnen, tacklings_versucht]
+  flankenquote_pct: [flanken_angekommen, flanken_versucht]
+  konversionsrate_pct: [tore, schuesse]   # Tore / Schüsse (inkl. Elfmeter), Benchmark-Statistik
+  pressingquote_pct: [pressing_erfolgreich, pressing_versucht]
+  flankenquote_spiel_pct: [flanken_spiel_angekommen, flanken_spiel_versucht]   # Flanken aus dem Spiel, ohne Standards
 
 zahlenformat:
   dezimal: ","        # Export mischt: xG/xA/xGP mit "." (oben per Spalte überschrieben), Rest ","

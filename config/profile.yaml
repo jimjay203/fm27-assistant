@@ -1,0 +1,152 @@
+# Rollenprofile mit absoluten Benchmarks: Schlecht / OK / Gut je Statistik.
+# Quelle: FM Stag "What does Good look like in FM24?" (aus FM24, für FM27 ungeprüft), siehe
+# wissen/benchmarks-fm24.md. Die Zahlen sind von Hand aus dem Bild abgetippt: gegenlesen.
+#
+# Score je Statistik: Schlecht = 0, OK = 50, Gut = 100 (linear dazwischen, geklemmt auf 0..100).
+# Ist "schlecht" größer als "gut", gilt niedriger = besser (z. B. Gegentore). Profil-Score = Mittel der
+# vorhandenen Statistiken, nur wenn mindestens `min_abdeckung` der Statistiken vorliegen.
+#
+# gewichtung: Schema aus config/ligen.yaml (stufen_gewichte) für die Liga-Gewichtung dieses Profils. Entscheidung Jimmy
+#   2026-11-22: getrennt nach Angriff (standard) und Verteidigung (mild). Prüfung an den Live-Daten: flach über die Stufen
+#   sind nur die Innenverteidiger; Außenverteidiger, Wing-Backs und Torhüter fallen ähnlich stark ab wie Angriffsrollen.
+# stat: interner Name aus spalten.yaml. art: p90 = Zählwert -> pro 90 | pct = Quote in % | direkt = schon pro 90.
+# positionen: Treffer, wenn EINE Position des Spielers passt (Export- und Live-Kürzel werden normalisiert).
+#   pos = Positionskürzel, seiten = nur diese Seiten (R, L, C); fehlt "seiten", zählt jede Seite.
+
+defaults:
+  min_minuten: 900
+  min_abdeckung: 0.6
+  nur_senior: true          # nur Team = Senior Team (Live-Daten)
+  topclubs: 20              # vs_topclub: die N Vereine mit dem höchsten Kaderwert (Summe Marktwerte) als Referenz
+
+profile:
+  torwart:
+    name: Torwart
+    gewichtung: mild
+    positionen: [{pos: GK}]
+    stats:
+      - {stat: xgp, art: p90, label: "xGoals verhindert / 90", schlecht: -0.38, ok: 0, gut: 0.25}
+      - {stat: gegentore_n, art: p90, label: "Gegentore / 90", schlecht: 2.15, ok: 1.41, gut: 0.75}
+      - {stat: abgefangen, art: p90, label: "Abgefangene Bälle / 90", schlecht: 0.04, ok: 0.1, gut: 0.22}
+      - {stat: passquote_pct, art: pct, label: "Passquote %", schlecht: 47, ok: 78, gut: 97}
+
+  iv_stopper:
+    name: Innenverteidiger - Stopper
+    gewichtung: mild
+    positionen: [{pos: D, seiten: [C]}]
+    stats:
+      - {stat: tacklings_gewonnen, art: p90, label: "Tacklings / 90", schlecht: 0.8, ok: 1.29, gut: 2.38}
+      - {stat: kopfballduelle_gewonnen_pct, art: pct, label: "Kopfballquote %", schlecht: 59, ok: 72, gut: 82}
+      - {stat: klaerungen, art: p90, label: "Klärungen / 90", schlecht: 0.44, ok: 0.85, gut: 1.64}
+      - {stat: abgefangen, art: p90, label: "Abgefangene Bälle / 90", schlecht: 1.36, ok: 2.15, gut: 3.18}
+      - {stat: schuesse_geblockt, art: p90, label: "Geblockte Schüsse / 90", schlecht: 0.19, ok: 0.42, gut: 0.72}
+
+  iv_spielaufbau:
+    name: Innenverteidiger - Spielaufbau
+    gewichtung: mild
+    positionen: [{pos: D, seiten: [C]}]
+    stats:
+      - {stat: tacklings_gewonnen, art: p90, label: "Tacklings / 90", schlecht: 0.88, ok: 1.24, gut: 2.36}
+      - {stat: klaerungen, art: p90, label: "Klärungen / 90", schlecht: 0.39, ok: 0.64, gut: 0.89}
+      - {stat: abgefangen, art: p90, label: "Abgefangene Bälle / 90", schlecht: 1.69, ok: 2.33, gut: 3.0}
+      - {stat: schuesse_geblockt, art: p90, label: "Geblockte Schüsse / 90", schlecht: 0.16, ok: 0.34, gut: 0.63}
+      - {stat: progressive_paesse, art: p90, label: "Progressive Pässe / 90", schlecht: 3.17, ok: 4.52, gut: 6.9}
+
+  aussenverteidiger:
+    name: Außenverteidiger
+    gewichtung: mild
+    positionen: [{pos: D, seiten: [R, L]}]
+    stats:
+      - {stat: tacklings_gewonnen, art: p90, label: "Tacklings / 90", schlecht: 1.44, ok: 2.75, gut: 3.66}
+      - {stat: abgefangen, art: p90, label: "Abgefangene Bälle / 90", schlecht: 2.0, ok: 2.75, gut: 3.31}
+      - {stat: pressing_erfolgreich, art: p90, label: "Erfolgreiche Pressings / 90", schlecht: 1.35, ok: 2.48, gut: 3.5}
+      - {stat: flanken_spiel_angekommen, art: p90, label: "Flanken (Spiel) angekommen / 90", schlecht: 0.03, ok: 0.14, gut: 0.47}
+      - {stat: progressive_paesse, art: p90, label: "Progressive Pässe / 90", schlecht: 4.14, ok: 6.13, gut: 8.59}
+
+  wingback:
+    name: Wing-Back
+    gewichtung: mild
+    positionen: [{pos: WB}]
+    stats:
+      - {stat: tacklings_gewonnen, art: p90, label: "Tacklings / 90", schlecht: 1.57, ok: 2.89, gut: 3.88}
+      - {stat: abgefangen, art: p90, label: "Abgefangene Bälle / 90", schlecht: 1.89, ok: 2.78, gut: 3.48}
+      - {stat: pressing_erfolgreich, art: p90, label: "Erfolgreiche Pressings / 90", schlecht: 1.51, ok: 2.79, gut: 3.64}
+      - {stat: flanken_spiel_angekommen, art: p90, label: "Flanken (Spiel) angekommen / 90", schlecht: 0.04, ok: 0.25, gut: 0.71}
+      - {stat: dribblings, art: p90, label: "Dribblings / 90", schlecht: 0.39, ok: 1.69, gut: 3.03}
+
+  mittelfeld_zerstoerer:
+    name: Mittelfeld - Zerstörer
+    gewichtung: standard
+    positionen: [{pos: DM}, {pos: M, seiten: [C]}]
+    stats:
+      - {stat: tacklings_gewonnen, art: p90, label: "Tacklings / 90", schlecht: 1.17, ok: 2.16, gut: 3.01}
+      - {stat: abgefangen, art: p90, label: "Abgefangene Bälle / 90", schlecht: 1.32, ok: 1.97, gut: 2.75}
+      - {stat: geblockt, art: p90, label: "Blocks / 90", schlecht: 0.2, ok: 0.41, gut: 0.75}
+      - {stat: pressing_erfolgreich, art: p90, label: "Erfolgreiche Pressings / 90", schlecht: 1.13, ok: 2.84, gut: 3.81}
+      - {stat: passquote_pct, art: pct, label: "Passquote %", schlecht: 86, ok: 90, gut: 94}
+
+  mittelfeld_spielmacher:
+    name: Mittelfeld - Spielmacher
+    gewichtung: standard
+    positionen: [{pos: M, seiten: [C]}, {pos: DM}]
+    stats:
+      - {stat: entscheidende_paesse_spiel_p90, art: direkt, label: "Schlüsselpässe (Spiel) / 90", schlecht: 0.76, ok: 1.23, gut: 1.82}
+      - {stat: progressive_paesse, art: p90, label: "Progressive Pässe / 90", schlecht: 2.67, ok: 4.86, gut: 7.19}
+      - {stat: xa, art: p90, label: "xAssists / 90", schlecht: 0.1, ok: 0.19, gut: 0.33}
+      - {stat: dribblings, art: p90, label: "Dribblings / 90", schlecht: 0.43, ok: 1.32, gut: 2.5}
+      - {stat: passquote_pct, art: pct, label: "Passquote %", schlecht: 82, ok: 88, gut: 91}
+
+  offensives_mittelfeld:
+    name: Offensives Mittelfeld
+    gewichtung: standard
+    positionen: [{pos: AM, seiten: [C]}]
+    stats:
+      - {stat: entscheidende_paesse_spiel_p90, art: direkt, label: "Schlüsselpässe (Spiel) / 90", schlecht: 0.75, ok: 1.27, gut: 1.81}
+      - {stat: xa, art: p90, label: "xAssists / 90", schlecht: 0.13, ok: 0.21, gut: 0.32}
+      - {stat: dribblings, art: p90, label: "Dribblings / 90", schlecht: 0.89, ok: 1.85, gut: 3.7}
+      - {stat: passquote_pct, art: pct, label: "Passquote %", schlecht: 82, ok: 85, gut: 88}
+      - {stat: schuesse_aufs_tor, art: p90, label: "Schüsse aufs Tor / 90", schlecht: 0.37, ok: 0.71, gut: 1.1}
+
+  fluegel_vorlagengeber:
+    name: Flügel - Vorlagengeber
+    gewichtung: standard
+    positionen: [{pos: AM, seiten: [R, L]}, {pos: M, seiten: [R, L]}]
+    stats:
+      - {stat: dribblings, art: p90, label: "Dribblings / 90", schlecht: 1.05, ok: 2.4, gut: 4.69}
+      - {stat: flanken_spiel_angekommen, art: p90, label: "Flanken (Spiel) angekommen / 90", schlecht: 0.1, ok: 0.33, gut: 0.66}
+      - {stat: sprints_p90, art: direkt, label: "Sprints / 90", schlecht: 8.57, ok: 14.19, gut: 18.03}
+      - {stat: entscheidende_paesse_spiel_p90, art: direkt, label: "Schlüsselpässe (Spiel) / 90", schlecht: 0.59, ok: 1.15, gut: 1.94}
+      - {stat: xa, art: p90, label: "xAssists / 90", schlecht: 0.1, ok: 0.19, gut: 0.36}
+
+  fluegel_stuermer:
+    name: Flügel - Stürmer
+    gewichtung: standard
+    positionen: [{pos: AM, seiten: [R, L]}, {pos: M, seiten: [R, L]}]
+    stats:
+      - {stat: dribblings, art: p90, label: "Dribblings / 90", schlecht: 1.5, ok: 3.01, gut: 4.6}
+      - {stat: schuesse_aufs_tor, art: p90, label: "Schüsse aufs Tor / 90", schlecht: 0.43, ok: 0.82, gut: 1.34}
+      - {stat: sprints_p90, art: direkt, label: "Sprints / 90", schlecht: 8.24, ok: 14.17, gut: 17.49}
+      - {stat: npxg, art: p90, label: "Non-Penalty-xG / 90", schlecht: 0.15, ok: 0.25, gut: 0.44}
+      - {stat: konversionsrate_pct, art: pct, label: "Konversionsrate %", schlecht: 7, ok: 16, gut: 28}
+
+  stuermer_vorlagengeber:
+    name: Stürmer - Vorlagengeber
+    gewichtung: standard
+    positionen: [{pos: ST}]
+    stats:
+      - {stat: kopfbaelle_gewonnen, art: p90, label: "Gewonnene Kopfbälle / 90", schlecht: 0.67, ok: 1.95, gut: 3.98}
+      - {stat: xa, art: p90, label: "xAssists / 90", schlecht: 0.08, ok: 0.14, gut: 0.25}
+      - {stat: npxg, art: p90, label: "Non-Penalty-xG / 90", schlecht: 0.21, ok: 0.3, gut: 0.52}
+      - {stat: schuesse_aufs_tor, art: p90, label: "Schüsse aufs Tor / 90", schlecht: 0.64, ok: 0.94, gut: 1.51}
+      - {stat: konversionsrate_pct, art: pct, label: "Konversionsrate %", schlecht: 13, ok: 20, gut: 30}
+
+  stuermer_torjaeger:
+    name: Stürmer - Torjäger
+    gewichtung: standard
+    positionen: [{pos: ST}]
+    stats:
+      - {stat: kopfbaelle_gewonnen, art: p90, label: "Gewonnene Kopfbälle / 90", schlecht: 1.03, ok: 2.76, gut: 5.08}
+      - {stat: dribblings, art: p90, label: "Dribblings / 90", schlecht: 0.69, ok: 1.17, gut: 3.05}
+      - {stat: npxg, art: p90, label: "Non-Penalty-xG / 90", schlecht: 0.22, ok: 0.35, gut: 0.5}
+      - {stat: schuesse_aufs_tor, art: p90, label: "Schüsse aufs Tor / 90", schlecht: 0.73, ok: 1.09, gut: 1.57}
+      - {stat: konversionsrate_pct, art: pct, label: "Konversionsrate %", schlecht: 15, ok: 21, gut: 30}

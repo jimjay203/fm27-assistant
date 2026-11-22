@@ -21,6 +21,13 @@ Aktiver Save: saves/werder/ – lies dort immer zuerst kontext.md und taktik.md.
 
 ## Technik
 - Python ausschließlich über uv (`uv run python scripts/import.py --save werder`, `uv run pytest`).
+- Datenquelle live: `uv run python scripts/live.py --save werder` (FM27 + FMMT-27-Server laufen;
+  Setup und Kalibrierung: Kopf von `scripts/live.py`, `config/live_spalten.yaml`). Exporte bleiben Fallback.
+  Live-Werte (Marktwert, Gehalt) sind exakt aus dem Speicher (Snapshot-Typ `live`), nicht die
+  Scouting-Spannen des Spiels. Versteckte Werte (CA/PA, Persönlichkeit) werden nicht abgerufen;
+  Attribute gibt es live nur für eigene Spieler.
+- Kaderplaner (Web-App): `uv run python scripts/webapp.py --save werder [--quelle live]` → http://127.0.0.1:8700.
+  Formationen in `config/formationen.yaml`, Logik in `scripts/planer.py` (Rollen-Score aus `scripts/rollen.py`).
 - Save-Auswahl: `--save <name>`, sonst Umgebungsvariable `FM27_SAVE`, sonst Default `werder`.
 
 ## Stil

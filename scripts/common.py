@@ -13,7 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SAVE = "werder"
-PLAYER_VIEWS = ("kader", "suche", "scouting")
+PLAYER_VIEWS = ("kader", "suche", "scouting", "live")  # live = scripts/live.py (FMMT-27, Speicher)
 TEAM_VIEWS = ("team_stats", "spiel")
 VIEW_TYPES = PLAYER_VIEWS + TEAM_VIEWS
 
@@ -157,6 +157,17 @@ def connect(db_path: Path | str | None = None) -> sqlite3.Connection:
     return conn
 
 
+class Abbruch(SystemExit):
+    """SystemExit(1) mit der Meldung als Attribut (für Aufrufer wie die Web-App)."""
+
+    def __init__(self, meldung: str):
+        super().__init__(1)
+        self.meldung = meldung
+
+    def __str__(self) -> str:
+        return self.meldung
+
+
 def die(msg: str) -> None:
     print(f"FEHLER: {msg}", file=sys.stderr)
-    raise SystemExit(1)
+    raise Abbruch(msg)

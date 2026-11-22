@@ -1,0 +1,626 @@
+# Erfolgsmessung je Rolle: welche Statistiken zeigen, ob ein Spieler seine Rolle gut ausfüllt?
+#
+# Herleitung (Claude, 2026-11-22, Auftrag Jimmy): aus den Rollenbeschreibungen in wissen/rollen.md (Quelle Zweierkette,
+# aus FM26, für FM27 ungeprüft) und den Statistiken, die der Reader liefert. NICHTS davon ist an FM27 validiert; es sind
+# begründete Setzungen, die Jimmy prüfen soll. Gewichte: 3 = Kern der Rolle, 2 = wichtig, 1 = Nebenaspekt.
+#
+# Aufbau: Statistiken stecken in Bausteinen (bausteine). Eine Rolle ist eine gewichtete Mischung aus Bausteinen.
+#   Score einer Rolle = gewichtetes Mittel der Baustein-Scores; Baustein-Score = Mittel der Statistik-Scores (0..100,
+#   Anker = Perzentile des Pools der Positionsgruppe, siehe benchmark.py / anker_fm27.yaml).
+# richtung: hoch (Default) oder niedrig (niedriger Wert ist besser).
+# art: p90 = Zählwert -> pro 90 | pct = Quote in % | direkt = schon pro 90.
+# verlaesslichkeit: wie gut die Statistiken diese Rolle überhaupt erfassen (hoch | mittel | gering). Bei "gering" fehlen
+#   die entscheidenden Merkmale in den Daten (siehe `luecken`), der Wert ist dann nur eine grobe Näherung.
+# wie: Rolle ist textlich identisch mit einer anderen (Quelle: "wie ..."), gleiche Bausteine.
+#
+# Grundsätzliche Datenlücken (für ALLE Rollen): Positionsspiel und Laufwege ohne Ball, Passlänge/-risiko (kurz oder lang),
+# Ablagen, Kontertore, Zielzonen von Flanken. Statistiken stammen aus Spielen des jeweiligen Spielers im Teamstil seines
+# Vereins (Topclubs haben viel Ballbesitz, ihre Verteidiger verteidigen weniger).
+
+# Liga-Gewichtung je Positionsgruppe (Schema aus ligen.yaml). Entscheidung Jimmy 2026-11-22: getrennt nach Angriff und
+# Verteidigung. Prüfung an Live-Daten: flach über die Stufen sind nur die Innenverteidiger; AV, WB und Torhüter fallen
+# ähnlich stark ab wie Angriffsrollen. Hier je Gruppe änderbar.
+gewichtung_je_gruppe:
+  tw: mild
+  iv: mild
+  av: mild
+  fv: mild
+  dm: standard
+  zm: standard
+  zm_seite: standard
+  om: standard
+  fluegel: standard
+  st: standard
+
+# Rollennamen aus FM27, die in der Quelle (FM26) anders heißen -> gewertet wie die genannte Rolle der Quelle.
+alias_rollen:
+  # SpIV: in FM27 umbenannt, inhaltlich 1:1 der Ballspielende Innenverteidiger (bestätigt von Jimmy, 2026-11-22)
+  "Spielaufbauender Innenverteidiger": "Ballspielender Innenverteidiger"
+
+# Anteil von "mit Ball" und "ohne Ball" am Paar-Score eines Spielers (Setzung).
+phasen_gewicht: {mit: 0.5, ohne: 0.5}
+
+bausteine:
+  torgefahr:
+    name: Torgefahr
+    stats:
+      - {stat: npxg, art: p90}
+      - {stat: schuesse_aufs_tor, art: p90}
+      - {stat: konversionsrate_pct, art: pct}
+  fernschuss:
+    name: Schüsse von außerhalb des Strafraums
+    stats:
+      - {stat: schuesse_fern_p90, art: direkt}
+  chancen:
+    name: Chancenkreation
+    stats:
+      - {stat: xa, art: p90}
+      - {stat: entscheidende_paesse_spiel_p90, art: direkt}
+      - {stat: grosschancen, art: p90}
+  ballvortrag:
+    name: Ballvortrag (Pässe nach vorn und Dribblings)
+    stats:
+      - {stat: progressive_paesse, art: p90}
+      - {stat: dribblings, art: p90}
+  dribbling:
+    name: Dribbling
+    stats:
+      - {stat: dribblings, art: p90}
+  aufbau:
+    name: Spielaufbau (Fortschritt und Volumen)
+    stats:
+      - {stat: progressive_paesse, art: p90}
+      - {stat: paesse_angekommen, art: p90}
+  passsicherheit:
+    name: Passsicherheit
+    stats:
+      - {stat: passquote_pct, art: pct}
+      - {stat: ballverluste, art: p90, richtung: niedrig}
+  flanken:
+    name: Flanken aus dem Spiel
+    stats:
+      - {stat: flanken_spiel_angekommen, art: p90}
+      - {stat: flankenquote_spiel_pct, art: pct}
+  luftkampf:
+    name: Luftkampf
+    stats:
+      - {stat: kopfbaelle_gewonnen, art: p90}
+      - {stat: kopfballduelle_gewonnen_pct, art: pct}
+  tempo:
+    # ACHTUNG: misst die HÄUFIGKEIT von Sprints (Sprints pro 90), nicht die Schnelligkeit. Gegenprobe 2026-11-22/2027-01-18:
+    # Dinkçi hat Schnelligkeit 17 und Antritt 15 (eines der schnellsten Attribute im Kader), aber nur 7,5 Sprints/90.
+    # Rolle, Taktik und Spielanteil bestimmen, wie oft gesprintet wird. Für echtes Tempo hilft bei Fremden nur der Export
+    # (Attribut Schnelligkeit/Antritt, bei nicht gescouteten als Spanne).
+    name: Sprinthäufigkeit (Näherung für Tempo, nicht Schnelligkeit)
+    stats:
+      - {stat: sprints_p90, art: direkt}
+  laufleistung:
+    name: Laufleistung
+    stats:
+      - {stat: distanz_km, art: p90}
+  zweikampf:
+    name: Zweikampf
+    stats:
+      - {stat: tacklings_gewonnen, art: p90}
+      - {stat: tackling_pct, art: pct}
+  abfangen:
+    name: Abfangen
+    stats:
+      - {stat: abgefangen, art: p90}
+  raumsicherung:
+    name: Raumsicherung (Klären, Blocken)
+    stats:
+      - {stat: klaerungen, art: p90}
+      - {stat: geblockt, art: p90}
+      - {stat: schuesse_geblockt, art: p90}
+  pressing:
+    name: Pressing
+    stats:
+      - {stat: pressing_erfolgreich, art: p90}
+      - {stat: pressingquote_pct, art: pct}
+  ballgewinn:
+    name: Ballgewinne
+    stats:
+      - {stat: ballgewinne, art: p90}
+  disziplin:
+    name: Disziplin (wenige Fouls)
+    stats:
+      - {stat: fouls, art: p90, richtung: niedrig}
+  tw_schussabwehr:
+    name: Torwart - Schussabwehr
+    stats:
+      - {stat: xgp, art: p90}
+      - {stat: par_pct, art: pct}
+      - {stat: xsv_pct, art: pct}
+      - {stat: gegentore_n, art: p90, richtung: niedrig}
+  tw_aufbau:
+    name: Torwart - Spielaufbau
+    stats:
+      - {stat: passquote_pct, art: pct}
+      - {stat: progressive_paesse, art: p90}
+      - {stat: paesse_angekommen, art: p90}
+  tw_klaerung:
+    name: Torwart - Aktionen außerhalb der Linie (schwach belegt)
+    stats:
+      - {stat: klaerungen, art: p90}
+      - {stat: abgefangen, art: p90}
+
+# Positionen, auf denen die Rolle gespielt wird (Pool für die Anker). pos + optionale Seiten wie in profile.yaml.
+positionsgruppen:
+  tw: [{pos: GK}]
+  iv: [{pos: D, seiten: [C]}]
+  av: [{pos: D, seiten: [R, L]}]
+  fv: [{pos: WB}, {pos: D, seiten: [R, L]}]
+  dm: [{pos: DM}]
+  zm: [{pos: M, seiten: [C]}, {pos: DM}]
+  zm_seite: [{pos: M}]
+  om: [{pos: AM, seiten: [C]}, {pos: M, seiten: [C]}]
+  fluegel: [{pos: AM, seiten: [R, L]}, {pos: M, seiten: [R, L]}]
+  st: [{pos: ST}]
+
+rollen:
+  # ------------------------------------------------------------------ Torwart
+  "Torwart":
+    phase: std
+    gruppe: tw
+    bausteine: {tw_schussabwehr: 3, tw_aufbau: 1}
+    begruendung: "Ausgewogene Standardrolle: im Kern zählt das Halten. Verteilung hängt laut Quelle von der Spielanlage ab, daher nur schwach gewichtet."
+    verlaesslichkeit: mittel
+    luecken: "Herauslaufen und Strafraumbeherrschung sind nicht erfasst. xGP am 2026-11-22 an Hein gegen die Spielansicht geprüft (stimmt nach Korrektur im Fork); xSv % weicht dort um etwa 1 Punkt ab."
+  "Linientorhüter":
+    phase: ohne
+    gruppe: tw
+    bausteine: {tw_schussabwehr: 3}
+    begruendung: "Bleibt im Tor, Mitspieler schützen den Raum davor: Erfolg ist, Schüsse zu halten."
+    verlaesslichkeit: mittel
+    luecken: "Torlinienpositionierung nicht erfasst. xGP geprüft (Hein, 2026-11-22), xSv % weicht um etwa 1 Punkt ab."
+  "Libero-Torhüter":
+    phase: ohne
+    gruppe: tw
+    bausteine: {tw_schussabwehr: 2, tw_klaerung: 1}
+    begruendung: "Verteidigt aktiv außerhalb des Tores, fängt Pässe ab, stellt Stürmer im Eins-gegen-Eins."
+    verlaesslichkeit: gering
+    luecken: "Herauslaufen und Sweeper-Aktionen sind nicht erfasst; Abfangen/Klären ist bei Torhütern meist 0 (Anker nicht trennscharf)."
+  "Kompromissloser Torhüter":
+    phase: mit
+    gruppe: tw
+    bausteine: {passsicherheit: 1}
+    begruendung: "Vermeidet jedes Risiko, schlägt lang. Messbar ist nur, dass er den Ball nicht verliert."
+    verlaesslichkeit: gering
+    luecken: "Lange Abschläge und deren Ergebnis fehlen; Passquote würde diese Rolle zu Unrecht bestrafen und ist deshalb weggelassen."
+  "Ballspielender Torhüter":
+    phase: mit
+    gruppe: tw
+    bausteine: {tw_aufbau: 3, passsicherheit: 1}
+    begruendung: "Aktiv im Aufbau, überspielt das Pressing als zusätzlicher Feldspieler: Passquote, Fortschritt und wenig Ballverluste."
+    verlaesslichkeit: mittel
+
+  # ------------------------------------------------------------ Innenverteidigung
+  "Innenverteidiger":
+    phase: std
+    gruppe: iv
+    bausteine: {raumsicherung: 2, luftkampf: 2, zweikampf: 1, abfangen: 1, passsicherheit: 1, aufbau: 1}
+    begruendung: "Standardrolle: Tor schützen, auf Ballverluste reagieren, in offensiven Taktiken die Zirkulation stützen."
+    verlaesslichkeit: mittel
+  "Stoppender Innenverteidiger":
+    phase: ohne
+    gruppe: iv
+    bausteine: {zweikampf: 3, ballgewinn: 2, abfangen: 1, luftkampf: 1, disziplin: 1}
+    begruendung: "Verteidigt nach vorne, sucht frühe Zweikämpfe: Zweikämpfe und Ballgewinne zählen am meisten, Fouls kosten."
+    verlaesslichkeit: mittel
+    luecken: "Ob die Zweikämpfe früh (hoch) stattfinden, ist nicht erfasst."
+  "Absichernder Innenverteidiger":
+    phase: ohne
+    gruppe: iv
+    bausteine: {raumsicherung: 3, abfangen: 2, luftkampf: 2, disziplin: 1}
+    begruendung: "Zurückhaltend, hält die Linie, wartet ab: Klären, Blocken, Abfangen und Kopfbälle statt aktiver Zweikämpfe."
+    verlaesslichkeit: mittel
+    luecken: "Linienhöhe und Staffelung nicht erfasst."
+  "Ballspielender Innenverteidiger":
+    phase: mit
+    gruppe: iv
+    bausteine: {aufbau: 3, passsicherheit: 2, dribbling: 1}
+    begruendung: "Mehr Risiko im Aufbau, Steckpässe aus der Tiefe, Läufe mit Ball: progressive Pässe, Passvolumen, Dribblings bei vertretbaren Ballverlusten."
+    verlaesslichkeit: mittel
+    luecken: "Steckpässe sind nur über 'progressive Pässe' angenähert."
+  "Kompromissloser Innenverteidiger":
+    phase: mit
+    gruppe: iv
+    bausteine: {passsicherheit: 3, luftkampf: 1}
+    begruendung: "Safety first: Sicherheitspässe und lang unter Druck. Messbar ist die Sicherheit (Passquote, wenig Ballverluste)."
+    verlaesslichkeit: gering
+    luecken: "Lange Bälle unter Druck und ihr Ergebnis fehlen."
+  "Aufrückender Innenverteidiger":
+    phase: mit
+    gruppe: iv
+    bausteine: {aufbau: 2, dribbling: 1, fernschuss: 1, passsicherheit: 1}
+    begruendung: "Rückt ins Mittelfeld auf, unterstützt mit Pässen, gelegentlich Torgefahr aus der zweiten Reihe."
+    verlaesslichkeit: gering
+    luecken: "Aufrücken selbst nicht erfasst. Torgefahr nur über Fernschüsse. Quelle nennt außergewöhnliche technische und mentale Fähigkeiten."
+  "Halbraumverteidiger":
+    phase: std
+    gruppe: iv
+    bausteine: {zweikampf: 1, raumsicherung: 1, abfangen: 1, luftkampf: 1, aufbau: 1}
+    begruendung: "Seitlicher Spieler der Dreierkette: Verteidigen wie ein IV, in Ballbesitz sichere Anspielstation in der Tiefe."
+    verlaesslichkeit: mittel
+  "Stoppender Halbraumverteidiger":
+    phase: ohne
+    gruppe: iv
+    wie: "Stoppender Innenverteidiger"
+    bausteine: {zweikampf: 3, ballgewinn: 2, abfangen: 1, luftkampf: 1, disziplin: 1}
+    begruendung: "Quelle: textgleich mit dem Stoppenden Innenverteidiger."
+    verlaesslichkeit: mittel
+  "Absichernder Halbraumverteidiger":
+    phase: ohne
+    gruppe: iv
+    wie: "Absichernder Innenverteidiger"
+    bausteine: {raumsicherung: 3, abfangen: 2, luftkampf: 2, disziplin: 1}
+    begruendung: "Quelle: textgleich mit dem Absichernden Innenverteidiger."
+    verlaesslichkeit: mittel
+  "Hinterlaufender Halbraumverteidiger":
+    phase: mit
+    gruppe: iv
+    bausteine: {flanken: 2, ballvortrag: 1, chancen: 1, laufleistung: 1, tempo: 1}
+    begruendung: "Wird mit Ball zum Flügelläufer, hinterläuft Mitspieler, flankt im letzten Drittel."
+    verlaesslichkeit: gering
+    luecken: "Hinterlaufen selbst nicht erfasst; Flanken und Laufleistung sind Näherungen."
+
+  # ---------------------------------------------------- Außen- und Flügelverteidiger
+  "Außenverteidiger":
+    phase: std
+    gruppe: av
+    bausteine: {zweikampf: 2, abfangen: 1, flanken: 1, aufbau: 1}
+    begruendung: "Hauptsächlich Defensivspieler, schaltet sich bei Bedarf nach vorne ein."
+    verlaesslichkeit: mittel
+  "Flügelverteidiger":
+    phase: std
+    gruppe: fv
+    bausteine: {flanken: 2, zweikampf: 1, aufbau: 1, laufleistung: 1, chancen: 1}
+    begruendung: "Kreuzung aus AV und Flügelspieler: Breite, Anspielstation im Aufbau, Läufe und Flanken im letzten Drittel."
+    verlaesslichkeit: mittel
+  "Abwartender Außenverteidiger":
+    phase: ohne
+    gruppe: av
+    bausteine: {abfangen: 2, zweikampf: 2, raumsicherung: 1, disziplin: 1}
+    begruendung: "Bleibt tief, sichert gegen Konter ab, Mitspieler pressen: Abfangen und Zweikämpfe ohne Fouls."
+    verlaesslichkeit: mittel
+  "Pressender Außenverteidiger":
+    phase: ohne
+    gruppe: av
+    bausteine: {pressing: 3, zweikampf: 2, ballgewinn: 1}
+    begruendung: "Läuft gegnerische Außen früh und hoch an: Pressing, Zweikämpfe, Ballgewinne."
+    verlaesslichkeit: mittel
+  "Inverser Außenverteidiger":
+    phase: mit
+    gruppe: av
+    bausteine: {aufbau: 3, passsicherheit: 2}
+    begruendung: "Wird mit Ball zum zusätzlichen Innenverteidiger/Absicherer und rückt nach innen: Passsicherheit und Spielaufbau."
+    verlaesslichkeit: gering
+    luecken: "Einrücken und Konterabsicherung (Positionsspiel) nicht erfasst."
+  "Abwartender Flügelverteidiger":
+    phase: ohne
+    gruppe: fv
+    wie: "Abwartender Außenverteidiger"
+    bausteine: {abfangen: 2, zweikampf: 2, raumsicherung: 1, disziplin: 1}
+    begruendung: "Quelle: textgleich mit dem Abwartenden Außenverteidiger."
+    verlaesslichkeit: mittel
+  "Pressender Flügelverteidiger":
+    phase: ohne
+    gruppe: fv
+    wie: "Pressender Außenverteidiger"
+    bausteine: {pressing: 3, zweikampf: 2, ballgewinn: 1}
+    begruendung: "Quelle: textgleich mit dem Pressenden Außenverteidiger."
+    verlaesslichkeit: mittel
+  "Inverser Flügelverteidiger":
+    phase: mit
+    gruppe: fv
+    bausteine: {aufbau: 3, passsicherheit: 2}
+    begruendung: "Rückt in die Mitte, unterstützt das Passspiel, verhält sich wie ein defensiver Mittelfeldspieler; seltener Flanken und Hinterlaufen."
+    verlaesslichkeit: gering
+    luecken: "Einrücken nicht erfasst."
+  "Spielmachender Flügelverteidiger":
+    phase: mit
+    gruppe: fv
+    bausteine: {chancen: 3, aufbau: 2, flanken: 1}
+    begruendung: "Zentral, Schlüsselrolle im Passspiel, soll Chancen kreieren (tödliche Pässe, Flanken)."
+    verlaesslichkeit: mittel
+    luecken: "Quelle nennt technische Fähigkeiten als Voraussetzung."
+  "Vorgeschobener Flügelverteidiger":
+    phase: mit
+    gruppe: fv
+    bausteine: {flanken: 3, laufleistung: 2, dribbling: 2, chancen: 1, tempo: 1}
+    begruendung: "Spielt so hoch wie möglich, gibt Breite, unterstützt mit Läufen im letzten Drittel."
+    verlaesslichkeit: mittel
+
+  # --------------------------------------------------------- Defensives Mittelfeld
+  "Defensiver Mittelfeldspieler":
+    phase: std
+    gruppe: dm
+    bausteine: {zweikampf: 2, abfangen: 2, passsicherheit: 2, ballgewinn: 1, raumsicherung: 1}
+    begruendung: "Schützt die Abwehr und den Raum davor, Bindeglied mit einfachen Pässen."
+    verlaesslichkeit: mittel
+  "Halbverteidiger":
+    phase: ohne
+    gruppe: dm
+    bausteine: {raumsicherung: 2, abfangen: 2, zweikampf: 1, luftkampf: 1}
+    begruendung: "Lässt sich in die Abwehrkette fallen und agiert als zusätzlicher IV, sonst wie ein Sechser."
+    verlaesslichkeit: gering
+    luecken: "Zurückfallen (Positionsspiel) nicht erfasst."
+  "Abschirmender Sechser":
+    phase: ohne
+    gruppe: dm
+    bausteine: {abfangen: 3, raumsicherung: 2, zweikampf: 1, disziplin: 1}
+    begruendung: "Hält die Position, stellt Passwege zu, presst selten: Abfangen und Blocken statt aktiver Zweikämpfe."
+    verlaesslichkeit: mittel
+    luecken: "Passwege zustellen ist nicht erfasst."
+  "Pressender Sechser":
+    phase: ohne
+    gruppe: dm
+    bausteine: {pressing: 3, zweikampf: 2, ballgewinn: 2}
+    begruendung: "Verlässt die Position für das hohe Pressing, höhere Grundposition."
+    verlaesslichkeit: mittel
+  "Flügelsichernder Sechser":
+    phase: ohne
+    gruppe: dm
+    bausteine: {zweikampf: 2, abfangen: 2, laufleistung: 1, ballgewinn: 1}
+    begruendung: "Sichert weite Bereiche, doppelt mit dem Außenverteidiger: Zweikämpfe, Abfangen, Laufarbeit."
+    verlaesslichkeit: gering
+    luecken: "Doppeln und Seitenwechsel der Position nicht erfasst."
+  "Tiefer Spielmacher":
+    phase: mit
+    gruppe: dm
+    bausteine: {aufbau: 3, passsicherheit: 2, chancen: 1}
+    begruendung: "Leitet Angriffe aus der Tiefe mit gezielten Pässen ein; kreativ, aber oft tiefster Mittelfeldspieler."
+    verlaesslichkeit: mittel
+  "Abkippender Sechser":
+    phase: mit
+    gruppe: dm
+    bausteine: {passsicherheit: 3, aufbau: 2}
+    begruendung: "Fällt im Aufbau in die Abwehrkette, erhöht die Pressingresistenz: sichere Pässe, kaum Ballverluste."
+    verlaesslichkeit: gering
+    luecken: "Abkippen selbst nicht erfasst."
+  "Box-to-Box-Spieler":
+    phase: mit
+    gruppe: dm
+    bausteine: {laufleistung: 2, torgefahr: 2, ballvortrag: 1, chancen: 1, aufbau: 1}
+    begruendung: "Dynamik in Aufbau und letztem Drittel, kommt spät in den Strafraum (zweite Bälle, Flanken). Quelle: außergewöhnliche Physis und Einsatzfreude."
+    verlaesslichkeit: mittel
+    luecken: "Späte Läufe in den Strafraum nicht erfasst."
+  "Box-to-Box-Spielmacher":
+    phase: mit
+    gruppe: dm
+    bausteine: {chancen: 2, aufbau: 2, laufleistung: 2}
+    begruendung: "Kreatives Herz, verbindet Mannschaftsteile, vereint Tiefen und Vorgeschobenen Spielmacher; braucht Spielmacherqualität und Physis."
+    verlaesslichkeit: mittel
+
+  # ------------------------------------------------------------ Zentrales Mittelfeld
+  "Zentraler Mittelfeldspieler":
+    phase: std
+    gruppe: zm
+    bausteine: {aufbau: 1, chancen: 1, zweikampf: 1, abfangen: 1, passsicherheit: 1, laufleistung: 1}
+    begruendung: "Vielseitiges Scharnier, muss alles erfüllen: gleichmäßige Mischung."
+    verlaesslichkeit: mittel
+  "Abschirmender Achter":
+    phase: ohne
+    gruppe: zm
+    bausteine: {abfangen: 3, zweikampf: 1, raumsicherung: 1}
+    begruendung: "Hält die Position, stellt Passwege zu, verstellt den Weg durch die Mitte."
+    verlaesslichkeit: mittel
+    luecken: "Passwege zustellen nicht erfasst."
+  "Pressender Achter":
+    phase: ohne
+    gruppe: zm
+    wie: "Pressender Sechser"
+    bausteine: {pressing: 3, zweikampf: 2, ballgewinn: 2}
+    begruendung: "Quelle: textgleich mit dem Pressenden Sechser."
+    verlaesslichkeit: mittel
+  "Flügelsichernder Achter":
+    phase: ohne
+    gruppe: zm_seite
+    wie: "Flügelsichernder Sechser"
+    bausteine: {zweikampf: 2, abfangen: 2, laufleistung: 1, ballgewinn: 1}
+    begruendung: "Quelle: textgleich mit dem Flügelsichernden Sechser."
+    verlaesslichkeit: gering
+    luecken: "Doppeln mit dem Außenverteidiger und Seitenwechsel der Position nicht erfasst."
+  "Spielmacher":
+    phase: mit
+    gruppe: zm
+    bausteine: {chancen: 2, aufbau: 2, passsicherheit: 1}
+    begruendung: "Kreative Verbindung, bringt den Ball in gefährliche Zonen, Steckpässe auf Offensive."
+    verlaesslichkeit: mittel
+  "Weiter Achter":
+    phase: mit
+    gruppe: zm_seite
+    bausteine: {aufbau: 2, laufleistung: 2, passsicherheit: 1}
+    begruendung: "Breiter Verbinder mit Laufstärke, gute Option für Diagonalbälle und Seitenwechsel."
+    verlaesslichkeit: gering
+    luecken: "Diagonalbälle und Seitenwechsel (Passlänge) nicht erfasst."
+  "Vorgeschobener Spielmacher":
+    phase: mit
+    gruppe: om
+    bausteine: {chancen: 3, aufbau: 2, passsicherheit: 1}
+    begruendung: "Orchestriert zwischen den Linien des Gegners, schafft Torchancen mit tödlichen Pässen ins letzte Drittel."
+    verlaesslichkeit: mittel
+
+  # ---------------------------------------------------------- Offensives Mittelfeld
+  "Offensiver Mittelfeldspieler":
+    phase: std
+    gruppe: om
+    bausteine: {chancen: 2, dribbling: 1, torgefahr: 1, passsicherheit: 1}
+    begruendung: "Zwischen den Linien, braucht Passspiel, Dribbling und Abschluss; Chancen für sich und andere."
+    verlaesslichkeit: mittel
+  "Mitarbeitender Zehner":
+    phase: ohne
+    gruppe: om
+    bausteine: {pressing: 2, abfangen: 1, zweikampf: 1, ballgewinn: 1, laufleistung: 1}
+    begruendung: "Lässt sich fallen, hilft, das Zentrum zu sichern."
+    verlaesslichkeit: mittel
+  "Zentraler Umschaltzehner":
+    phase: ohne
+    gruppe: om
+    bausteine: {torgefahr: 2, tempo: 1, dribbling: 1, chancen: 1}
+    begruendung: "Arbeitet nicht nach hinten, ist nach Ballgewinn Anspielstation für Konter: Erfolg ist die Wirkung im Umschalten, nicht die Defensive."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar (keine Kontertore/-chancen). Defensive Beiträge werden bewusst nicht verlangt."
+  "Ausweichender Umschaltzehner":
+    phase: ohne
+    gruppe: om
+    bausteine: {tempo: 2, torgefahr: 1, dribbling: 1, chancen: 1}
+    begruendung: "Höhere Position, weicht in die Halbräume aus für Konter über außen."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar."
+  "Freigeist":
+    phase: mit
+    gruppe: om
+    bausteine: {chancen: 2, dribbling: 2, torgefahr: 1}
+    begruendung: "Totale kreative Freiheit, geht am Ball jedes Risiko ein: Chancenkreation und Dribbling; Ballverluste werden nicht bestraft."
+    verlaesslichkeit: gering
+    luecken: "Freiheit/Unberechenbarkeit nicht messbar."
+  "Halbraumspieler":
+    phase: mit
+    gruppe: om
+    bausteine: {chancen: 2, flanken: 1, torgefahr: 1, laufleistung: 1}
+    begruendung: "Bewegt sich weit, kombiniert mit Außenstürmern, läuft durch Schnittstellen, flankt oder läuft vor."
+    verlaesslichkeit: gering
+    luecken: "Läufe durch Schnittstellen nicht erfasst."
+  "Zweiter Stürmer":
+    phase: mit
+    gruppe: om
+    bausteine: {torgefahr: 3, chancen: 1, dribbling: 1}
+    begruendung: "Sorgt vor allem für Torgefahr, rückt im letzten Drittel in die vorderste Reihe."
+    verlaesslichkeit: mittel
+
+  # ------------------------------------------------------------------- Flügel
+  "Äußerer Mittelfeldspieler":
+    phase: std
+    gruppe: fluegel
+    bausteine: {chancen: 1, flanken: 1, aufbau: 1, passsicherheit: 1, laufleistung: 1}
+    begruendung: "'ZM für außen': frühe Flanken und Pässe aus der Tiefe, Technik statt Tempo und Dribbling."
+    verlaesslichkeit: mittel
+  "Flügelspieler":
+    phase: std
+    gruppe: fluegel
+    bausteine: {dribbling: 2, flanken: 2, chancen: 1, tempo: 1}
+    begruendung: "Breite, Flanken und Pässe von der Seitenlinie, Eins-gegen-Eins per Dribbling. Quelle nennt Dribbling als Attribut."
+    verlaesslichkeit: mittel
+  "Mitarbeitender Außenspieler":
+    phase: ohne
+    gruppe: fluegel
+    bausteine: {laufleistung: 2, zweikampf: 1, abfangen: 1, pressing: 1, ballgewinn: 1}
+    begruendung: "Macht seine Seite dicht, fällt zeitweise in die letzte Linie: Laufarbeit und Defensivaktionen."
+    verlaesslichkeit: mittel
+  "Mitarbeitender Flügelspieler":
+    phase: ohne
+    gruppe: fluegel
+    wie: "Mitarbeitender Außenspieler"
+    bausteine: {laufleistung: 2, zweikampf: 1, abfangen: 1, pressing: 1, ballgewinn: 1}
+    begruendung: "Quelle: textgleich mit dem Mitarbeitenden Außenspieler."
+    verlaesslichkeit: mittel
+  "Äußerer Umschaltspieler":
+    phase: ohne
+    gruppe: fluegel
+    bausteine: {tempo: 2, dribbling: 1, chancen: 1, flanken: 1}
+    begruendung: "Hält eine hohe Position, ist nach Ballgewinn anspielbar: Erfolg ist die Wirkung im Umschalten (Tempo, Dribbling, Vorlagen)."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar. Defensive Beiträge werden bewusst nicht verlangt (Quelle: Seite kann Schwachstelle werden)."
+  "Umschaltflügelspieler":
+    phase: ohne
+    gruppe: fluegel
+    wie: "Äußerer Umschaltspieler"
+    bausteine: {tempo: 2, dribbling: 1, chancen: 1, flanken: 1}
+    begruendung: "Quelle: textgleich mit dem Äußeren Umschaltspieler."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar."
+  "Inverser Umschaltflügelspieler":
+    phase: ohne
+    gruppe: fluegel
+    bausteine: {tempo: 2, torgefahr: 1, dribbling: 1, chancen: 1}
+    begruendung: "Zieht beim gegnerischen Angriff nach innen, Konter über die Halbräume, anspielbar für vertikale Bälle."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar."
+  "Halbraumflügel":
+    phase: mit
+    gruppe: fluegel
+    bausteine: {chancen: 2, torgefahr: 1, flanken: 1, dribbling: 1}
+    begruendung: "Rückt in die Halbräume, öffnet Räume für Hinterlaufende, spielt Pässe und Flanken in den Strafraum, näher am Tor als ein klassischer Flügel."
+    verlaesslichkeit: mittel
+  "Äußerer Spielmacher":
+    phase: mit
+    gruppe: fluegel
+    bausteine: {chancen: 3, aufbau: 2, dribbling: 1}
+    begruendung: "Startet außen, übernimmt dann im Zentrum die kreative Hauptrolle, tödliche Bälle aus den Halbräumen."
+    verlaesslichkeit: mittel
+  "Inverser Außenstürmer":
+    phase: mit
+    gruppe: fluegel
+    bausteine: {torgefahr: 3, dribbling: 1, tempo: 1, chancen: 1}
+    begruendung: "Rückt in die Halbräume, Läufe in den Rücken der Abwehr, Torgefahr von außen."
+    verlaesslichkeit: mittel
+  "Außenstürmer":
+    phase: mit
+    gruppe: fluegel
+    bausteine: {torgefahr: 3, dribbling: 2, tempo: 1}
+    begruendung: "Gibt Breite, zieht in den Strafraum und in den Rücken der Abwehr, Torgefahr; in erster Linie offensiv."
+    verlaesslichkeit: mittel
+
+  # ------------------------------------------------------------------ Stürmer
+  "Mittelstürmer":
+    phase: std
+    gruppe: st
+    bausteine: {torgefahr: 3, chancen: 1, luftkampf: 1}
+    begruendung: "Klassische Nummer neun: Angriffe abschließen, selbst oder durch überlegtes Ablegen."
+    verlaesslichkeit: mittel
+  "Mitarbeitender Mittelstürmer":
+    phase: ohne
+    gruppe: st
+    bausteine: {pressing: 2, zweikampf: 1, ballgewinn: 1, laufleistung: 1}
+    begruendung: "Positioniert sich tiefer, hilft, das Zentrum abzusichern."
+    verlaesslichkeit: mittel
+  "Zentraler Umschaltstürmer":
+    phase: ohne
+    gruppe: st
+    bausteine: {torgefahr: 2, tempo: 1, dribbling: 1}
+    begruendung: "Arbeitet nicht nach hinten, ist nach Ballgewinn Anspielstation für Konter."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar. Defensive Beiträge werden bewusst nicht verlangt."
+  "Ausweichender Umschaltstürmer":
+    phase: ohne
+    gruppe: st
+    bausteine: {tempo: 2, torgefahr: 2, dribbling: 1}
+    begruendung: "Höhere Position, weicht in die Halbräume für Konter über außen aus."
+    verlaesslichkeit: gering
+    luecken: "Konterwirkung nicht direkt messbar."
+  "Hängende Spitze":
+    phase: mit
+    gruppe: st
+    bausteine: {chancen: 3, aufbau: 1, passsicherheit: 1}
+    begruendung: "Verbindet Mittelfeld und Angriff, nimmt Pässe zwischen den Linien an, verteilt auf Nachrückende und Außen."
+    verlaesslichkeit: mittel
+  "Falsche Neun":
+    phase: mit
+    gruppe: st
+    bausteine: {chancen: 2, dribbling: 1, aufbau: 1, torgefahr: 1}
+    begruendung: "Fällt in den Zehnerraum, agiert wie ein vorgeschobener Spielmacher, bindet Verteidiger."
+    verlaesslichkeit: gering
+    luecken: "Zurückfallen und das Binden von Verteidigern nicht erfasst."
+  "Zielspieler":
+    phase: mit
+    gruppe: st
+    bausteine: {luftkampf: 3, torgefahr: 2, chancen: 1}
+    begruendung: "Physis und Größe, Abnehmer langer Bälle (festmachen, weiterleiten), Lufthoheit im Strafraum. Quelle: Physis und Größe als Attribute."
+    verlaesslichkeit: mittel
+    luecken: "Festmachen und Weiterleiten (Ablagen) nicht erfasst, nur Kopfbälle und xAssists."
+  "Knipser":
+    phase: mit
+    gruppe: st
+    bausteine: {torgefahr: 4}
+    begruendung: "Lauert auf der Höhe des letzten Verteidigers, wenig Aufbau: Erfolg sind Torgefahr und Verwertung. Quelle: gute Fähigkeiten ohne Ball."
+    verlaesslichkeit: mittel
+    luecken: "Antizipation und Laufwege ohne Ball nicht erfasst."
+  "Halbraumstürmer":
+    phase: mit
+    gruppe: st
+    bausteine: {torgefahr: 2, tempo: 1, dribbling: 1}
+    begruendung: "Läuft ständig die Zwischenräume an, anspielbar in den Fuß oder in die Tiefe."
+    verlaesslichkeit: gering
+    luecken: "Laufwege nicht erfasst."

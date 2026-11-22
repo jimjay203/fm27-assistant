@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FM27 Kaderplaner</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <div class="titel">
+      <h1>Kaderplaner</h1>
+      <span id="stand" class="stand">lädt …</span>
+    </div>
+    <div class="steuerung">
+      <label>Formation <select id="formation"></select></label>
+      <label>Quelle
+        <select id="quelle">
+          <option value="db">DB (Exporte)</option>
+          <option value="live">Live (FMMT-27)</option>
+        </select>
+      </label>
+      <label title="Vergleichspool der Anker: Ligen ab dieser Stufe">Pool ab <select id="pool_min_stufe"></select></label>
+      <label title="Mindestanzahl Werte je Statistik im Pool, sonst wird die Statistik verworfen">Pool-Min. <input id="anker_min_n" type="number" min="10" step="10"></label>
+      <button id="neu_laden">Neu laden</button>
+    </div>
+  </header>
+
+  <section id="filter" class="filter">
+    <label>max. Alter <input data-f="max_alter" type="number" min="15" max="40" placeholder="–"></label>
+    <label>max. Marktwert (Mio.) <input data-f="max_wert_mio" type="number" min="0" step="0.5" placeholder="–"></label>
+    <label>Liga ab <select data-f="min_stufe"></select></label>
+    <label>Liga-Gewichtung <select data-f="gewichtung"></select></label>
+    <label>Min. Kandidaten <input data-f="min_minuten" type="number" min="0" step="100"></label>
+    <label>Min. eigene <input data-f="min_minuten_eigene" type="number" min="0" step="100"></label>
+    <label class="check"><input data-f="nur_volle_daten" type="checkbox"> nur volle Daten</label>
+    <label class="check" id="nur_suche_box"><input data-f="nur_suche" type="checkbox"> nur Spielersuche</label>
+    <button id="filter_reset" class="leise">Filter zurücksetzen</button>
+  </section>
+
+  <div id="meldung" class="meldung" hidden></div>
+
+  <main>
+    <div class="feld-wrap">
+      <div id="feld" class="feld">
+        <div class="linie mitte"></div><div class="kreis"></div>
+        <div class="strafraum oben"></div><div class="strafraum unten"></div>
+      </div>
+      <p class="legende">Score = Paar-Score × Liga-Gewicht (0 = Schlecht, 50 = OK, 100 = Gut; Perzentile 25/55/90
+        des Pools). Δ = Abstand zum gesetzten eigenen Spieler. Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).</p>
+    </div>
+    <aside id="panel" class="panel">
+      <p class="leer">Slot anklicken, um Ranglisten und Verbesserungen zu sehen.</p>
+    </aside>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

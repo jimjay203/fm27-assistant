@@ -1,0 +1,56 @@
+# Rollen der aktuellen Werder-Taktik je Slot (mit Ball / ohne Ball), für scripts/rollen.py --slot / --alle.
+#
+# Quelle: saves/werder/taktik.md, Rollentabelle "Standard" (Paket B, Entscheidung Jimmy 05.12.2026) und Aufstellung
+# gegen Union (09.01.2027). Diese Datei ist eine KOPIE für die Auswertung; maßgeblich bleibt taktik.md (nur der Agent
+# `taktik` ändert sie). Bei Änderungen der Taktik hier nachziehen.
+# stamm: Spieler laut taktik.md (Stand dort), nur zur Orientierung in der Ausgabe - nicht aktuell geprüft.
+
+quelle: "taktik.md, Rollentabelle Standard (Paket B, 05.12.2026) + Aufstellung Union (09.01.2027)"
+
+slots:
+  TW:
+    mit: "Torwart"
+    ohne: "Linientorhüter"
+    stamm: [Hein, Schlager]
+  RV:
+    mit: "Außenverteidiger"
+    ohne: "Pressender Außenverteidiger"
+    stamm: [Arthur, Deman]
+  "IV r":
+    mit: "Innenverteidiger"
+    ohne: "Absichernder Innenverteidiger"
+    stamm: [Pieper, Wójcik, Córdoba]
+  "IV l":
+    mit: "Spielaufbauender Innenverteidiger"
+    ohne: "Stoppender Innenverteidiger"
+    stamm: [Pfeiffer, Córdoba]
+    hinweis: "SpIV = Spielaufbauender Innenverteidiger, in FM27 umbenannter Ballspielender Innenverteidiger, 1:1 (bestätigt von Jimmy, 2026-11-22; alias_rollen). Pfeiffer spielte gegen Union als KIV (Kompromissloser Innenverteidiger)."
+  LV:
+    mit: "Außenverteidiger"
+    ohne: "Pressender Außenverteidiger"
+    stamm: [Ndiaye, Deman]
+  "DM Lynen":
+    mit: "Defensiver Mittelfeldspieler"
+    ohne: "Abschirmender Sechser"
+    stamm: [Lynen]
+  "DM Svanberg":
+    mit: "Box-to-Box-Spieler"
+    ohne: "Flügelsichernder Sechser"
+    stamm: [Svanberg, Stage, Reis]
+  "OM r":
+    mit: "Außenstürmer"
+    ohne: "Umschaltflügelspieler"
+    stamm: [Dinkçi, Weiser]
+  "OM z":
+    mit: "Zweiter Stürmer"
+    ohne: "Mitarbeitender Zehner"
+    stamm: [Hack, Chuki]
+    hinweis: "Chuki steht in der Union-Aufstellung auf ZwS, hier als Zweiter Stürmer gedeutet (Vermutung, siehe wissen/rollen.md)."
+  "OM l":
+    mit: "Inverser Außenstürmer"
+    ohne: "Mitarbeitender Flügelspieler"
+    stamm: [Grüll]
+  ST:
+    mit: "Zielspieler"
+    ohne: "Zentraler Umschaltstürmer"
+    stamm: [Füllkrug, Itten]

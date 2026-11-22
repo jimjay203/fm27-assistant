@@ -1,0 +1,146 @@
+"""Kaderplaner als lokale Web-App: Formation und Rollen wählen, beste eigene Spieler und Verbesserungen sehen.
+
+Fachlogik: scripts/planer.py (Rollen-Score aus scripts/rollen.py). Oberfläche: web/. Der Server bindet nur an
+127.0.0.1 und schreibt nichts in die DB außer der Schema-Migration von common.connect().
+
+Aufruf:  uv run python scripts/webapp.py --save werder [--quelle live] [--port 8700] [--kein-browser]
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+import threading
+import webbrowser
+from collections.abc import Callable
+from dataclasses import asdict, fields
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import common
+import live
+import planer
+
+WEB = common.ROOT / "web"
+
+
+class FilterIn(BaseModel):
+    min_minuten: int = 900
+    min_minuten_eigene: int = 400
+    max_alter: int | None = None
+    max_wert_mio: float | None = None
+    min_stufe: str | None = None
+    gewichtung: str | None = None
+    nur_volle_daten: bool = False
+    nur_suche: bool = True
+    top_eigene: int = 8
+    top_kandidaten: int = 15
+
+
+class PlanIn(BaseModel):
+    formation: str
+    slots: dict[str, dict[str, str]] = {}
+    filter: FilterIn = FilterIn()
+
+
+class ReloadIn(BaseModel):
+    quelle: str = "db"
+    pool_min_stufe: str = "Gut"
+    anker_min_n: int = 100
+
+
+def _fehler(e: SystemExit, status: int = 400) -> HTTPException:
+    text = getattr(e, "meldung", None) or (e.code if isinstance(e.code, str) else None)
+    return HTTPException(status_code=status, detail=text or "Fehler")
+
+
+def create_app(laden: Callable[[dict], planer.Kontext], start: dict) -> FastAPI:
+    """`laden(einstellungen) -> Kontext`; `start` = Einstellungen der ersten Ladung (quelle, pool_min_stufe, ...)."""
+    app = FastAPI(title="FM27 Kaderplaner")
+    state = {"ctx": laden(start), "einstellungen": dict(start)}
+    lock = threading.Lock()
+
+    @app.get("/api/meta")
+    def meta():
+        ctx = state["ctx"]
+        return {
+            "formationen": planer.formationen_meta(ctx),
+            "standard": ctx.formationen.get("standard"),
+            "stand": ctx.stand,
+            "einstellungen": state["einstellungen"],
+            "luecken": ctx.luecken,
+            "stufen": ctx.lg.stufen,
+            "gewichtungen": ["aus", *ctx.lg.schemata()],
+            "filter_standard": asdict(planer.Filter()),
+        }
+
+    @app.post("/api/plan")
+    def plan(body: PlanIn):
+        f = planer.Filter(**{k.name: getattr(body.filter, k.name) for k in fields(planer.Filter)})
+        try:
+            return planer.plan(state["ctx"], body.formation, body.slots, f)
+        except SystemExit as e:
+            raise _fehler(e) from None
+
+    @app.post("/api/reload")
+    def reload(body: ReloadIn):
+        neu = {**state["einstellungen"], **body.model_dump()}
+        with lock:
+            try:
+                ctx = laden(neu)
+            except SystemExit as e:  # z. B. FMMT nicht erreichbar: alter Kontext bleibt aktiv
+                raise _fehler(e, 503) from None
+            state["ctx"], state["einstellungen"] = ctx, neu
+        return {"stand": ctx.stand, "einstellungen": neu}
+
+    if WEB.exists():
+        app.mount("/static", StaticFiles(directory=WEB), name="static")
+
+        @app.get("/")
+        def index():
+            return FileResponse(WEB / "index.html")
+
+    return app
+
+
+def main(argv=None) -> None:
+    common.setup_stdout()
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    common.add_common_args(ap)
+    ap.add_argument("--quelle", choices=["db", "live"], default="db")
+    ap.add_argument("--verein", help="Eigener Verein (Default: häufigster Verein im Kader-Snapshot)")
+    ap.add_argument("--url", default=live.DEFAULT_URL, help="FMMT-27-Server für --quelle live")
+    ap.add_argument("--pool-min-stufe", default="Gut", help="Vergleichspool der Anker")
+    ap.add_argument("--anker-min-n", type=int, default=100, help="Mindestwerte je Statistik im Pool")
+    ap.add_argument("--port", type=int, default=8700)
+    ap.add_argument("--kein-browser", action="store_true")
+    a = ap.parse_args(argv)
+    save = common.resolve_save(a.save)
+
+    def laden(e: dict) -> planer.Kontext:
+        return planer.kontext_laden(
+            save, e["quelle"], a.verein, a.url, a.db, a.config_dir,
+            pool_min_stufe=e["pool_min_stufe"], anker_min_n=e["anker_min_n"],
+        )  # fmt: skip
+
+    start = {"quelle": a.quelle, "pool_min_stufe": a.pool_min_stufe, "anker_min_n": a.anker_min_n}
+    app = create_app(laden, start)
+
+    import uvicorn
+
+    url = f"http://127.0.0.1:{a.port}/"
+    print(f"Kaderplaner ({save}) unter {url}")
+    if not a.kein_browser:
+        threading.Timer(1.0, webbrowser.open, args=(url,)).start()
+    uvicorn.run(app, host="127.0.0.1", port=a.port, log_level="warning")
+
+
+if __name__ == "__main__":
+    main()

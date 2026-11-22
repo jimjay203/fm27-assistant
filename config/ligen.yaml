@@ -93,8 +93,9 @@ ranking:
   - {liga: "División Profesional", land: Bolivien, ansehen: "Recht gut", pos: 11}
   - {liga: "Super League 2", land: Griechenland, ansehen: "Recht gut", pos: 49}
   # Ab hier aus den Screenshots 4-8 (Stand 2026-11-20). Zwischen "Super League 2" und "Challenger Pro League"
-  # überlappen sich die Screenshots nicht; dort könnten Zeilen fehlen. Pos. von "Challenger Pro League"
-  # war abgeschnitten (50 aus der Reihenfolge ergänzt).
+  # überlappten sich die Screenshots nicht. Nachtrag 2026-11-22 (Screenshot von Jimja): dort fehlte genau eine
+  # Zeile, "T1" (Thailand). "Challenger Pro League" hat Pos. 50 (bestätigt).
+  - {liga: "T1", land: Thailand, ansehen: "Recht gut", pos: 8}
   - {liga: "Challenger Pro League", land: Belgien, ansehen: "Recht gut", pos: 50}
   - {liga: "Challenge League", land: Schweiz, ansehen: "Recht gut", pos: 51}
   - {liga: "Men's Premier Division", land: Irland, ansehen: "Recht gut", pos: 52}
@@ -226,6 +227,166 @@ ranking:
   - {liga: "National 1", land: Frankreich, ansehen: Durchschnittlich, pos: 107}
   - {liga: "Nationaldivisioun", land: Luxemburg, ansehen: Durchschnittlich, pos: 108}
   # Die Liste läuft in der Ansicht weiter (letzte Zeile war abgeschnitten, Stufe "Durchschnittlich").
+
+# ---------------------------------------------------------------------------------------------
+# Alias: Live-Name (Spalte `Division` des FMMT-Readers, mit Sponsor) -> Eintrag in `ranking` (liga + land).
+# Nur belegte Zuordnungen (Namen der Spiel-Ansicht; Sponsorname = gleiche Liga). Was hier fehlt, hat KEINE
+# Stufe (Score wird dann nicht gewichtet und die Liga bleibt außerhalb des Pools), z. B. Landes-/Verbandsligen,
+# Tercera/Segunda Federación, "Amateurliga". Ergänzen, wenn neue Ligen im Save geladen werden.
+# Stand 2026-11-22, Namen aus dem Reader (Build 6AF5C68F-18878000).
+alias:
+  # England / Schottland / Nordirland
+  "Premier League": {liga: "Premier League", land: England}
+  "Sky Bet Championship": {liga: "EFL Championship", land: England}
+  "Sky Bet League One": {liga: "EFL League One", land: England}
+  "Sky Bet League Two": {liga: "EFL League Two", land: England}
+  "Enterprise National League": {liga: "National League", land: England}
+  "William Hill Premiership": {liga: "Scottish Premiership", land: Schottland}
+  "William Hill Championship": {liga: "Scottish Championship", land: Schottland}
+  "BOYLE Sports Premiership": {liga: "NIFL Premiership", land: Nordirland}
+  # Spanien / Italien / Frankreich / Portugal
+  "LaLiga EA Sports": {liga: "LaLiga", land: Spanien}
+  "LaLiga Hypermotion": {liga: "LaLiga 2", land: Spanien}
+  "Primera Federación Versus e-Learning 1": {liga: "Primera Federación", land: Spanien}
+  "Primera Federación Versus e-Learning 2": {liga: "Primera Federación", land: Spanien}
+  "Serie A Enilive": {liga: "Serie A", land: Italien}
+  "Serie BKT": {liga: "Serie B", land: Italien}
+  "Ligue 1 McDonald's": {liga: "Ligue 1", land: Frankreich}
+  "Ligue 2 BKT": {liga: "Ligue 2", land: Frankreich}
+  "Ligue 3 Betclic": {liga: "Ligue 3", land: Frankreich}
+  "Championnat National 1 Groupe A": {liga: "National 1", land: Frankreich}
+  "Championnat National 1 Groupe B": {liga: "National 1", land: Frankreich}
+  "Championnat National 1 Groupe C": {liga: "National 1", land: Frankreich}
+  "Liga Portugal Betclic": {liga: "Liga Portugal", land: Portugal}
+  "Liga Portugal Meu Super": {liga: "Liga Portugal 2", land: Portugal}
+  "Liga 3 Placard Série A": {liga: "Liga 3", land: Portugal}
+  "Liga 3 Placard Série B": {liga: "Liga 3", land: Portugal}
+  # Deutschland / Österreich / Schweiz
+  "Bundesliga": {liga: "Bundesliga", land: Deutschland}
+  "2. Bundesliga": {liga: "2. Bundesliga", land: Deutschland}
+  "3. Liga": {liga: "3. Liga", land: Deutschland}
+  "Regionalliga Nord": {liga: "Regionalliga", land: Deutschland}
+  "Regionalliga West": {liga: "Regionalliga", land: Deutschland}
+  "Regionalliga Südwest": {liga: "Regionalliga", land: Deutschland}
+  "Regionalliga Bayern": {liga: "Regionalliga", land: Deutschland}
+  "Regionalliga Nordost": {liga: "Regionalliga", land: Deutschland}
+  "Bayernliga Nord": {liga: "Oberliga", land: Deutschland}     # 5. Spielklasse = Oberliga-Ebene
+  "Bayernliga Süd": {liga: "Oberliga", land: Deutschland}
+  "Hessenliga": {liga: "Oberliga", land: Deutschland}
+  "Mittelrheinliga": {liga: "Oberliga", land: Deutschland}
+  "ADMIRAL Bundesliga": {liga: "Bundesliga", land: Österreich}
+  "ADMIRAL 2. Liga": {liga: "2. Liga", land: Österreich}
+  "Regionalliga Ost": {liga: "Regionalliga", land: Österreich}
+  "Regionalliga Süd Steiermark": {liga: "Regionalliga", land: Österreich}
+  "Brack Super League": {liga: "Super League", land: Schweiz}
+  "Dieci Challenge League": {liga: "Challenge League", land: Schweiz}
+  # Benelux
+  "VriendenLoterij Eredivisie": {liga: "Eredivisie", land: Niederlande}
+  "Keuken Kampioen Divisie": {liga: "Eerste Divisie", land: Niederlande}
+  "Jupiler Pro League": {liga: "Jupiler Pro League", land: Belgien}
+  "Challenger Pro League": {liga: "Challenger Pro League", land: Belgien}
+  "Belgiens First National Division - VV": {liga: "Eerste nationale", land: Belgien}
+  "Belgiens First National Division - FFA": {liga: "Eerste nationale", land: Belgien}
+  "BGL Ligue": {liga: "Nationaldivisioun", land: Luxemburg}
+  # Skandinavien / Ost- und Südosteuropa
+  "3F Superliga": {liga: "Superliga", land: Dänemark}
+  "Trendyol Süper Lig": {liga: "Süper Lig", land: Türkei}
+  "Trendyol 1. Lig": {liga: "1. Lig", land: Türkei}
+  "Stoiximan Super League": {liga: "Super League", land: Griechenland}
+  "Betsson Super League 2": {liga: "Super League 2", land: Griechenland}
+  "Chance liga": {liga: "1. ČFL", land: Tschechien}
+  "Chance NÁRODNÍ LIGA": {liga: "2. ČFL", land: Tschechien}
+  "PKO Bank Polski Ekstraklasa": {liga: "Ekstraklasa", land: Polen}
+  "Betclic 1. Liga": {liga: "1. Liga", land: Polen}
+  "SuperSport HNL": {liga: "HNL", land: Kroatien}
+  "SuperSport Druga NL": {liga: "2. NL", land: Kroatien}
+  "Mozzart Bet SuperLiga": {liga: "Super liga Srbije", land: Serbien}
+  "Mozzart Bet PrvaLiga": {liga: "Prva liga Srbije", land: Serbien}
+  "Niké liga": {liga: "I. liga", land: Slowakei}
+  "Prva Liga Telemach": {liga: "1. SNL", land: Slowenien}
+  "Fizz Liga": {liga: "NB I", land: Ungarn}
+  "SuperLiga": {liga: "Liga I", land: Rumänien}
+  "Liga II Casa Pariurilor": {liga: "Liga II", land: Rumänien}
+  "Efbet Liga": {liga: "Parva Liga", land: Bulgarien}
+  "MIR Rossiyskaya Premyer-Liga": {liga: "RPL", land: Russland}
+  "VBet Liha": {liga: "UPL", land: Ukraine}
+  "Ligat TOTO Winner": {liga: "Ligat Ha'Al", land: Israel}
+  "Misli Premyer Liqası": {liga: "Premyer Liqası", land: Aserbaidschan}
+  "Fastex Premiyer Liga": {liga: "Premiyer Liga", land: Armenien}
+  "WWIN Liga Bosne i Hercegovine": {liga: "Premijer Liga BiH", land: "Bosnien und Herzegowina"}
+  "Abissnet Superiore": {liga: "Kategoria Superiore", land: Albanien}
+  "Cyprus League by Stoiximan": {liga: "A' Katigorías", land: Zypern}
+  "VBET Malta Premier": {liga: "Malta Premier", land: Malta}
+  "Gibraltar Football League": {liga: "GFL", land: Gibraltar}
+  # Naher Osten / Afrika
+  "Roshn Saudi League": {liga: "Saudi Pro League", land: Saudi-Arabien}
+  "Saudi Arabiens First Division League": {liga: "Saudi 1st Division", land: Saudi-Arabien}
+  "ADNOC Pro League": {liga: "UAE Pro League", land: UAE}
+  "Doha Bank Stars League": {liga: "Qatar Stars League", land: Katar}
+  "Nasser Bin Hamad Premier League": {liga: "Bahraini Premier League", land: Bahrain}
+  "Zain League": {liga: "Premier League", land: Kuwait}
+  "Asia Cell Premier League": {liga: "Iraqi Premier League", land: Irak}
+  "Persian Gulf Pro League": {liga: "Persian Gulf League", land: Iran}
+  "Botola Pro 1 Inwi": {liga: "Botola D1", land: Marokko}
+  "Ligue Professionnelle 1 Mobilis": {liga: "Ligue 1", land: Algerien}
+  # Asien / Ozeanien / Amerika
+  "Meiji Yasuda J1 League": {liga: "J1 League", land: Japan}
+  "Meiji Yasuda J2 League": {liga: "J2 League", land: Japan}
+  "BYD Sealion 6 League I": {liga: "T1", land: Thailand}
+  "BYD Seal 5 League II": {liga: "T2", land: Thailand}
+  "BRI Super League": {liga: "Indonesiens Super League", land: Indonesien}
+  "Liga Super Malaysia": {liga: "Liga Super", land: Malaysia}
+  "BOC Life Hong Kong Premier League": {liga: "Hong Kong Premier League", land: "Hong Kong"}
+  "Hero Indian Super League": {liga: "Indian Super League", land: Indien}
+  "Isuzu UTE A-League Men": {liga: "A-League Men", land: Australien}
+  "Liga BBVA MX": {liga: "Liga MX", land: Mexiko}
+  "Major League Soccer": {liga: "MLS", land: "United States"}
+  "USL Championship": {liga: "USLC", land: "United States"}
+  "Campeonato Brasileiro Série D": {liga: "Brasileirão Série D", land: Brasilien}
+
+# Regeln für Familien gleich benannter Staffeln (Regex gegen den Live-Namen, Groß-/Kleinschreibung egal).
+# Erst `alias` (exakt), dann diese Regeln in der Reihenfolge.
+alias_regeln:
+  - {muster: "^Oberliga ", liga: "Oberliga", land: Deutschland}
+  - {muster: "^Campeonato Brasileiro S.rie A", liga: "Brasileirão", land: Brasilien}
+  - {muster: "^Campeonato Brasileiro S.rie B", liga: "Brasileirão Série B", land: Brasilien}
+  - {muster: "^Campeonato Brasileiro S.rie C", liga: "Brasileirão Série C", land: Brasilien}
+  - {muster: "^Serie C ", liga: "Serie C", land: Italien}
+
+# ---------------------------------------------------------------------------------------------
+# Gewichtung nach Ansehen-Stufe (Setzung, siehe unten). Faktor auf den Benchmark-Score; die Basis ist die
+# Bundesliga (Stufe "Exzellent") = 1,00, weil dort euer Kader spielt. Gewichte sind keine Messwerte.
+#   standard: 6 % je Stufe, Spanne 0,70 bis 1,05
+#   mild:     3 % je Stufe (wie FMMT-27: nur ±15 % insgesamt)
+#   steil:    10 % je Stufe
+# Eine eigene Variante kann unter `stufen_gewichte` ergänzt werden. Fehlt die Stufe einer Liga (kein Alias),
+# gibt es keinen Faktor: die Liga bleibt außerhalb der gewichteten Rangliste.
+gewichtung_standard: standard
+stufen_gewichte:
+  standard:
+    Herausragend: 1.05
+    Exzellent: 1.00
+    Beeindruckend: 0.94
+    Gut: 0.88
+    "Recht gut": 0.82
+    Brauchbar: 0.76
+    Durchschnittlich: 0.70
+  mild:
+    Herausragend: 1.03
+    Exzellent: 1.00
+    Beeindruckend: 0.97
+    Gut: 0.94
+    "Recht gut": 0.91
+    Brauchbar: 0.88
+    Durchschnittlich: 0.85
+  steil:
+    Herausragend: 1.10
+    Exzellent: 1.00
+    Beeindruckend: 0.90
+    Gut: 0.80
+    "Recht gut": 0.70
+    Brauchbar: 0.60
+    Durchschnittlich: 0.50
 
 ligen: {}
   # "<Liga-Name wie im Export>": 100

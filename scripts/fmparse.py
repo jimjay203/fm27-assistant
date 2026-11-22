@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-_NULLS = {"", "-", "–", "—", "?", "n/a", "nan", "none", "null"}
+_NULLS = {"", "-", "–", "—", "?", "n/a", "nan", "none", "null", "n/v"}
 _MULT = {"k": 1e3, "tsd": 1e3, "m": 1e6, "mio": 1e6, "b": 1e9, "mrd": 1e9}
 _DATE_FORMATS = (
     "%Y-%m-%d",
@@ -140,10 +140,30 @@ def parse_attribute_range(s, decimal: str = ".") -> tuple[float, float] | None:
     return (v, v) if v is not None else None
 
 
+_MONTHS_DE = {m: i for i, m in enumerate(
+    ["januar", "februar", "märz", "april", "mai", "juni", "juli", "august",
+     "september", "oktober", "november", "dezember"], start=1)}  # fmt: skip
+_UNIT_DAYS = {"tag": 1, "woche": 7, "monat": 30, "jahr": 365}
+
+
+def parse_duration_days(s) -> float | None:
+    """'5 Wochen' -> 35; '0 Tage' -> 0. Monat = 30, Jahr = 365 Tage (Näherung)."""
+    t = _clean(s)
+    m = re.fullmatch(r"(\d+)\s*(tag|woche|monat|jahr)(?:e|en|n)?", t or "", re.I)
+    return int(m.group(1)) * _UNIT_DAYS[m.group(2).lower()] if m else None
+
+
 def parse_date(s) -> str | None:
     t = _clean(s)
     if t is None:
         return None
+    # Langformat: 'Mittwoch, 30. Dezember 2026' (Wochentag optional)
+    m = re.fullmatch(r"(?:[^\W\d_]+,\s*)?(\d{1,2})\.\s*([^\W\d_]+)\s+(\d{4})", t)
+    if m and m.group(2).lower() in _MONTHS_DE:
+        try:
+            return datetime(int(m.group(3)), _MONTHS_DE[m.group(2).lower()], int(m.group(1))).date().isoformat()
+        except ValueError:
+            return None
     for fmt in _DATE_FORMATS:
         try:
             return datetime.strptime(t, fmt).date().isoformat()

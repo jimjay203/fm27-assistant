@@ -1,0 +1,153 @@
+# Mapping FMMT-27-Reader (HTTP /api/players, Spaltennamen im FM24-Exportstil) -> interne Namen aus
+# spalten.yaml. Quelle der Feldformate: reader/export.py + reader/fm27.py (FMMT-27 1.0.5, gelesen
+# 2026-11-21). Was nicht hier steht, wird nicht gespeichert (kein Rohdump).
+#
+# Bewusst NICHT abgerufen/gespeichert: CA/PA, Persönlichkeit, versteckte Attribute, Positionswerte
+# (Pos Ratings). Attribute (Attrs) gibt es nur für eigene Spieler (Club ID bzw. Loaned From ID aus
+# my_clubs), weil das Spiel sie bei fremden nur als Scouting-Spanne zeigt.
+
+# Gehalt: Wage ist ein roher Integer ohne Einheit (export.py: "Wage": r["wage"]).
+# Kalibriert am 2026-12-05 gegen den Kader-Export 04.12. (59 Spieler per UID): Export-Jahresgehalt in EUR
+# / Live-Wage = 60,4 bei fast allen = 52 Wochen * 1,162 -> Live ist GBP pro Woche, 1,162 EUR je GBP.
+# Ausreißer sind Leihspieler (Hack 30,1, Ndiaye 134): dort teilen Vereine das Gehalt, Live zeigt den
+# Vertragswert beim Stammverein, der Export den Anteil des Leihvereins. Nicht durchgerechnet.
+gehalt:
+  periode: woche
+  faktor: 1.162
+
+# Transfer Value: String mit festem £-Symbol ("£1.2M"), 0 und 300 Mio. = Platzhalter. Gleicher Kurs wie Gehalt.
+# ACHTUNG: Live liefert den gespeicherten Basiswert, nicht den im Spiel angezeigten Wert. Abgleich mit
+# dem Export (58 Spieler): Verhältnis Export/Live 0,56 bis 2,03, Median 1,21 (davon 1,162 Kurs).
+# Einzelwerte weichen um bis zu etwa +-35 % ab -> für Kaufoptionen den angezeigten Wert (Export) nutzen.
+wert:
+  faktor: 1.162
+
+# Attribute: roher Wert im Raster 1-100; angezeigt wird round(roh / 5) (am 2026-12-05 gegen den Export
+# geprüft: 45 von 47 Spalten 98-100 % identisch, Zielstrebigkeit/Grundfitness waren vertauscht).
+# Gespeichert wird der gerundete, im Spiel sichtbare Wert (min. 1), keine Zwischenwerte wie 12,8.
+attribut_skala: 5
+
+# Nur Spieler dieser Teams liefern Stats/Minuten. Der Scope `competitive` des Readers zählt auch Jugend-/
+# Reserveligen; diese Spieler laufen unter der Division ihres Vereins (am 2026-12-05 gefunden: Team leer,
+# Marktwert ~1-13 Tsd. GBP, Gehalt unter 1.000 GBP/Woche, in keinem Export). Sie würden Perzentile und
+# Fair-Value-Fit mit Nicht-Profis verfälschen. Profilfelder (Verein, Wert, Vertrag) bleiben erhalten.
+nur_team: [Senior Team]
+
+kern:
+  uid: UID
+  name: Name
+  club: Club
+  league: Division
+  position: Position
+  age: Age
+  minutes: Mins
+  wage: Wage
+  value: Transfer Value
+  contract_end: Expires          # dd/mm/yyyy
+
+# typ: summe  = Zählwert unverändert
+#      p90    = Wert pro 90 -> Zählwert (v * Mins / 90), damit per90.py unverändert greift
+#      direkt = Wert unverändert (_pct, _avg, _p90)
+stats:
+  Gls: {name: tore, typ: summe}
+  Ast: {name: assists, typ: summe}
+  xG: {name: xg, typ: summe}
+  NP-xG: {name: npxg, typ: summe}
+  xA: {name: xa, typ: summe}
+  Shots: {name: schuesse, typ: summe}
+  ShT: {name: schuesse_aufs_tor, typ: summe}
+  CCC: {name: grosschancen, typ: summe}
+  Yel: {name: gelb, typ: summe}
+  Red: {name: rot, typ: summe}
+  Fls: {name: fouls, typ: summe}
+  FA: {name: gefoult, typ: summe}
+  Off: {name: abseits, typ: summe}
+  PoM: {name: spieler_des_spiels, typ: summe}
+  Goals Outside Box: {name: tore_fernschuss, typ: summe}   # FM27: None
+  Av Rat: {name: wertung_avg, typ: direkt}
+  xG/shot: {name: xg_pro_schuss_avg, typ: direkt}
+  Shots Outside Box/90: {name: schuesse_fern_p90, typ: direkt}
+  K Hdrs/90: {name: entscheidende_kopfbaelle_p90, typ: direkt}
+  Sprints/90: {name: sprints_p90, typ: direkt}
+  Sv %: {name: par_pct, typ: direkt}
+  xSv %: {name: xsv_pct, typ: direkt}
+  Drb/90: {name: dribblings, typ: p90}
+  K Ps/90: {name: schluesselpaesse, typ: p90}
+  Pr passes/90: {name: progressive_paesse, typ: p90}
+  Ps C/90: {name: paesse_angekommen, typ: p90}
+  Crs A/90: {name: flanken_versucht, typ: p90}
+  Cr C/90: {name: flanken_angekommen, typ: p90}
+  OP-Crs A/90: {name: flanken_spiel_versucht, typ: p90}      # Flanken aus dem Spiel (ohne Standards)
+  OP-Crs C/90: {name: flanken_spiel_angekommen, typ: p90}
+  OP-KP/90: {name: entscheidende_paesse_spiel_p90, typ: direkt}  # Schlüsselpässe aus dem Spiel pro 90
+  Poss Lost/90: {name: ballverluste, typ: p90}               # Ballverluste (nur live, kein Export-Pendant)
+  Poss Won/90: {name: ballgewinne, typ: p90}                 # Ballgewinne (nur live, kein Export-Pendant)
+  Pres A/90: {name: pressing_versucht, typ: p90}
+  Pres C/90: {name: pressing_erfolgreich, typ: p90}
+  Tck/90: {name: tacklings_gewonnen, typ: p90}    # Annahme (FM24-Semantik: gewonnene Tacklings); ungeprüft
+  K Tck/90: {name: tacklings_entscheidend, typ: p90}
+  Int/90: {name: abgefangen, typ: p90}
+  Clr/90: {name: klaerungen, typ: p90}
+  Blk/90: {name: geblockt, typ: p90}
+  Shts Blckd/90: {name: schuesse_geblockt, typ: p90}
+  Hdrs W/90: {name: kopfbaelle_gewonnen, typ: p90}
+  Dist/90: {name: distanz_km, typ: p90}           # km pro 90 (Reader: distance10/10)
+  Con/90: {name: gegentore_n, typ: p90}
+  xGP/90: {name: xgp, typ: p90}
+
+# Versuche aus Quote + gewonnenen/angekommenen: versucht = zaehler / (quote / 100)
+quoten:
+  - {name: paesse_versucht, zaehler: paesse_angekommen, quote: "Pas %"}
+  - {name: kopfbaelle_versucht, zaehler: kopfbaelle_gewonnen, quote: "Hdr %"}
+  - {name: tacklings_versucht, zaehler: tacklings_gewonnen, quote: "Tck R"}
+
+# Reihenfolge = SHOWN_ATTRS des Readers (47 Werte). Englisch -> Attributname aus spalten.yaml.
+# Zuordnung am 2026-12-05 gegen den Export geprüft (Aerial Reach->Hohe Bälle, Flair->Kreativität stimmen).
+attribute:
+  Crossing: Flanken
+  Dribbling: Dribbling
+  Finishing: Abschluss
+  Heading: Kopfballtechnik
+  Long Shots: Weitschüsse
+  Marking: Deckung
+  Off The Ball: Ohne Ball
+  Passing: Passen
+  Penalty Taking: Elfmeter
+  Tackling: Tackling
+  Vision: Übersicht
+  Handling: Halten
+  Aerial Reach: Hohe Bälle
+  Command Of Area: Strafraumkontrolle
+  Communication: Kommunikation
+  Kicking: Abschlag
+  Throwing: Abwurf
+  Anticipation: Antizipation
+  Decisions: Entscheidungen
+  One On Ones: Eins gegen Eins
+  Positioning: Stellungsspiel
+  Reflexes: Reflexe
+  First Touch: Ballannahme
+  Technique: Technik
+  Flair: Kreativität
+  Corners: Ecken
+  Teamwork: Teamwork
+  Work Rate: Einsatzfreude
+  Long Throws: Weite Einwürfe
+  Eccentricity: Exzentrizität
+  Rushing Out: Herauslaufen (Tendenz)
+  Punching: Fausten
+  Acceleration: Antritt
+  Free Kick Taking: Freistöße
+  Strength: Kraft
+  Stamina: Ausdauer
+  Pace: Schnelligkeit
+  Jumping Reach: Sprunghöhe
+  Leadership: Führungsqualitäten
+  Balance: Balance
+  Bravery: Mut
+  Aggression: Aggressivität
+  Agility: Beweglichkeit
+  Natural Fitness: Grundfitness
+  Determination: Zielstrebigkeit
+  Composure: Nervenstärke
+  Concentration: Konzentration

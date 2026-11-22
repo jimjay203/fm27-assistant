@@ -462,3 +462,44 @@ def test_resolve_save_env(monkeypatch):
 def test_schema_is_sqlite():
     assert isinstance(common.connect(":memory:"), sqlite3.Connection)
     assert pd.__version__
+
+
+def test_parse_langdatum_und_dauer():
+    assert fmparse.parse_date("Mittwoch, 30. Dezember 2026") == "2026-12-30"
+    assert fmparse.parse_date("Donnerstag, 26. März 2026") == "2026-03-26"
+    assert fmparse.parse_date("-") is None
+    assert fmparse.parse_duration_days("0 Tage") == 0
+    assert fmparse.parse_duration_days("5 Wochen") == 35
+    assert fmparse.parse_duration_days("6 Monate") == 180
+    assert fmparse.parse_duration_days("-") is None
+    assert fmparse.is_null("N/V")
+
+
+def test_kader_verletzung_hierarchie_gruppen():
+    c, res, warnings = _import_echt(datei="2027-01-14_kader.csv")
+    assert (res["rows"], res["unmapped"], res["unlesbar"]) == (5, 0, 0)
+    assert warnings == []
+
+    def info(field, name):
+        r = c.execute(
+            "SELECT i.text FROM player_info i JOIN players p USING(snapshot_id, player_uid) "
+            "WHERE p.name=? AND i.field=?", (name, field)).fetchone()
+        return r[0] if r else None
+
+    def days(name):
+        r = c.execute(
+            "SELECT s.value FROM player_stats s JOIN players p USING(snapshot_id, player_uid) "
+            "WHERE p.name=? AND s.stat='ausfallszeit_tage_n'", (name,)).fetchone()
+        return r[0] if r else None
+
+    assert info("gruppe", "Karl Hein") == "Kerngruppe"
+    assert info("hierarchie", "Karl Hein") == "Sehr einflussreicher Spieler"
+    assert days("Karl Hein") == 0 and info("ausfallszeit", "Karl Hein") == "0 Tage"
+    assert info("verletzung", "Karl Hein") is None and info("verletzt_am", "Karl Hein") is None
+    rows = c.execute("SELECT name FROM players WHERE name NOT IN ('Karl Hein')").fetchall()
+    verletzt = {
+        n: (info("verletzung", n), info("verletzt_am", n), days(n)) for (n,) in rows
+    }
+    assert ("Wadenzerrung (leicht)", "2026-12-30", 35) in verletzt.values()
+    assert ("Kreuzbandriss", "2026-03-26", 180) in verletzt.values()
+    assert any(info("hierarchie", n) is None for n in verletzt)  # N/V -> leer

@@ -22,6 +22,10 @@ import common
 # Stats mit diesen Suffixen werden nicht durch Minuten geteilt (Rate, Durchschnitt, Spielezähler).
 NOT_NORMALIZED = ("_pct", "_p90", "_avg", "_n")
 
+# Deutsche Positionskürzel der Exporte -> englische (FMMT-Live, rollen.yaml). Gleiche Kürzel (ST, DM, M)
+# brauchen keinen Eintrag. FV = Flügel-/Außenverteidiger (hier WB), OM = offensives Mittelfeld (AM).
+POS_ALIAS = {"TW": "GK", "V": "D", "FV": "WB", "OM": "AM"}
+
 CORE_COLS = [
     "player_uid",
     "name",
@@ -49,8 +53,25 @@ CORE_COLS = [
 ]
 
 
-def load_wide(conn, save: str, view: str | None = None):
-    """Neuester Snapshot je Spieler. -> (players+Stats-Spalten, Attribute-Spalten `attr_*`)."""
+def letzter_snapshot(conn, save: str, view: str) -> tuple[int, str] | None:
+    """(id, ingame_date) des neuesten Snapshots dieses Typs, sonst None."""
+    r = conn.execute(
+        "SELECT id, ingame_date FROM snapshots WHERE save = ? AND view_type = ? "
+        "ORDER BY ingame_date DESC, id DESC LIMIT 1",
+        (save, view),
+    ).fetchone()
+    return (int(r[0]), r[1]) if r else None
+
+
+def letzte_snapshots(conn, save: str, views=("kader", "suche", "live")) -> dict[str, tuple[int, str]]:
+    """Je Typ nur der neueste Snapshot: ältere Suchen haben veraltete Saisonstatistiken."""
+    return {v: s for v in views if (s := letzter_snapshot(conn, save, v))}
+
+
+def load_wide(conn, save: str, view: str | None = None, snapshot_ids: list[int] | None = None):
+    """Neuester Snapshot je Spieler. -> (players+Stats-Spalten, Attribute-Spalten `attr_*`).
+
+    `snapshot_ids` beschränkt auf diese Snapshots (z. B. nur den letzten Kader und die letzte Suche)."""
     q = (
         "SELECT p.*, s.ingame_date, s.view_type, lr.rang AS liga_rang, lr.ansehen AS liga_ansehen "
         "FROM players p JOIN snapshots s ON s.id = p.snapshot_id "
@@ -61,6 +82,12 @@ def load_wide(conn, save: str, view: str | None = None):
     if view:
         q += " AND s.view_type = ?"
         args.append(view)
+    if snapshot_ids is not None:
+        if not snapshot_ids:
+            empty = pd.DataFrame(columns=["snapshot_id", "player_uid"])
+            return empty, empty.copy()
+        q += f" AND s.id IN ({','.join('?' * len(snapshot_ids))})"
+        args.extend(int(i) for i in snapshot_ids)
     players = pd.read_sql_query(q + " ORDER BY s.ingame_date, s.id", conn, params=args)
     players = players.drop_duplicates("player_uid", keep="last").reset_index(drop=True)
     if players.empty:
@@ -97,7 +124,7 @@ def position_matches(pos, positions) -> bool:
         return False
     wanted = {p.upper() for p in positions}
     tokens = [t.strip().split()[0].upper() for t in pos.replace("/", ",").split(",") if t.strip()]
-    return any(t in wanted for t in tokens)
+    return any(POS_ALIAS.get(t, t) in wanted for t in tokens)
 
 
 def percentile_in_groups(df: pd.DataFrame, col: str, pool: pd.Series, min_group: int) -> pd.Series:
@@ -105,6 +132,7 @@ def percentile_in_groups(df: pd.DataFrame, col: str, pool: pd.Series, min_group:
     out = pd.Series(np.nan, index=df.index)
     sub = df[pool].copy()
     pos = sub["position"].fillna("?").astype(str).str.split(r"[,/]").str[0].str.split().str[0]
+    pos = pos.replace(POS_ALIAS)  # Export (V, FV, OM, TW) und Live (D, WB, AM, GK) in dieselbe Gruppe
     # Liga + Land des Vereins: "Bundesliga" gibt es in Deutschland und Österreich.
     country = sub["club_country"].fillna("?") if "club_country" in sub else "?"
     keys = [pos, sub["league"].fillna("?"), country]

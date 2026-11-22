@@ -1,0 +1,352 @@
+# Automatisch erzeugt, nicht von Hand ändern (neu erzeugen: benchmark.py --anker-berechnen).
+meta:
+  erstellt_aus: FMMT-27 live, Spielstand 2027-01-18
+  pool: Senior Team, ab 900 Min., volle Daten, Position des Profils, Ligen ab Stufe
+    Gut
+  perzentile:
+    schlecht: 25
+    ok: 55
+    gut: 90
+  hinweis: Erzeugt von scripts/benchmark.py --anker-berechnen. Schlecht/OK/Gut = diese
+    Perzentile der Pool-Werte (bei 'niedriger ist besser' gespiegelt). Setzung, kein
+    Messwert.
+profile:
+  torwart:
+    n_pool: 327
+    stats:
+      xgp:
+        schlecht: -0.159
+        ok: 0.046
+        gut: 0.2792
+        n: 327
+      gegentore_n:
+        schlecht: 1.366
+        ok: 1.1047
+        gut: 0.8282
+        n: 327
+      passquote_pct:
+        schlecht: 77.2059
+        ok: 82.2616
+        gut: 87.7756
+        n: 327
+    verworfen:
+      abgefangen: Anker nicht trennscharf (0.00 / 0.00 / 0.15)
+  iv_stopper:
+    n_pool: 875
+    stats:
+      tacklings_gewonnen:
+        schlecht: 0.4051
+        ok: 0.5875
+        gut: 1.2872
+        n: 875
+      kopfballduelle_gewonnen_pct:
+        schlecht: 62.2432
+        ok: 69.7463
+        gut: 77.6016
+        n: 875
+      klaerungen:
+        schlecht: 1.2392
+        ok: 1.5319
+        gut: 1.9728
+        n: 875
+      abgefangen:
+        schlecht: 2.962
+        ok: 3.3531
+        gut: 4.0
+        n: 875
+      schuesse_geblockt:
+        schlecht: 0.3813
+        ok: 0.6006
+        gut: 0.9703
+        n: 875
+    verworfen: {}
+  iv_spielaufbau:
+    n_pool: 875
+    stats:
+      tacklings_gewonnen:
+        schlecht: 0.4051
+        ok: 0.5875
+        gut: 1.2872
+        n: 875
+      klaerungen:
+        schlecht: 1.2392
+        ok: 1.5319
+        gut: 1.9728
+        n: 875
+      abgefangen:
+        schlecht: 2.962
+        ok: 3.3531
+        gut: 4.0
+        n: 875
+      schuesse_geblockt:
+        schlecht: 0.3813
+        ok: 0.6006
+        gut: 0.9703
+        n: 875
+      progressive_paesse:
+        schlecht: 3.3913
+        ok: 3.9396
+        gut: 6.4327
+        n: 875
+    verworfen: {}
+  aussenverteidiger:
+    n_pool: 823
+    stats:
+      tacklings_gewonnen:
+        schlecht: 0.8321
+        ok: 1.2563
+        gut: 1.7507
+        n: 823
+      abgefangen:
+        schlecht: 3.0375
+        ok: 3.518
+        gut: 4.1453
+        n: 823
+      pressing_erfolgreich:
+        schlecht: 0.7939
+        ok: 1.1058
+        gut: 1.532
+        n: 823
+      flanken_spiel_angekommen:
+        schlecht: 0.0509
+        ok: 0.2438
+        gut: 0.9057
+        n: 823
+      progressive_paesse:
+        schlecht: 4.6752
+        ok: 6.6132
+        gut: 8.6426
+        n: 823
+    verworfen: {}
+  wingback:
+    n_pool: 663
+    stats:
+      tacklings_gewonnen:
+        schlecht: 1.0498
+        ok: 1.3569
+        gut: 1.8096
+        n: 663
+      abgefangen:
+        schlecht: 2.9205
+        ok: 3.5173
+        gut: 4.1624
+        n: 663
+      pressing_erfolgreich:
+        schlecht: 0.9614
+        ok: 1.2125
+        gut: 1.616
+        n: 663
+      flanken_spiel_angekommen:
+        schlecht: 0.1523
+        ok: 0.3716
+        gut: 1.0528
+        n: 663
+      dribblings:
+        schlecht: 0.5459
+        ok: 0.9134
+        gut: 2.4985
+        n: 663
+    verworfen: {}
+  mittelfeld_zerstoerer:
+    n_pool: 1101
+    stats:
+      tacklings_gewonnen:
+        schlecht: 0.7258
+        ok: 0.9667
+        gut: 1.321
+        n: 1101
+      abgefangen:
+        schlecht: 2.1154
+        ok: 2.9055
+        gut: 3.6431
+        n: 1101
+      geblockt:
+        schlecht: 0.6818
+        ok: 0.8831
+        gut: 1.1977
+        n: 1101
+      pressing_erfolgreich:
+        schlecht: 1.0198
+        ok: 1.3102
+        gut: 1.6594
+        n: 1101
+      passquote_pct:
+        schlecht: 87.0715
+        ok: 89.3496
+        gut: 92.1538
+        n: 1101
+    verworfen: {}
+  mittelfeld_spielmacher:
+    n_pool: 1101
+    stats:
+      entscheidende_paesse_spiel_p90:
+        schlecht: 0.779
+        ok: 1.1835
+        gut: 1.8199
+        n: 1101
+      progressive_paesse:
+        schlecht: 3.6449
+        ok: 4.5855
+        gut: 6.4237
+        n: 1101
+      xa:
+        schlecht: 0.0817
+        ok: 0.1446
+        gut: 0.2532
+        n: 1101
+      dribblings:
+        schlecht: 0.2027
+        ok: 0.3899
+        gut: 1.585
+        n: 1101
+      passquote_pct:
+        schlecht: 87.0715
+        ok: 89.3496
+        gut: 92.1538
+        n: 1101
+    verworfen: {}
+  offensives_mittelfeld:
+    n_pool: 784
+    stats:
+      entscheidende_paesse_spiel_p90:
+        schlecht: 1.1833
+        ok: 1.5773
+        gut: 2.1163
+        n: 784
+      xa:
+        schlecht: 0.0994
+        ok: 0.1661
+        gut: 0.2728
+        n: 784
+      dribblings:
+        schlecht: 0.6446
+        ok: 1.3827
+        gut: 3.543
+        n: 784
+      passquote_pct:
+        schlecht: 84.5555
+        ok: 86.4949
+        gut: 89.8282
+        n: 784
+      schuesse_aufs_tor:
+        schlecht: 0.4222
+        ok: 0.7699
+        gut: 1.4107
+        n: 784
+    verworfen: {}
+  fluegel_vorlagengeber:
+    n_pool: 1120
+    stats:
+      dribblings:
+        schlecht: 0.9985
+        ok: 2.3622
+        gut: 4.081
+        n: 1120
+      flanken_spiel_angekommen:
+        schlecht: 0.1972
+        ok: 0.5602
+        gut: 1.1541
+        n: 1120
+      sprints_p90:
+        schlecht: 8.1007
+        ok: 10.0404
+        gut: 12.6825
+        n: 1120
+      entscheidende_paesse_spiel_p90:
+        schlecht: 1.1482
+        ok: 1.5669
+        gut: 2.1222
+        n: 1120
+      xa:
+        schlecht: 0.0857
+        ok: 0.1375
+        gut: 0.2489
+        n: 1120
+    verworfen: {}
+  fluegel_stuermer:
+    n_pool: 1120
+    stats:
+      dribblings:
+        schlecht: 0.9985
+        ok: 2.3622
+        gut: 4.081
+        n: 1120
+      schuesse_aufs_tor:
+        schlecht: 0.3478
+        ok: 0.7224
+        gut: 1.4178
+        n: 1120
+      sprints_p90:
+        schlecht: 8.1007
+        ok: 10.0404
+        gut: 12.6825
+        n: 1120
+      npxg:
+        schlecht: 0.0842
+        ok: 0.1782
+        gut: 0.3214
+        n: 1120
+      konversionsrate_pct:
+        schlecht: 5.8824
+        ok: 12.0
+        gut: 22.2222
+        n: 1111
+    verworfen: {}
+  stuermer_vorlagengeber:
+    n_pool: 575
+    stats:
+      kopfbaelle_gewonnen:
+        schlecht: 0.8187
+        ok: 1.6188
+        gut: 3.2135
+        n: 575
+      xa:
+        schlecht: 0.0659
+        ok: 0.1144
+        gut: 0.2124
+        n: 575
+      npxg:
+        schlecht: 0.1848
+        ok: 0.2801
+        gut: 0.4325
+        n: 575
+      schuesse_aufs_tor:
+        schlecht: 0.8601
+        ok: 1.3263
+        gut: 1.9805
+        n: 575
+      konversionsrate_pct:
+        schlecht: 10.3807
+        ok: 15.9727
+        gut: 23.3023
+        n: 575
+    verworfen: {}
+  stuermer_torjaeger:
+    n_pool: 575
+    stats:
+      kopfbaelle_gewonnen:
+        schlecht: 0.8187
+        ok: 1.6188
+        gut: 3.2135
+        n: 575
+      dribblings:
+        schlecht: 0.6224
+        ok: 1.0446
+        gut: 3.4657
+        n: 575
+      npxg:
+        schlecht: 0.1848
+        ok: 0.2801
+        gut: 0.4325
+        n: 575
+      schuesse_aufs_tor:
+        schlecht: 0.8601
+        ok: 1.3263
+        gut: 1.9805
+        n: 575
+      konversionsrate_pct:
+        schlecht: 10.3807
+        ok: 15.9727
+        gut: 23.3023
+        n: 575
+    verworfen: {}

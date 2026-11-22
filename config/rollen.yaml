@@ -9,6 +9,12 @@ defaults:
   attribut_gewicht: 0.0       # Anteil des Attribut-Priors am Rollen-Score (0 = aus)
   xg_delta_flag_p90: 0.10     # Flag, wenn |Tore - xG| pro 90 darüber liegt (Platzhalter, kalibrieren)
   defensiv_volumen: []        # TODO(export): Stats, die ballbesitzbereinigt werden (Wert * 50 / Ballbesitz)
+  min_abdeckung: 1.0          # Gewichtsanteil der KPIs, der vorliegen muss (1.0 = strikt, sonst NaN)
+  fv_ratio_min: 2.0           # Moneyball-Flag: Fair Value >= Faktor * Marktwert (Setzung nach FMMT-27, ungeprüft)
+  fv_z_min: 1.5               # Moneyball-Flag nur, wenn die Abweichung >= so viele Modell-Streuungen (RMSE, log10) beträgt
+  fv_min_fair: 250000         # Moneyball-Flag nur, wenn Fair Value mind. so hoch (Euro); Setzung nach FMMT-27
+  fv_min_n: 50               # Fair-Value-Fit nur für Gruppen mit mind. so vielen Spielern
+  fv_liga_min_n: 10           # Liga-Medianwert nur ab so vielen Spielern, sonst globaler Median
 
 rollen:
   stuermer_abschluss:
@@ -26,3 +32,96 @@ rollen:
       Ohne Ball: 0.3
       Ruhe am Ball: 0.2
       Antritt: 0.2
+
+  # --- Positionsgruppen nach FMMT-27 (PKEYS, gleichgewichtet; Setzung des Autors, ungeprüft) ---
+  # Weggelassen, weil nicht abbildbar: npG/90 (kein Elfer-Split live), PossWon/90, CS/90, Conc/90,
+  # Saves/90. Fehlende KPIs sind erlaubt (min_abdeckung 0.6), weil viele Ligen nur reduzierte Stats haben.
+  # attribute_prior: Archetyp-Gewichte aus wissen/attribut-gewichte.md (nur eigene Spieler, Gewicht 0.0 = aus).
+  gruppe_st:
+    positionen: [ST]
+    min_abdeckung: 0.6
+    kpis:
+      npxg_p90: 1
+      schuesse_p90: 1
+      schussgenauigkeit_pct: 1
+      xg_pro_schuss_avg: 1
+      xa_p90: 1
+      schluesselpaesse_p90: 1
+      dribblings_p90: 1
+      pressing_erfolgreich_p90: 1
+      kopfbaelle_gewonnen_p90: 1
+    attribute_prior: {Antritt: 5, Sprunghöhe: 5, Schnelligkeit: 5, Antizipation: 3, Dribbling: 3, Abschluss: 3, Nervenstärke: 2, Ohne Ball: 2, Ausdauer: 2, Einsatzfreude: 2}
+  gruppe_am:
+    positionen: [AM]
+    min_abdeckung: 0.6
+    kpis:
+      npxg_p90: 1
+      xa_p90: 1
+      schluesselpaesse_p90: 1
+      grosschancen_p90: 1
+      dribblings_p90: 1
+      progressive_paesse_p90: 1
+      flankenquote_pct: 1
+      pressing_erfolgreich_p90: 1
+    attribute_prior: {Antritt: 5, Dribbling: 5, Schnelligkeit: 5, Antizipation: 3, Nervenstärke: 2, Ohne Ball: 2, Passen: 2, Ausdauer: 2, Einsatzfreude: 2}
+  gruppe_mid:
+    positionen: [DM, M]
+    min_abdeckung: 0.6
+    kpis:
+      paesse_angekommen_p90: 1
+      passquote_pct: 1
+      progressive_paesse_p90: 1
+      schluesselpaesse_p90: 1
+      xa_p90: 1
+      dribblings_p90: 1
+      tacklings_gewonnen_p90: 1
+      abgefangen_p90: 1
+      pressing_erfolgreich_p90: 1
+    attribute_prior: {Antritt: 5, Schnelligkeit: 5, Ausdauer: 4, Antizipation: 3, Dribbling: 3, Einsatzfreude: 3, Passen: 2, Stellungsspiel: 2, Teamwork: 2}
+  gruppe_def:
+    positionen: [D, WB]
+    min_abdeckung: 0.6
+    kpis:
+      tacklings_gewonnen_p90: 1
+      tackling_pct: 1
+      abgefangen_p90: 1
+      klaerungen_p90: 1
+      geblockt_p90: 1
+      kopfbaelle_gewonnen_p90: 1
+      kopfballduelle_gewonnen_pct: 1
+      paesse_angekommen_p90: 1
+      passquote_pct: 1
+      progressive_paesse_p90: 1
+    attribute_prior: {Antritt: 5, Sprunghöhe: 5, Schnelligkeit: 5, Antizipation: 3, Kopfballtechnik: 3, Kraft: 3, Nervenstärke: 2, Passen: 2, Stellungsspiel: 2}
+  gruppe_gk:
+    positionen: [GK]
+    min_abdeckung: 0.6
+    kpis:
+      par_pct: 1
+      xsv_pct: 1
+      xgp_p90: 1
+    attribute_prior: {Beweglichkeit: 5, Reflexe: 5, Antritt: 3, Hohe Bälle: 3, Stellungsspiel: 2, Strafraumkontrolle: 2}
+
+# --- Sell/Keep (scripts/sellkeep.py): Kaskade nach FMMT-27, alle Schwellen Setzungen, ungeprüft ---
+sell_keep:
+  min_minuten: 900            # darunter: zu wenig Daten für Leistungsurteil
+  jung: 23                    # bis hier Entwickeln/Leihe/Abgeben über Alters-Benchmark
+  vs_alter_entwickeln: 100    # Ability / Benchmark(Alter) in %, ab hier Entwickeln
+  vs_alter_leihe: 85          # ab hier Leihe, darunter Abgeben
+  vertrag_monate: 12          # Restlaufzeit, ab der Verlängern/Verkaufen ansteht
+  teuer_faktor: 2.0           # Marktwert >= Faktor * Fair Value -> teuer
+  stamm_anteil: 0.5           # Minuten / meistgenutzter Spieler >= Anteil -> Stammspieler
+  ersatz_anteil: 0.25         # >= Anteil -> Ersatz, darunter überzählig
+  peak_alter: {default: 29, GK: 33}
+
+# Archetyp-Gewichte + Benchmark: wissen/attribut-gewichte.md (fm-scoring via FMMT-27, MIT, ungeprüft).
+# Attributnamen = DB-Namen (deutsch). Score = gewichtetes Mittel (Skala 1-20) über exakte Attribute.
+ability:
+  position: {GK: [GK], D: [CB], WB: [WB/6], DM: [WB/6], M: [WB/6, "10"], AM: ["10"], ST: ["9"]}
+  archetypen:
+    CB: {Antritt: 5, Sprunghöhe: 5, Schnelligkeit: 5, Antizipation: 3, Kopfballtechnik: 3, Kraft: 3, Nervenstärke: 2, Passen: 2, Stellungsspiel: 2, Entscheidungen: 1, Ballannahme: 1, Ausdauer: 1, Tackling: 1, Einsatzfreude: 1}
+    WB/6: {Antritt: 5, Schnelligkeit: 5, Ausdauer: 4, Antizipation: 3, Dribbling: 3, Einsatzfreude: 3, Passen: 2, Stellungsspiel: 2, Teamwork: 2, Nervenstärke: 1, Entscheidungen: 1, Ballannahme: 1, Kraft: 1, Tackling: 1}
+    "10": {Antritt: 5, Dribbling: 5, Schnelligkeit: 5, Antizipation: 3, Nervenstärke: 2, Ohne Ball: 2, Passen: 2, Ausdauer: 2, Einsatzfreude: 2, Entscheidungen: 1, Abschluss: 1, Ballannahme: 1, Kraft: 1, Teamwork: 1}
+    "9": {Antritt: 5, Sprunghöhe: 5, Schnelligkeit: 5, Antizipation: 3, Dribbling: 3, Abschluss: 3, Nervenstärke: 2, Ohne Ball: 2, Ausdauer: 2, Einsatzfreude: 2, Entscheidungen: 1, Ballannahme: 1, Kopfballtechnik: 1, Kraft: 1, Teamwork: 1}
+    GK: {Beweglichkeit: 5, Reflexe: 5, Antritt: 3, Hohe Bälle: 3, Stellungsspiel: 2, Strafraumkontrolle: 2, Antizipation: 1, Kommunikation: 1, Nervenstärke: 1, Konzentration: 1, Entscheidungen: 1, Eins gegen Eins: 1, Halten: 0.5, Abschlag: 0.5, Abwurf: 0.5}
+  alter_benchmark: {15: 10.3, 16: 10.9, 17: 11.5, 18: 12.2, 19: 12.6, 20: 12.9, 21: 13.2, 22: 13.4, 23: 13.7, 24: 13.8}

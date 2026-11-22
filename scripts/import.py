@@ -70,7 +70,9 @@ class Mapping:
 
     dezimal: überschreibt zahlenformat.dezimal für diese Spalte; einheit: Pflicht-Suffix ('km');
     typ: text | date (-> player_info) | einsaetze ('6 (2)' -> Starts/Einwechslungen) |
-         zeitraum ('6.7.26 - 30.6.27' -> loan_start/loan_end).
+         zeitraum ('6.7.26 - 30.6.27' -> loan_start/loan_end) |
+         dauer ('5 Wochen' -> player_info Text + Stat <name>_tage_n; Monat = 30 Tage, Näherung).
+    Text-Werte komplett in Klammern ('( Kerngruppe )') werden entklammert.
     Doppelte Header heißen wie bei pandas: 'Endet', 'Endet.1'.
     """
 
@@ -163,7 +165,7 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
     dec = mp.decimal
     spec = lambda i: mp.by_internal.get(i, {})  # noqa: E731
     kind = {i: spec(i).get("typ") for i in mapped}
-    text_cols = {i: c for i, c in mapped.items() if kind[i] in ("text", "date")}
+    text_cols = {i: c for i, c in mapped.items() if kind[i] in ("text", "date", "dauer")}
     apps_col = next((c for i, c in mapped.items() if kind[i] == "einsaetze"), None)
     period_i, period_col = next(((i, c) for i, c in mapped.items() if kind[i] == "zeitraum"), (None, None))
     stat_cols = {
@@ -272,6 +274,8 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
                 val = date(i, rec[col])
             else:  # '-', '–', '?' = leer -> kein Eintrag
                 val = None if fmparse.is_null(rec[col]) else _text(rec[col])
+                if val and (m := re.fullmatch(r"\(\s*(.*?)\s*\)", val)):
+                    val = m.group(1) or None  # '( Kerngruppe )' -> 'Kerngruppe'
             if val:
                 info[i] = val
         for field, val in info.items():
@@ -285,6 +289,13 @@ def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
                 bad[apps_col] = bad.get(apps_col, 0) + 1
             if apps:
                 vals["einsaetze_start_n"], vals["einsaetze_ein_n"] = apps
+        for i, col in text_cols.items():
+            if kind[i] == "dauer" and not fmparse.is_null(rec[col]):
+                days = fmparse.parse_duration_days(rec[col])
+                if days is None:
+                    bad[col] = bad.get(col, 0) + 1
+                else:
+                    vals[f"{i}_tage_n"] = days
         for stat, col in stat_cols.items():
             v = num(stat, rec[col])
             if v is not None:
