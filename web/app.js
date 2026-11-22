@@ -297,22 +297,48 @@ function panelZeichnen() {
 // ------------------------------------------------------------------ Spielerprofil
 
 let profilNr = 0;
+let profilAktuell = null; // { p, uid, vergleich }
 
-async function profilOeffnen(uid) {
+function standardVergleich(s, uid) {
+  // Eigener Spieler ansehen -> mit dem besten Kandidaten vergleichen, sonst mit dem gesetzten Spieler
+  if (s.gesetzt && s.gesetzt !== uid) return s.gesetzt;
+  return s.verbesserungen.find((z) => z.uid !== uid)?.uid || s.eigene.find((z) => z.uid !== uid)?.uid || "";
+}
+
+async function profilOeffnen(uid, vergleich) {
   const s = PLAN && PLAN.slots[aktiverSlot];
   if (!s) return;
   const nr = ++profilNr;
+  if (vergleich === undefined) vergleich = standardVergleich(s, uid);
   const q = new URLSearchParams({ mit: s.mit, ohne: s.ohne });
-  if (s.gesetzt && s.gesetzt !== uid) q.set("vergleich", s.gesetzt);
+  if (vergleich) q.set("vergleich", vergleich);
   if (zustand.filter && zustand.filter.gewichtung) q.set("gewichtung", zustand.filter.gewichtung);
-  $("#profil_inhalt").innerHTML = '<p class="leer">Profil lädt …</p>';
+  if ($("#profil").hidden) $("#profil_inhalt").innerHTML = '<p class="leer">Profil lädt …</p>';
   $("#profil").hidden = false;
   try {
     const p = await api(`/api/spieler/${encodeURIComponent(uid)}?${q}`);
-    if (nr === profilNr) $("#profil_inhalt").innerHTML = profilHtml(p, aktiverSlot);
+    if (nr !== profilNr) return;
+    profilAktuell = { p, uid, vergleich };
+    $("#profil_inhalt").innerHTML = profilHtml(p, aktiverSlot);
+    profilVerdrahten();
   } catch (e) {
     if (nr === profilNr) $("#profil_inhalt").innerHTML = `<p class="meldung fehler">${esc(e.message)}</p>`;
   }
+}
+
+function profilVerdrahten() {
+  const sel = $("#vergleich_wahl");
+  if (sel) sel.addEventListener("change", () => profilOeffnen(profilAktuell.uid, sel.value));
+  document.querySelectorAll("[data-form]").forEach((b) =>
+    b.addEventListener("click", () => {
+      zustand.chartForm = b.dataset.form;
+      speichern();
+      $("#chart_bereich").innerHTML = chartHtml(profilAktuell.p);
+      chartVerdrahten();
+      document.querySelectorAll("[data-form]").forEach((x) => x.classList.toggle("an", x.dataset.form === zustand.chartForm));
+    }),
+  );
+  chartVerdrahten();
 }
 
 function profilSchliessen() {
@@ -412,13 +438,167 @@ function profilStatistiken(p) {
     g.stats.map((st) =>
       `<tr><td>${esc(st.label)}</td><td class="num">${zahl(st.gesamt, Number.isInteger(st.gesamt) ? 0 : 2)}</td>` +
       `<td class="num">${st.pro90 == null ? "–" : zahl(st.pro90, 2)}</td>` +
-      `<td class="num">${st.perzentil == null ? "–" : `<span class="balken"><span style="width:${st.perzentil}%"></span></span> ${score(st.perzentil)}`}</td></tr>`,
+      `<td class="num">${st.perzentil == null ? "–" : score(st.perzentil)}</td></tr>`,
     ).join("") + `</tbody></table></div>`).join("");
   return `<h3>Statistiken</h3><p class="hinweis">${pool}</p><div class="stat-raster">${gruppen}</div>`;
 }
 
+// ------------------------------------------------------------------ Vergleichschart (Pizza / Radar)
+
+const kurzName = (n) => (n || "").split(" ").slice(-1)[0];
+
+function profilVergleich(p, slot) {
+  const s = PLAN.slots[slot];
+  const uid = p.spieler.uid;
+  const akt = p.vergleich ? p.vergleich.uid : "";
+  const opt = (z, zusatz = "") =>
+    `<option value="${esc(z.uid)}"${z.uid === akt ? " selected" : ""}>${esc(z.name)}${zusatz} · ${zahl(z.paar_gew)}</option>`;
+  const eigene = s.eigene.filter((z) => z.uid !== uid).map((z) => opt(z, z.uid === s.gesetzt ? " (gesetzt)" : "")).join("");
+  const kand = s.verbesserungen.filter((z) => z.uid !== uid).map((z) => opt(z)).join("");
+  const form = zustand.chartForm || "pizza";
+  return `<div class="vergleich-kopf"><h3>Vergleich</h3>` +
+    `<label>mit <select id="vergleich_wahl"><option value=""${akt ? "" : " selected"}>– kein Vergleich –</option>` +
+    (eigene ? `<optgroup label="Eigene Spieler (${esc(slot)})">${eigene}</optgroup>` : "") +
+    (kand ? `<optgroup label="Kandidaten">${kand}</optgroup>` : "") + `</select></label>` +
+    `<span class="umschalter"><button data-form="pizza" class="${form === "pizza" ? "an" : ""}">Pizza</button>` +
+    `<button data-form="radar" class="${form === "radar" ? "an" : ""}">Radar</button></span></div>` +
+    `<div id="chart_bereich">${chartHtml(p)}</div>`;
+}
+
+function chartHtml(p) {
+  const daten = p.chart || [];
+  if (!daten.length) return '<p class="hinweis">Keine bewertbaren Statistiken für diese Rollen.</p>';
+  const zwei = !!p.vergleich;
+  const legende = zwei
+    ? `<div class="legende-chart"><span><span class="punkt s1"></span>${esc(p.spieler.name)}</span>` +
+      `<span><span class="punkt s2"></span>${esc(p.vergleich.name)}</span></div>`
+    : "";
+  const svg = (zustand.chartForm || "pizza") === "radar" ? radarSvg(daten, zwei) : pizzaSvg(daten, zwei);
+  const n = daten[0].n_pool;
+  return legende + `<div class="chart-wrap"><div class="chart">${svg}</div>` +
+    `<div class="hinweis">Perzentil je Statistik der beiden Rollen im Pool der Positionsgruppe (${zahl(n)} Spieler, ` +
+    `ab 900 Min., Ligen ab ${esc(p.pool.min_stufe)}). 100 = besser als alle, 50 = Median; bei „weniger ist besser“ ` +
+    `gespiegelt, also immer: weiter außen = besser. Werte und Anker stehen in der Score-Aufschlüsselung darunter.` +
+    `<div class="tooltip" id="chart_tip" hidden></div></div></div>`;
+}
+
+// Geometrie: Mittelpunkt C, innerer Ring R0, 100. Perzentil bei R1, Beschriftung außerhalb
+const C = 280, R0 = 26, R1 = 178, RL = 196;
+const winkel = (i, n) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
+const punkt = (a, r) => [C + r * Math.cos(a), C + r * Math.sin(a)];
+const radius = (pz) => R0 + ((R1 - R0) * Math.max(0, Math.min(100, pz))) / 100;
+
+function sektor(a0, a1, r0, r1) {
+  const [x0, y0] = punkt(a0, r1), [x1, y1] = punkt(a1, r1), [x2, y2] = punkt(a1, r0), [x3, y3] = punkt(a0, r0);
+  const gross = a1 - a0 > Math.PI ? 1 : 0;
+  return `M${x0.toFixed(1)},${y0.toFixed(1)} A${r1},${r1} 0 ${gross} 1 ${x1.toFixed(1)},${y1.toFixed(1)} ` +
+    `L${x2.toFixed(1)},${y2.toFixed(1)} A${r0},${r0} 0 ${gross} 0 ${x3.toFixed(1)},${y3.toFixed(1)} Z`;
+}
+
+function umbrechen(text, max = 17) {
+  const woerter = text.split(" "), zeilen = [""];
+  for (const w of woerter) {
+    const z = zeilen[zeilen.length - 1];
+    if ((z + " " + w).trim().length > max && z) zeilen.push(w);
+    else zeilen[zeilen.length - 1] = (z + " " + w).trim();
+  }
+  return zeilen.length > 2 ? [zeilen[0], zeilen[1] + " …"] : zeilen;
+}
+
+function beschriftung(daten, n) {
+  return daten.map((d, i) => {
+    const a = winkel(i + 0.5, n);
+    const [x, y] = punkt(a, RL);
+    const cos = Math.cos(a);
+    const anker = Math.abs(cos) < 0.25 ? "middle" : cos > 0 ? "start" : "end";
+    const zeilen = umbrechen(d.label);
+    const dy0 = Math.sin(a) < -0.5 ? -(zeilen.length - 1) * 12 : Math.sin(a) > 0.5 ? 6 : -((zeilen.length - 1) * 6) + 3;
+    return `<text x="${x.toFixed(1)}" y="${(y + dy0).toFixed(1)}" text-anchor="${anker}">` +
+      zeilen.map((z, k) => `<tspan x="${x.toFixed(1)}" dy="${k ? 12 : 0}">${esc(z)}</tspan>`).join("") + `</text>`;
+  }).join("");
+}
+
+function gitter(n, radar) {
+  return [25, 50, 75, 100].map((pz) => {
+    const r = radius(pz);
+    if (!radar) return `<circle class="gitter" cx="${C}" cy="${C}" r="${r}"${pz === 100 ? "" : ' stroke-dasharray="2 3"'}/>`;
+    const pts = Array.from({ length: n }, (_, i) => punkt(winkel(i + 0.5, n), r).map((v) => v.toFixed(1)).join(",")).join(" ");
+    return `<polygon class="gitter" points="${pts}"${pz === 100 ? "" : ' stroke-dasharray="2 3"'}/>`;
+  }).join("") + `<text x="${C + 3}" y="${(C - radius(50) + 11).toFixed(1)}">50</text>` +
+    `<text x="${C + 3}" y="${(C - radius(100) + 11).toFixed(1)}">100</text>`;
+}
+
+function treffer(daten, n) {
+  return daten.map((d, i) =>
+    `<path class="treffer" data-i="${i}" d="${sektor(winkel(i, n), winkel(i + 1, n), 0, R1 + 12)}"/>`).join("");
+}
+
+function pizzaSvg(daten, zwei) {
+  const n = daten.length, breite = (2 * Math.PI) / n;
+  let marken = "";
+  daten.forEach((d, i) => {
+    const a0 = winkel(i, n);
+    const teile = zwei ? 2 : 1;
+    for (let k = 0; k < teile; k++) {
+      const pz = d.perzentil[k];
+      if (pz == null) continue;
+      const s0 = a0 + (k * breite) / teile, s1 = a0 + ((k + 1) * breite) / teile;
+      marken += `<path class="s${k + 1}" d="${sektor(s0, s1, R0, radius(pz))}"/>`;
+    }
+    const [x0, y0] = punkt(a0, R0), [x1, y1] = punkt(a0, R1);
+    marken += `<line class="achse" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}"/>`;
+  });
+  return `<svg viewBox="0 0 560 560" role="img" aria-label="Pizza-Chart der Perzentile">` +
+    gitter(n, false) + marken + beschriftung(daten, n) + treffer(daten, n) + `</svg>`;
+}
+
+function radarSvg(daten, zwei) {
+  const n = daten.length;
+  let speichen = "";
+  for (let i = 0; i < n; i++) {
+    const [x, y] = punkt(winkel(i + 0.5, n), R1);
+    const [x0, y0] = punkt(winkel(i + 0.5, n), R0);
+    speichen += `<line class="achse" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+  }
+  // Radar: Achsen in der Sektormitte, damit Beschriftung und Trefferflächen zur Pizza passen
+  const flaeche = (k) => {
+    const pts = daten.map((d, i) => punkt(winkel(i + 0.5, n), radius(d.perzentil[k] ?? 0)));
+    const poly = `<polygon class="f${k + 1}" points="${pts.map((q) => q.map((v) => v.toFixed(1)).join(",")).join(" ")}"/>`;
+    const dots = pts.map((q, i) => (daten[i].perzentil[k] == null ? "" :
+      `<circle class="p${k + 1}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="4.5"/>`)).join("");
+    return poly + dots;
+  };
+  return `<svg viewBox="0 0 560 560" role="img" aria-label="Radar-Chart der Perzentile">` +
+    gitter(n, true) + speichen + (zwei ? flaeche(1) : "") + flaeche(0) + beschriftung(daten, n) + treffer(daten, n) + `</svg>`;
+}
+
+function chartVerdrahten() {
+  const tip = $("#chart_tip");
+  const svg = document.querySelector("#chart_bereich svg");
+  if (!tip || !svg || !profilAktuell) return;
+  const p = profilAktuell.p, daten = p.chart;
+  const wrap = document.querySelector("#chart_bereich .chart-wrap");
+  svg.querySelectorAll(".treffer").forEach((el) => {
+    el.addEventListener("mousemove", (ev) => {
+      const d = daten[Number(el.dataset.i)];
+      const zeile = (k, z) => `<div><span class="punkt s${k + 1}"></span>${esc(kurzName(z.name))}: ` +
+        `<b>${d.perzentil[k] == null ? "keine Daten" : zahl(d.perzentil[k]) + ". Perzentil"}</b> ` +
+        `(${statWert(d.wert[k], d.art)}${d.art === "p90" ? " pro 90" : ""})</div>`;
+      tip.innerHTML = `<div><b>${esc(d.label)}</b></div><div class="hinweis">${esc(d.baustein)} · ${d.phase === "mit" ? "mit Ball" : "ohne Ball"}` +
+        `${d.niedrig ? " · weniger ist besser" : ""}</div>` + zeile(0, p.spieler) + (p.vergleich ? zeile(1, p.vergleich) : "");
+      tip.hidden = false;
+      const box = wrap.getBoundingClientRect();
+      let x = ev.clientX - box.left + 14, y = ev.clientY - box.top + 14;
+      if (x + tip.offsetWidth > box.width) x = ev.clientX - box.left - tip.offsetWidth - 14;
+      tip.style.left = x + "px";
+      tip.style.top = y + "px";
+    });
+    el.addEventListener("mouseleave", () => { tip.hidden = true; });
+  });
+}
+
 function profilHtml(p, slot) {
-  return profilKopf(p, slot) + profilScores(p) + profilAttribute(p.attribute) + profilStatistiken(p);
+  return profilKopf(p, slot) + profilVergleich(p, slot) + profilScores(p) + profilAttribute(p.attribute) + profilStatistiken(p);
 }
 
 // ------------------------------------------------------------------ Ablauf
@@ -451,7 +631,21 @@ async function metaHolen() {
   await planHolen();
 }
 
+const THEMES = { auto: "Auto", light: "Hell", dark: "Dunkel" };
+function themeSetzen(t) {
+  zustand.theme = t;
+  speichern();
+  if (t === "auto") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  $("#theme").textContent = `Design: ${THEMES[t]}`;
+}
+
 function init() {
+  themeSetzen(THEMES[zustand.theme] ? zustand.theme : "auto");
+  $("#theme").addEventListener("click", () => {
+    const folge = Object.keys(THEMES);
+    themeSetzen(folge[(folge.indexOf(zustand.theme) + 1) % folge.length]);
+  });
   $("#formation").addEventListener("change", (e) => {
     zustand.formation = e.target.value;
     aktiverSlot = null;

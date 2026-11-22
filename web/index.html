@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FM27 Kaderplaner</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script>
+    // Design vor dem ersten Zeichnen setzen (kein Aufblitzen): auto | light | dark
+    try {
+      const t = (JSON.parse(localStorage.getItem("fm27-kaderplaner")) || {}).theme;
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
 </head>
 <body>
   <header>
@@ -23,6 +30,7 @@
       <label title="Vergleichspool der Anker: Ligen ab dieser Stufe">Pool ab <select id="pool_min_stufe"></select></label>
       <label title="Mindestanzahl Werte je Statistik im Pool, sonst wird die Statistik verworfen">Pool-Min. <input id="anker_min_n" type="number" min="10" step="10"></label>
       <button id="neu_laden">Neu laden</button>
+      <button id="theme" class="leise" title="Design wechseln: Auto (System) → Hell → Dunkel">Design: Auto</button>
     </div>
   </header>
 

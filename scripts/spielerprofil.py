@@ -302,6 +302,31 @@ def attribute_und_info(ctx: planer.Kontext, row: pd.DataFrame) -> dict:
     }  # fmt: skip
 
 
+def chart_daten(ctx: planer.Kontext, sub: pd.DataFrame, aufschl: list[dict]) -> list[dict]:
+    """Je Statistik der beiden Rollen (einmal, mit Anker): Perzentil im Pool der Positionsgruppe der Rolle.
+
+    Reihenfolge wie in den Rollen (mit Ball, dann ohne Ball; je Baustein). Perzentil: hoch = gut, auch bei
+    'weniger ist besser'. Werte je Zeile von `sub` (Spieler, ggf. Vergleich)."""
+    out, gesehen = [], set()
+    for r in aufschl:
+        pool = _pool(ctx, r["gruppe"])
+        for bs in r["bausteine"]:
+            for st in bs["stats"]:
+                if st.get("fehlt") or st["stat"] in gesehen:
+                    continue
+                gesehen.add(st["stat"])
+                spec = {"stat": st["stat"], "art": st["art"]}
+                ref = np.sort(b.stat_values(pool, spec).dropna().to_numpy())
+                v = b.stat_values(sub, spec).to_numpy(dtype=float)
+                pz = b.prozent_im_referenz(ref, v, st["niedrig"]) if len(ref) else [np.nan] * len(v)
+                out.append({
+                    "stat": st["stat"], "label": st["label"], "baustein": bs["label"], "phase": r["phase"],
+                    "art": st["art"], "niedrig": st["niedrig"], "n_pool": len(ref),
+                    "wert": [_w(x) for x in v], "perzentil": [_w(float(x)) for x in pz],
+                })  # fmt: skip
+    return out
+
+
 # --------------------------------------------------------------------------- Profil
 
 
@@ -339,10 +364,12 @@ def profil(
             "paar_gew": _w(p * lgw) if lgw is not None and not pd.isna(p) else None,
             "vs_top": _w(paar["vs_top"].iat[i]),
         })  # fmt: skip
+    aufschl = score_aufschluesselung(ctx, sub, {"mit": mit, "ohne": ohne})
     return {
         "spieler": spieler[0],
         "vergleich": spieler[1] if len(spieler) > 1 else None,
-        "rollen": score_aufschluesselung(ctx, sub, {"mit": mit, "ohne": ohne}),
+        "rollen": aufschl,
+        "chart": chart_daten(ctx, sub, aufschl),
         "statistiken": statistiken(ctx, row, gruppe),
         "attribute": attribute_und_info(ctx, row),
         "pool": {"gruppe": gruppe, "n": len(_pool(ctx, gruppe)), "min_stufe": ctx.pool_min_stufe},

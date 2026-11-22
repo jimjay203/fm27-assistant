@@ -1,22 +1,69 @@
+/* Farben nur über Tokens. Hell = Standard; dunkel über das Betriebssystem (Auto) oder den Schalter
+   (data-theme auf <html>). Chart-Serien: Blau = Spieler, Orange = Vergleich (validiert, beide Modi). */
 :root {
+  color-scheme: light;
   --bg: #f4f5f2;
-  --fg: #1d2420;
-  --muted: #66706a;
-  --line: #d9ddd6;
   --card: #ffffff;
-  --rasen: #2f7d4a;
-  --rasen2: #2a7243;
+  --card-2: #fafbf9;      /* Filterleiste, abgesetzte Zeilen */
+  --hover: #f1f4ef;
+  --fg: #1d2420;
+  --muted: #5f6963;
+  --line: #d9ddd6;
+  --chip: #eef0ec;
   --akzent: #1f6feb;
+  --akzent-chip: #e7f0ff;
+  --auf-akzent: #ffffff;
   --gut: #1a7f37;
-  --warn: #b26b00;
+  --warn: #9a5c00;
   --schlecht: #c0392b;
+  --top-fg: #0b5d24;
+  --top-bg: #d7f0dc;
+  --meldung-bg: #fff4e0; --meldung-rand: #f0c27a;
+  --fehler-bg: #fdecea; --fehler-rand: #e8a29a;
+  --rasen: #2f7d4a; --rasen2: #2a7243; --feldlinie: rgba(255, 255, 255, .45);
+  --slot-bg: rgba(255, 255, 255, .96);
+  --schatten: rgba(0, 0, 0, .25);
+  --overlay: rgba(20, 28, 24, .45);
+  /* Chart */
+  --chart-flaeche: #fcfcfb;
+  --grid: #e1e0d9;
+  --achse: #c3c2b7;
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #0d0d0d; --card: #1a1a19; --card-2: #151514; --hover: #232321;
+    --fg: #f0efec; --muted: #b3b2a9; --line: #33332f; --chip: #2a2a27;
+    --akzent: #4c8ff0; --akzent-chip: #1d2b40; --auf-akzent: #ffffff;
+    --gut: #4cc35a; --warn: #e3a64a; --schlecht: #ef7a7a; --top-fg: #b9f0c3; --top-bg: #1e4a2a;
+    --meldung-bg: #33280f; --meldung-rand: #7a5a1c; --fehler-bg: #3a1a18; --fehler-rand: #84413b;
+    --rasen: #1f4d30; --rasen2: #1b452b; --feldlinie: rgba(255, 255, 255, .28);
+    --slot-bg: rgba(26, 26, 25, .96); --schatten: rgba(0, 0, 0, .6); --overlay: rgba(0, 0, 0, .65);
+    --chart-flaeche: #1a1a19; --grid: #2c2c2a; --achse: #383835; --serie-1: #3987e5; --serie-2: #d95926;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d0d0d; --card: #1a1a19; --card-2: #151514; --hover: #232321;
+  --fg: #f0efec; --muted: #b3b2a9; --line: #33332f; --chip: #2a2a27;
+  --akzent: #4c8ff0; --akzent-chip: #1d2b40; --auf-akzent: #ffffff;
+  --gut: #4cc35a; --warn: #e3a64a; --schlecht: #ef7a7a; --top-fg: #b9f0c3; --top-bg: #1e4a2a;
+  --meldung-bg: #33280f; --meldung-rand: #7a5a1c; --fehler-bg: #3a1a18; --fehler-rand: #84413b;
+  --rasen: #1f4d30; --rasen2: #1b452b; --feldlinie: rgba(255, 255, 255, .28);
+  --slot-bg: rgba(26, 26, 25, .96); --schatten: rgba(0, 0, 0, .6); --overlay: rgba(0, 0, 0, .65);
+  --chart-flaeche: #1a1a19; --grid: #2c2c2a; --achse: #383835; --serie-1: #3987e5; --serie-2: #d95926;
+}
+
+:root {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
   color: var(--fg);
   background: var(--bg);
 }
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; background: var(--bg); color: var(--fg); }
 h1 { font-size: 18px; margin: 0; }
 h2 { font-size: 16px; margin: 0 0 4px; }
 h3 { font-size: 13px; margin: 18px 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
@@ -28,16 +75,16 @@ header {
 .titel { display: flex; gap: 14px; align-items: baseline; }
 .stand { color: var(--muted); font-size: 12px; }
 .steuerung, .filter { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.filter { padding: 8px 16px; border-bottom: 1px solid var(--line); background: #fafbf9; }
+.filter { padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--card-2); }
 label { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
 label.check { color: var(--fg); }
 input[type=number] { width: 72px; }
-input, select, button { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--fg); }
-button { cursor: pointer; background: var(--akzent); color: #fff; border-color: var(--akzent); }
-button.leise { background: #fff; color: var(--muted); border-color: var(--line); }
+input, select, button { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--card); color: var(--fg); }
+button { cursor: pointer; background: var(--akzent); color: var(--auf-akzent); border-color: var(--akzent); }
+button.leise { background: var(--card); color: var(--muted); border-color: var(--line); }
 
-.meldung { margin: 8px 16px 0; padding: 8px 12px; border-radius: 4px; background: #fff4e0; border: 1px solid #f0c27a; }
-.meldung.fehler { background: #fdecea; border-color: #e8a29a; }
+.meldung { margin: 8px 16px 0; padding: 8px 12px; border-radius: 4px; background: var(--meldung-bg); border: 1px solid var(--meldung-rand); }
+.meldung.fehler { background: var(--fehler-bg); border-color: var(--fehler-rand); }
 
 main { display: grid; grid-template-columns: minmax(420px, 560px) 1fr; gap: 16px; padding: 16px; align-items: start; }
 @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
@@ -46,15 +93,15 @@ main { display: grid; grid-template-columns: minmax(420px, 560px) 1fr; gap: 16px
   position: relative; width: 100%; aspect-ratio: 68 / 100; border-radius: 6px; overflow: hidden;
   background: repeating-linear-gradient(180deg, var(--rasen) 0 10%, var(--rasen2) 10% 20%);
 }
-.feld .linie.mitte { position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid rgba(255,255,255,.45); }
-.feld .kreis { position: absolute; left: 50%; top: 50%; width: 26%; aspect-ratio: 1; transform: translate(-50%, -50%); border: 2px solid rgba(255,255,255,.45); border-radius: 50%; }
-.feld .strafraum { position: absolute; left: 22%; width: 56%; height: 15%; border: 2px solid rgba(255,255,255,.45); }
+.feld .linie.mitte { position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid var(--feldlinie); }
+.feld .kreis { position: absolute; left: 50%; top: 50%; width: 26%; aspect-ratio: 1; transform: translate(-50%, -50%); border: 2px solid var(--feldlinie); border-radius: 50%; }
+.feld .strafraum { position: absolute; left: 22%; width: 56%; height: 15%; border: 2px solid var(--feldlinie); }
 .feld .strafraum.oben { top: -2px; } .feld .strafraum.unten { bottom: -2px; }
 .legende { color: var(--muted); font-size: 12px; margin: 8px 2px; }
 
 .slot {
   position: absolute; transform: translate(-50%, -50%); width: 150px; padding: 5px 6px 6px;
-  background: rgba(255,255,255,.96); border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  background: var(--slot-bg); border-radius: 6px; box-shadow: 0 1px 3px var(--schatten);
   cursor: pointer; border: 2px solid transparent;
 }
 .slot.aktiv { border-color: var(--akzent); }
@@ -63,8 +110,8 @@ main { display: grid; grid-template-columns: minmax(420px, 560px) 1fr; gap: 16px
 .slot .spieler { margin-top: 4px; font-size: 12px; display: flex; justify-content: space-between; gap: 4px; }
 .slot .spieler .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .slot .leer { color: var(--muted); font-style: italic; }
-.badge { font-size: 11px; padding: 0 5px; border-radius: 9px; background: #e7f0ff; color: var(--akzent); white-space: nowrap; }
-.badge.null { background: #eef0ec; color: var(--muted); }
+.badge { font-size: 11px; padding: 0 5px; border-radius: 9px; background: var(--akzent-chip); color: var(--akzent); white-space: nowrap; }
+.badge.null { background: var(--chip); color: var(--muted); }
 .warn { color: var(--warn); font-weight: 700; }
 
 .score { font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -82,17 +129,17 @@ th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; 
 th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 th .pfeil { font-size: 10px; }
 tr.zeile { cursor: pointer; }
-tr.zeile:hover { background: #f5f8f4; }
+tr.zeile:hover { background: var(--hover); }
 tr.gesetzt td:first-child { font-weight: 700; }
-tr.detail td { background: #fafbf9; white-space: normal; color: var(--muted); }
 .tabelle-wrap { overflow-x: auto; }
-.tag { font-size: 10px; padding: 0 4px; border-radius: 3px; background: #eef0ec; color: var(--muted); margin-left: 4px; }
+.tag { font-size: 10px; padding: 0 4px; border-radius: 3px; background: var(--chip); color: var(--muted); margin-left: 4px; }
 
 /* ---------------------------------------------------------------- Spielerprofil */
-.overlay { position: fixed; inset: 0; background: rgba(20, 28, 24, .45); display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px; overflow-y: auto; z-index: 10; }
+.overlay { position: fixed; inset: 0; background: var(--overlay); display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px; overflow-y: auto; z-index: 10; }
 .overlay[hidden] { display: none; }
-.profil-box { position: relative; background: var(--card); border-radius: 8px; width: min(1100px, 100%); padding: 18px 22px 24px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
-.schliessen { position: absolute; top: 10px; right: 12px; background: #fff; color: var(--muted); border-color: var(--line); font-size: 18px; line-height: 1; padding: 2px 9px; }
+.profil-box { position: relative; background: var(--card); border-radius: 8px; width: min(1100px, 100%); padding: 18px 22px 24px; box-shadow: 0 10px 40px var(--schatten); }
+.profil-box .hinweis, .profil-box .rollen { font-size: 12px; color: var(--muted); }
+.schliessen { position: absolute; top: 10px; right: 12px; background: var(--card); color: var(--muted); border-color: var(--line); font-size: 18px; line-height: 1; padding: 2px 9px; }
 .kacheln { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 .kachel { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; min-width: 88px; }
 .k-label { font-size: 11px; color: var(--muted); }
@@ -101,7 +148,7 @@ dl.info { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 
 dl.info dt { color: var(--muted); float: left; margin-right: 6px; }
 dl.info dd { margin: 0; }
 .vgl { color: var(--muted); font-weight: 400; font-size: 12px; text-transform: none; letter-spacing: 0; }
-table.aufschl tr.baustein td { font-weight: 600; background: #f5f7f3; }
+table.aufschl tr.baustein td { font-weight: 600; background: var(--card-2); }
 table.aufschl tr.stat td:first-child { padding-left: 18px; }
 table.aufschl td.anker { color: var(--muted); }
 td.fehlt { color: var(--warn); font-style: italic; }
@@ -110,10 +157,37 @@ td.fehlt { color: var(--warn); font-style: italic; }
 .attr { display: flex; justify-content: space-between; font-size: 12px; padding: 1px 0; border-bottom: 1px dotted var(--line); }
 .a-wert { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 34px; text-align: center; border-radius: 3px; padding: 0 3px; }
 .a-wert.spanne { font-weight: 500; border: 1px dashed currentColor; }
-.a-top { color: #0b5d24; background: #d7f0dc; }
+.a-top { color: var(--top-fg); background: var(--top-bg); }
 .a-gut { color: var(--gut); }
 .a-mittel { color: var(--fg); }
 .a-schwach { color: var(--schlecht); }
 .stat-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
-.balken { display: inline-block; width: 46px; height: 6px; background: #eef0ec; border-radius: 3px; vertical-align: middle; overflow: hidden; }
-.balken span { display: block; height: 100%; background: var(--akzent); }
+
+/* ---------------------------------------------------------------- Vergleichschart */
+.vergleich-kopf { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 14px 0 6px; }
+.vergleich-kopf h3 { margin: 0; }
+.umschalter { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.umschalter button { background: var(--card); color: var(--muted); border: 0; border-radius: 0; padding: 3px 10px; }
+.umschalter button.an { background: var(--akzent); color: var(--auf-akzent); }
+.chart-wrap { position: relative; display: grid; grid-template-columns: minmax(300px, 560px) 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .chart-wrap { grid-template-columns: 1fr; } }
+.chart { background: var(--chart-flaeche); border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { fill: var(--muted); font-size: 10px; }
+.chart .gitter { stroke: var(--grid); fill: none; }
+.chart .achse { stroke: var(--achse); }
+.chart .s1 { fill: var(--serie-1); stroke: var(--chart-flaeche); stroke-width: 2px; }
+.chart .s2 { fill: var(--serie-2); stroke: var(--chart-flaeche); stroke-width: 2px; }
+.chart .f1 { fill: var(--serie-1); fill-opacity: .18; stroke: var(--serie-1); stroke-width: 2px; }
+.chart .f2 { fill: var(--serie-2); fill-opacity: .18; stroke: var(--serie-2); stroke-width: 2px; }
+.chart .p1 { fill: var(--serie-1); stroke: var(--chart-flaeche); stroke-width: 2px; }
+.chart .p2 { fill: var(--serie-2); stroke: var(--chart-flaeche); stroke-width: 2px; }
+.chart .treffer { fill: transparent; cursor: default; }
+.chart .treffer:hover { fill: var(--fg); fill-opacity: .05; }
+.chart .gruppe-label { fill: var(--fg); font-weight: 600; }
+.legende-chart { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; margin: 4px 2px 8px; color: var(--fg); }
+.punkt { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.punkt.s1 { background: var(--serie-1); } .punkt.s2 { background: var(--serie-2); }
+.tooltip { position: absolute; pointer-events: none; background: var(--card); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 12px; box-shadow: 0 4px 14px var(--schatten); white-space: nowrap; z-index: 2; }
+.tooltip[hidden] { display: none; }
+table.chart-tabelle td.s1w { border-left: 3px solid var(--serie-1); }

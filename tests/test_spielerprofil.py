@@ -89,3 +89,14 @@ def test_attribute_aus_der_db_exakt_und_als_spanne(tmp_path):
     tw = sp.attribute_und_info(ctx, hein)
     assert tw["gruppen"] and "Torwart" in {g["gruppe"] for g in tw["gruppen"]}
     assert any(i["feld"] == "groesse" for i in tw["info"])
+
+
+def test_chart_daten_je_statistik_einmal_mit_perzentilen(mini_ctx):
+    pr = sp.profil(mini_ctx, "B", "Mit", "Ohne", vergleich="A")
+    stats = [c["stat"] for c in pr["chart"]]
+    assert stats == ["x", "f"]  # Reihenfolge der Rollen, keine Dubletten
+    for c in pr["chart"]:
+        assert len(c["perzentil"]) == 2 and all(0 <= v <= 100 for v in c["perzentil"])
+    x, f = pr["chart"]
+    assert x["perzentil"][1] > x["perzentil"][0]  # A (x=70) besser als B (x=50)
+    assert f["niedrig"] and f["perzentil"][1] > f["perzentil"][0]  # A (f=30) besser, gespiegelt
