@@ -120,6 +120,11 @@ class Kontext:
     clubs: list[str]
     stand: dict = field(default_factory=dict)
     luecken: dict = field(default_factory=dict)
+    pool_min_stufe: str = "Gut"
+    save: str | None = None
+    db_path: str | None = None  # None + db=False: kein DB-Zugriff (z. B. Tests)
+    db: bool = False
+    pools: dict = field(default_factory=dict)  # Vergleichspool je Positionsgruppe (Cache)
 
 
 def kontext_bauen(
@@ -159,7 +164,7 @@ def kontext_bauen(
     return Kontext(
         df=df, rk=rk, lg=lg, defaults=defaults, formationen=formationen,
         slots_taktik=slots_taktik or {}, specs=specs, anker=anker, ref=ref, clubs=clubs,
-        stand=stand, luecken=luecken,
+        stand=stand, luecken=luecken, pool_min_stufe=pool_min_stufe,
     )  # fmt: skip
 
 
@@ -188,6 +193,7 @@ def kontext_laden(
         anker_min_n=anker_min_n,
     )
     ctx.stand["save"] = save
+    ctx.save, ctx.db_path, ctx.db = save, db_path, True
     return ctx
 
 
@@ -291,6 +297,8 @@ def slot_luecken(ctx: Kontext, mit: str, ohne: str) -> list[dict]:
 def _wert(v):
     if v is None:
         return None
+    if isinstance(v, np.bool_):
+        return bool(v)
     if isinstance(v, (np.integer,)):
         return int(v)
     if isinstance(v, (float, np.floating)):

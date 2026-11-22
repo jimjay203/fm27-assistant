@@ -87,3 +87,33 @@ tr.gesetzt td:first-child { font-weight: 700; }
 tr.detail td { background: #fafbf9; white-space: normal; color: var(--muted); }
 .tabelle-wrap { overflow-x: auto; }
 .tag { font-size: 10px; padding: 0 4px; border-radius: 3px; background: #eef0ec; color: var(--muted); margin-left: 4px; }
+
+/* ---------------------------------------------------------------- Spielerprofil */
+.overlay { position: fixed; inset: 0; background: rgba(20, 28, 24, .45); display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px; overflow-y: auto; z-index: 10; }
+.overlay[hidden] { display: none; }
+.profil-box { position: relative; background: var(--card); border-radius: 8px; width: min(1100px, 100%); padding: 18px 22px 24px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.schliessen { position: absolute; top: 10px; right: 12px; background: #fff; color: var(--muted); border-color: var(--line); font-size: 18px; line-height: 1; padding: 2px 9px; }
+.kacheln { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.kachel { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; min-width: 88px; }
+.k-label { font-size: 11px; color: var(--muted); }
+.k-wert { font-size: 18px; font-variant-numeric: tabular-nums; }
+dl.info { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 16px; margin: 10px 0 0; font-size: 12px; }
+dl.info dt { color: var(--muted); float: left; margin-right: 6px; }
+dl.info dd { margin: 0; }
+.vgl { color: var(--muted); font-weight: 400; font-size: 12px; text-transform: none; letter-spacing: 0; }
+table.aufschl tr.baustein td { font-weight: 600; background: #f5f7f3; }
+table.aufschl tr.stat td:first-child { padding-left: 18px; }
+table.aufschl td.anker { color: var(--muted); }
+td.fehlt { color: var(--warn); font-style: italic; }
+.attr-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+.attr-gruppe h4, .stat-gruppe h4 { margin: 0 0 4px; font-size: 12px; }
+.attr { display: flex; justify-content: space-between; font-size: 12px; padding: 1px 0; border-bottom: 1px dotted var(--line); }
+.a-wert { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 34px; text-align: center; border-radius: 3px; padding: 0 3px; }
+.a-wert.spanne { font-weight: 500; border: 1px dashed currentColor; }
+.a-top { color: #0b5d24; background: #d7f0dc; }
+.a-gut { color: var(--gut); }
+.a-mittel { color: var(--fg); }
+.a-schwach { color: var(--schlecht); }
+.stat-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+.balken { display: inline-block; width: 46px; height: 6px; background: #eef0ec; border-radius: 3px; vertical-align: middle; overflow: hidden; }
+.balken span { display: block; height: 100%; background: var(--akzent); }

@@ -187,7 +187,7 @@ function slotsAktualisieren() {
 
 // ------------------------------------------------------------------ Panel
 
-function tabelle(spalten, zeilen, { gesetzt, sortierung } = {}) {
+function tabelle(spalten, zeilen, { gesetzt, sortierung, beiKlick } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "tabelle-wrap";
   let sort = sortierung || null;
@@ -220,27 +220,11 @@ function tabelle(spalten, zeilen, { gesetzt, sortierung } = {}) {
       }),
     );
     wrap.querySelectorAll("tr.zeile").forEach((tr) =>
-      tr.addEventListener("click", () => {
-        const next = tr.nextElementSibling;
-        if (next && next.classList.contains("detail")) return next.remove();
-        const z = zeilen.find((x) => x.uid === tr.dataset.uid);
-        tr.insertAdjacentHTML("afterend", `<tr class="detail"><td colspan="${spalten.length}">${bausteinText(z)}</td></tr>`);
-      }),
+      tr.addEventListener("click", () => beiKlick && beiKlick(tr.dataset.uid)),
     );
   };
   zeichnen();
   return wrap;
-}
-
-function bausteinText(z) {
-  const teil = (phase) => {
-    const b = z.bausteine?.[phase] || {};
-    const e = Object.entries(b);
-    return e.length ? e.map(([k, v]) => `${esc(k)} ${score(v)}`).join(", ") : "keine Bausteine bewertbar";
-  };
-  return `<b>mit Ball</b> (${zahl(z.mit)}): ${teil("mit")}<br><b>ohne Ball</b> (${zahl(z.ohne)}): ${teil("ohne")}` +
-    `<br>${esc(z.position || "")} · ${esc(z.league || "")} · Datenbasis ${esc(z.datenbasis || "–")}` +
-    (z.liga_gewicht != null ? ` · Liga-Gewicht ${zahl(z.liga_gewicht, 2)}` : "");
 }
 
 const SP_NAME = { k: "name", l: "Name", f: (z) => esc(z.name) + (STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : "") };
@@ -303,11 +287,138 @@ function panelZeichnen() {
           .map((o) => `${esc(o.name)} (${esc(o.grund)}${STATUS[o.eigen] ? ", " + STATUS[o.eigen] : ""})`).join(" · ")}</p>`
       : "");
   $("#t_eigene").appendChild(s.eigene.length
-    ? tabelle(SP_EIGENE, s.eigene, { gesetzt: s.gesetzt })
+    ? tabelle(SP_EIGENE, s.eigene, { gesetzt: s.gesetzt, beiKlick: (uid) => profilOeffnen(uid) })
     : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Kein eigener Spieler bewertbar." }));
   $("#t_kand").appendChild(s.verbesserungen.length
-    ? tabelle(SP_KAND, s.verbesserungen)
+    ? tabelle(SP_KAND, s.verbesserungen, { beiKlick: (uid) => profilOeffnen(uid) })
     : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Kein Kandidat übertrifft den gesetzten Spieler (mit diesen Filtern)." }));
+}
+
+// ------------------------------------------------------------------ Spielerprofil
+
+let profilNr = 0;
+
+async function profilOeffnen(uid) {
+  const s = PLAN && PLAN.slots[aktiverSlot];
+  if (!s) return;
+  const nr = ++profilNr;
+  const q = new URLSearchParams({ mit: s.mit, ohne: s.ohne });
+  if (s.gesetzt && s.gesetzt !== uid) q.set("vergleich", s.gesetzt);
+  if (zustand.filter && zustand.filter.gewichtung) q.set("gewichtung", zustand.filter.gewichtung);
+  $("#profil_inhalt").innerHTML = '<p class="leer">Profil lädt …</p>';
+  $("#profil").hidden = false;
+  try {
+    const p = await api(`/api/spieler/${encodeURIComponent(uid)}?${q}`);
+    if (nr === profilNr) $("#profil_inhalt").innerHTML = profilHtml(p, aktiverSlot);
+  } catch (e) {
+    if (nr === profilNr) $("#profil_inhalt").innerHTML = `<p class="meldung fehler">${esc(e.message)}</p>`;
+  }
+}
+
+function profilSchliessen() {
+  profilNr++;
+  $("#profil").hidden = true;
+}
+
+const statWert = (v, art) => (v == null ? "–" : zahl(v, art === "p90" ? 2 : 1));
+function attrKlasse(v) {
+  if (v == null) return "";
+  return v >= 16 ? "a-top" : v >= 13 ? "a-gut" : v >= 10 ? "a-mittel" : "a-schwach";
+}
+
+function kachel(label, wert, titel = "") {
+  return `<div class="kachel" title="${esc(titel)}"><div class="k-label">${esc(label)}</div><div class="k-wert">${wert}</div></div>`;
+}
+
+function profilKopf(p, slot) {
+  const z = p.spieler, v = p.vergleich;
+  const tags = [
+    STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : "",
+    z.eigen ? '<span class="tag">eigener Spieler</span>' : z.in_suche ? '<span class="tag">Spielersuche</span>' : "",
+  ].join("");
+  const zeile = [esc(z.club), `${esc(z.league ?? "–")}${z.liga_stufe ? ` (${esc(z.liga_stufe)})` : ""}`,
+    `${zahl(z.age)} Jahre`, esc(z.position), `${zahl(z.minutes)} Min.`, `Datenbasis ${esc(z.datenbasis ?? "–")}`].join(" · ");
+  const delta = v && z.paar_gew != null && v.paar_gew != null ? z.paar_gew - v.paar_gew : null;
+  const kacheln = [
+    kachel("Score", score(z.paar_gew), "Paar-Score × Liga-Gewicht"),
+    kachel("Paar", score(z.paar), "Mittel aus mit und ohne Ball"),
+    kachel("mit Ball", score(z.mit)), kachel("ohne Ball", score(z.ohne)),
+    kachel("vs Top", zahl(z.vs_top), "50 = Median der Topclub-Spieler"),
+    kachel("Liga-Gewicht", zahl(z.liga_gewicht, 2)),
+    v ? kachel(`Δ zu ${v.name}`, `<b>${delta == null ? "–" : (delta > 0 ? "+" : "") + zahl(delta)}</b>`,
+      `gesetzt auf ${slot}: Score ${zahl(v.paar_gew)}`) : "",
+  ].join("");
+  const geldZeile = [
+    `Marktwert ${spanne(z.value, z.value_min, z.value_max)}`, `Gehalt/J. ${spanne(z.wage, z.wage_min, z.wage_max)}`,
+    `Vertrag bis ${esc(z.contract_end ?? "–")}`, z.loan_end ? `Leihe bis ${esc(z.loan_end)}` : "",
+  ].filter(Boolean).join(" · ");
+  const info = p.attribute.info || [];
+  return `<h2>${esc(z.name)} ${tags}</h2><div class="rollen">${zeile}</div>` +
+    `<div class="kacheln">${kacheln}</div><div class="rollen">${geldZeile}</div>` +
+    (info.length ? `<dl class="info">${info.map((i) => `<dt>${esc(i.label)}</dt><dd>${esc(i.text)}</dd>`).join("")}</dl>` : "");
+}
+
+function profilScores(p) {
+  const v = p.vergleich;
+  const vk = v ? `<th class="num" title="${esc(v.name)}">${esc(v.name.split(" ").slice(-1)[0])}</th>` : "";
+  return p.rollen.map((r) => {
+    const kopf = `<h3>${r.phase === "mit" ? "Mit Ball" : "Ohne Ball"}: ${esc(r.rolle)}` +
+      (r.rolle !== r.gewertet_als ? ` <span class="tag">gewertet wie ${esc(r.gewertet_als)}</span>` : "") +
+      ` · ${score(r.score[0])}${v ? ` <span class="vgl">(${esc(v.name)}: ${zahl(r.score[1])})</span>` : ""}</h3>` +
+      `<p class="hinweis">Verlässlichkeit ${esc(r.verlaesslichkeit ?? "–")}${r.luecken ? " · " + esc(r.luecken) : ""}</p>`;
+    const zeilen = r.bausteine.map((bs) => {
+      const bz = `<tr class="baustein"><td>${esc(bs.label)} <span class="tag">×${zahl(bs.gewicht)}</span></td>` +
+        `<td></td><td></td><td class="num">${score(bs.score[0])}</td><td></td>${v ? `<td class="num">${score(bs.score[1])}</td>` : ""}</tr>`;
+      const sz = bs.stats.map((st) => {
+        if (st.fehlt) {
+          return `<tr class="stat"><td>${esc(st.label)}</td><td colspan="${v ? 5 : 4}" class="fehlt">nicht bewertet: ${esc(st.fehlt)}</td></tr>`;
+        }
+        const anker = `${statWert(st.schlecht, st.art)} / ${statWert(st.ok, st.art)} / ${statWert(st.gut, st.art)}`;
+        return `<tr class="stat"><td>${esc(st.label)}${st.niedrig ? ' <span class="tag">weniger ist besser</span>' : ""}</td>` +
+          `<td class="num">${statWert(st.wert[0], st.art)}</td><td class="num anker">${anker}</td>` +
+          `<td class="num">${score(st.score[0])}</td><td class="num">${zahl(st.vs_top[0])}</td>` +
+          (v ? `<td class="num">${statWert(st.wert[1], st.art)} · ${score(st.score[1])}</td>` : "") + `</tr>`;
+      }).join("");
+      return bz + sz;
+    }).join("");
+    return kopf + `<div class="tabelle-wrap"><table class="aufschl"><thead><tr><th>Baustein / Statistik</th>` +
+      `<th class="num">Wert</th><th class="num" title="Anker Schlecht / OK / Gut (Perzentile 25/55/90 des Pools)">Schlecht / OK / Gut</th>` +
+      `<th class="num">Score</th><th class="num" title="Anteil der Topclub-Spieler, den er übertrifft">vs Top</th>${vk}</tr></thead>` +
+      `<tbody>${zeilen}</tbody></table></div>`;
+  }).join("");
+}
+
+function profilAttribute(a) {
+  if (!a.gruppen.length) return `<h3>Attribute</h3><p class="hinweis">${esc(a.grund || "Keine Attribute vorhanden.")}</p>`;
+  const quelle = `Export „${esc(a.quelle.ansicht)}“ vom ${esc(a.quelle.datum)}: ${a.n_exakt} exakt, ${a.n_spanne} als Spanne ` +
+    `(Scouting-Kenntnisstand im Spiel, kein geschätzter Wert).`;
+  const spalten = a.gruppen.map((g) =>
+    `<div class="attr-gruppe"><h4>${esc(g.gruppe)}</h4>` + g.attribute.map((x) => {
+      const exakt = x.wert != null;
+      const lo = x.lo, hi = x.hi;
+      const anzeige = exakt ? zahl(x.wert) : lo != null ? (lo === hi ? zahl(lo) : `${zahl(lo)}–${zahl(hi)}`) : "?";
+      const klasse = attrKlasse(exakt ? x.wert : lo != null ? (lo + hi) / 2 : null) + (exakt ? "" : " spanne");
+      return `<div class="attr"><span>${esc(x.name)}</span><span class="a-wert ${klasse}">${anzeige}</span></div>`;
+    }).join("") + `</div>`).join("");
+  return `<h3>Attribute</h3><p class="hinweis">${quelle}</p><div class="attr-raster">${spalten}</div>`;
+}
+
+function profilStatistiken(p) {
+  const pool = `Perzentil: Anteil der ${zahl(p.pool.n)} Spieler der Positionsgruppe „${esc(p.pool.gruppe)}“ ` +
+    `(ab 900 Min., Ligen ab ${esc(p.pool.min_stufe)}), die er übertrifft; hoch = gut, auch bei „weniger ist besser“.`;
+  const gruppen = p.statistiken.map((g) =>
+    `<div class="stat-gruppe"><h4>${esc(g.gruppe)}</h4><table><thead><tr><th>Statistik</th><th class="num">Gesamt</th>` +
+    `<th class="num">pro 90</th><th class="num">Perzentil</th></tr></thead><tbody>` +
+    g.stats.map((st) =>
+      `<tr><td>${esc(st.label)}</td><td class="num">${zahl(st.gesamt, Number.isInteger(st.gesamt) ? 0 : 2)}</td>` +
+      `<td class="num">${st.pro90 == null ? "–" : zahl(st.pro90, 2)}</td>` +
+      `<td class="num">${st.perzentil == null ? "–" : `<span class="balken"><span style="width:${st.perzentil}%"></span></span> ${score(st.perzentil)}`}</td></tr>`,
+    ).join("") + `</tbody></table></div>`).join("");
+  return `<h3>Statistiken</h3><p class="hinweis">${pool}</p><div class="stat-raster">${gruppen}</div>`;
+}
+
+function profilHtml(p, slot) {
+  return profilKopf(p, slot) + profilScores(p) + profilAttribute(p.attribute) + profilStatistiken(p);
 }
 
 // ------------------------------------------------------------------ Ablauf
@@ -373,6 +484,13 @@ function init() {
     } finally {
       knopf.disabled = false;
     }
+  });
+  $("#profil_zu").addEventListener("click", profilSchliessen);
+  $("#profil").addEventListener("click", (e) => {
+    if (e.target.id === "profil") profilSchliessen();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("#profil").hidden) profilSchliessen();
   });
   metaHolen().catch((e) => meldung(e.message, true));
 }

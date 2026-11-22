@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
 import live
 import planer
+import spielerprofil
 
 WEB = common.ROOT / "web"
 
@@ -86,6 +87,15 @@ def create_app(laden: Callable[[dict], planer.Kontext], start: dict) -> FastAPI:
             return planer.plan(state["ctx"], body.formation, body.slots, f)
         except SystemExit as e:
             raise _fehler(e) from None
+
+    @app.get("/api/spieler/{uid}")
+    def spieler(
+        uid: str, mit: str, ohne: str, vergleich: str | None = None, gewichtung: str | None = None
+    ):
+        try:
+            return spielerprofil.profil(state["ctx"], uid, mit, ohne, vergleich, gewichtung or None)
+        except SystemExit as e:
+            raise _fehler(e, 404 if "nicht in den geladenen Daten" in str(e) else 400) from None
 
     @app.post("/api/reload")
     def reload(body: ReloadIn):

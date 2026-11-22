@@ -61,3 +61,17 @@ def test_startseite(client):
     r = client.get("/")
     assert r.status_code == 200 and "Kaderplaner" in r.text
     assert client.get("/static/app.js").status_code == 200
+
+
+def test_spielerprofil_endpoint(client):
+    p = client.post("/api/plan", json={"formation": "2er"}).json()
+    s = p["slots"]["ST r"]
+    uid = s["verbesserungen"][0]["uid"]
+    params = {"mit": s["mit"], "ohne": s["ohne"], "vergleich": s["gesetzt"]}
+    r = client.get(f"/api/spieler/{uid}", params=params)
+    assert r.status_code == 200
+    j = r.json()
+    assert j["spieler"]["uid"] == uid and j["vergleich"]["uid"] == s["gesetzt"]
+    assert {"rollen", "statistiken", "attribute", "pool"} <= set(j)
+    nf = client.get("/api/spieler/xyz", params={"mit": "Mit", "ohne": "Ohne"})
+    assert nf.status_code == 404
