@@ -273,7 +273,7 @@ def je_position(df: pd.DataFrame) -> list[dict]:
     for (pos, rolle), t in g.groupby(["position", "rolle"], dropna=False):
         noten = t["note"].dropna()
         out.append({
-            "position": pos, "rolle": rolle, "spiele": len(t), "minuten": int(t["minuten"].sum()),
+            "position": None if pd.isna(pos) else pos, "rolle": None if pd.isna(rolle) else rolle, "spiele": len(t), "minuten": int(t["minuten"].sum()),
             "note": round(float(noten.mean()), 2) if len(noten) else None, "tore": int(t["tore"].sum()),
             "vorlagen": int(t["vorlagen"].sum()), "xg": round(float(t["xg"].sum()), 2),
         })  # fmt: skip

@@ -57,6 +57,13 @@ def test_reload_live_nicht_erreichbar_behaelt_kontext(client):
     assert ok.status_code == 200 and ok.json()["einstellungen"]["anker_min_n"] == 50
 
 
+def test_reload_ohne_angaben_behaelt_einstellungen(client):
+    client.post("/api/reload", json={"anker_min_n": 50})
+    r = client.post("/api/reload", json={})
+    assert r.status_code == 200
+    assert r.json()["einstellungen"]["anker_min_n"] == 50
+
+
 def test_startseite(client):
     r = client.get("/")
     assert r.status_code == 200 and "Kaderplaner" in r.text

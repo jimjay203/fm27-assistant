@@ -100,3 +100,23 @@ def test_chart_daten_je_statistik_einmal_mit_perzentilen(mini_ctx):
     x, f = pr["chart"]
     assert x["perzentil"][1] > x["perzentil"][0]  # A (x=70) besser als B (x=50)
     assert f["niedrig"] and f["perzentil"][1] > f["perzentil"][0]  # A (f=30) besser, gespiegelt
+
+
+def test_einsatz_profil_mit_spielen_ohne_einsatz_ist_gueltiges_json(tmp_path):
+    import json
+    from types import SimpleNamespace
+
+    import spiele
+
+    conn = common.connect(tmp_path / "t.sqlite")
+    gespielt = {"date": "2027-01-10", "opponent": 761, "competition": 16, "played": True,
+                "position_bits": (1 << 1) | (1 << 15), "role": 16, "xg": 0.1, "goals": 0, "assists": 0,
+                "sub_on": 0, "sub_off": 70, "minutes": 70, "rating": 6.8, "raw": "00"}  # fmt: skip
+    ohne = {"date": "2027-01-17", "opponent": 762, "competition": 16, "played": False}
+    spiele.speichern(conn, "t", "R", {"entries": [gespielt, ohne]})
+    conn.close()
+    ctx = SimpleNamespace(db=True, db_path=tmp_path / "t.sqlite", save="t")
+    e = sp.einsatz_profil(ctx, "R")
+    json.dumps(e, allow_nan=False)  # früher: NaN in Position/Rolle der Spiele ohne Einsatz
+    assert e["spiele"][0]["eingesetzt"] is False and e["spiele"][0]["position"] is None
+    assert e["je_position"][0]["position"] == "DM" and e["je_position"][0]["minuten"] == 70

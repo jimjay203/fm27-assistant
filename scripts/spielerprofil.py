@@ -342,8 +342,8 @@ def einsatz_profil(ctx: planer.Kontext, uid: str) -> dict | None:
     c = spiele.codes()
     wb = c.get("wettbewerbe") or {}
     liste = [{
-        "datum": r.datum, "eingesetzt": bool(r.eingesetzt), "position": r.position, "rolle": r.rolle,
-        "rolle_kurz": r.rolle_kurz, "minuten": _w(r.minuten), "einwechslung": _w(r.einwechslung),
+        "datum": r.datum, "eingesetzt": bool(r.eingesetzt), "position": _w(r.position), "rolle": _w(r.rolle),
+        "rolle_kurz": _w(r.rolle_kurz), "minuten": _w(r.minuten), "einwechslung": _w(r.einwechslung),
         "auswechslung": _w(r.auswechslung), "note": _w(r.note), "tore": _w(r.tore), "vorlagen": _w(r.vorlagen),
         "xg": _w(r.xg), "wettbewerb": (wb.get(int(r.wettbewerb)) or {}).get("label") if pd.notna(r.wettbewerb) else None,
     } for r in df.itertuples()]  # fmt: skip

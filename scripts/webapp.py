@@ -73,9 +73,11 @@ class PlanIn(BaseModel):
 
 
 class ReloadIn(BaseModel):
-    quelle: str = "db"
-    pool_min_stufe: str = "Gut"
-    anker_min_n: int = 100
+    """Nur gesetzte Felder ändern die Einstellungen, der Rest bleibt wie zuletzt geladen."""
+
+    quelle: str | None = None
+    pool_min_stufe: str | None = None
+    anker_min_n: int | None = None
 
 
 def _fehler(e: SystemExit, status: int = 400) -> HTTPException:
@@ -165,7 +167,7 @@ def create_app(
 
     @app.post("/api/reload")
     def reload(body: ReloadIn):
-        neu = {**state["einstellungen"], **body.model_dump()}
+        neu = {**state["einstellungen"], **body.model_dump(exclude_none=True)}
         with lock:
             try:
                 ctx = laden(neu)
