@@ -6,12 +6,18 @@ Fachlogik: scripts/planer.py (Rollen-Score aus scripts/rollen.py). Oberfläche: 
 Spielerbilder: face_<uid>.png aus dem FM27-Faces-Ordner (--faces, sonst $FM27_FACES, sonst der Standardpfad unter
 Dokumente). Fehlt ein Bild, zeigt die Oberfläche die Initialen.
 
-Aufruf:  uv run python scripts/webapp.py --save werder [--quelle live] [--port 8700] [--kein-browser] [--faces DIR]
+FMMT-27-Reader: wird mitgestartet, wenn er nicht läuft (scripts/fmmt.py; --fmmt DIR, sonst $FM27_FMMT, sonst
+~/Developer/fmmt-27-fork; --kein-fmmt schaltet das ab). Quelle "auto" (Standard): live, wenn FM27 läuft und lesbar ist,
+sonst DB. Scheitert die Live-Ladung beim Start, läuft der Planer mit der DB weiter.
+
+Aufruf:  uv run python scripts/webapp.py --save werder [--quelle auto|live|db] [--port 8700] [--kein-browser]
+         [--faces DIR] [--fmmt DIR | --kein-fmmt]
 """
 
 from __future__ import annotations
 
 import argparse
+import atexit
 import os
 import re
 import sys
@@ -28,6 +34,7 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
+import fmmt
 import live
 import planer
 import spielerprofil
@@ -153,7 +160,10 @@ def main(argv=None) -> None:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     common.add_common_args(ap)
-    ap.add_argument("--quelle", choices=["db", "live"], default="db")
+    ap.add_argument(
+        "--quelle", choices=["auto", "db", "live"], default="auto",
+        help="auto (Default): live, wenn FM27 lesbar ist, sonst DB",
+    )  # fmt: skip
     ap.add_argument(
         "--verein", help="Eigener Verein (Default: häufigster Verein im Kader-Snapshot)"
     )
@@ -167,20 +177,46 @@ def main(argv=None) -> None:
     ap.add_argument(
         "--faces", help=f"Ordner mit face_<uid>.png (Default: $FM27_FACES oder {FACES_STANDARD})"
     )
+    ap.add_argument(
+        "--fmmt", help=f"FMMT-27-Ordner (Default: $FM27_FMMT oder {fmmt.FMMT_STANDARD})"
+    )
+    ap.add_argument("--kein-fmmt", action="store_true", help="FMMT-27-Reader nicht mitstarten")
     a = ap.parse_args(argv)
     save = common.resolve_save(a.save)
 
+    reader = None
+    if not a.kein_fmmt:
+        reader = fmmt.Reader(a.url, fmmt.ordner(a.fmmt))
+        atexit.register(reader.stoppen)
+        ergebnis = reader.sicherstellen()
+        print(
+            f"FMMT-27-Reader: {ergebnis}" + (" (FM27 lesbar)" if fmmt.spiel_bereit(a.url) else "")
+        )
+
     def laden(e: dict) -> planer.Kontext:
+        if e["quelle"] == "live" and reader:
+            reader.sicherstellen()  # z. B. nach "Neu laden: live", falls der Reader inzwischen beendet wurde
         return planer.kontext_laden(
             save, e["quelle"], a.verein, a.url, a.db, a.config_dir,
             pool_min_stufe=e["pool_min_stufe"], anker_min_n=e["anker_min_n"],
         )  # fmt: skip
 
-    start = {"quelle": a.quelle, "pool_min_stufe": a.pool_min_stufe, "anker_min_n": a.anker_min_n}
+    quelle = a.quelle
+    if quelle == "auto":
+        quelle = "live" if fmmt.spiel_bereit(a.url) else "db"
+    start = {"quelle": quelle, "pool_min_stufe": a.pool_min_stufe, "anker_min_n": a.anker_min_n}
     faces = faces_ordner(a.faces)
     if faces is None:
         print("Hinweis: kein Faces-Ordner gefunden, Spielerbilder werden durch Initialen ersetzt.")
-    app = create_app(laden, start, faces)
+    try:
+        app = create_app(laden, start, faces)
+    except SystemExit as e:
+        if quelle != "live" or a.quelle == "live":
+            raise
+        print(f"Live-Daten nicht ladbar ({getattr(e, 'meldung', e)}), weiter mit der DB.")
+        start["quelle"] = "db"
+        app = create_app(laden, start, faces)
+    print(f"Quelle: {start['quelle']}")
 
     import uvicorn
 

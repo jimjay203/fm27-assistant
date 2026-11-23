@@ -26,7 +26,9 @@ Aktiver Save: saves/werder/ – lies dort immer zuerst kontext.md und taktik.md.
   Live-Werte (Marktwert, Gehalt) sind exakt aus dem Speicher (Snapshot-Typ `live`), nicht die
   Scouting-Spannen des Spiels. Versteckte Werte (CA/PA, Persönlichkeit) werden nicht abgerufen;
   Attribute gibt es live nur für eigene Spieler.
-- Kaderplaner (Web-App): `uv run python scripts/webapp.py --save werder [--quelle live]` → http://127.0.0.1:8700.
+- Kaderplaner (Web-App): `uv run python scripts/webapp.py --save werder` → http://127.0.0.1:8700. Startet den
+  FMMT-27-Reader mit, wenn er nicht läuft (`scripts/fmmt.py`, Ordner `--fmmt`/`FM27_FMMT`, abschaltbar mit
+  `--kein-fmmt`); Quelle `auto`: live, wenn FM27 lesbar ist, sonst DB.
   Formationen in `config/formationen.yaml`, Logik in `scripts/planer.py` (Rollen-Score aus `scripts/rollen.py`).
   Spielerbilder: `face_<uid>.png` aus dem FM27-Faces-Ordner (`--faces`, sonst `FM27_FACES`, sonst Standardpfad).
 - Save-Auswahl: `--save <name>`, sonst Umgebungsvariable `FM27_SAVE`, sonst Default `werder`.

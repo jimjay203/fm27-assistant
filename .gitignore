@@ -5,3 +5,4 @@ saves/*/data/raw/*
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+logs/
