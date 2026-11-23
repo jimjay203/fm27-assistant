@@ -35,6 +35,7 @@
       </label>
       <label title="Vergleichspool der Anker: Ligen ab dieser Stufe">Pool ab <select id="pool_min_stufe"></select></label>
       <label title="Mindestanzahl Werte je Statistik im Pool, sonst wird die Statistik verworfen">Pool-Min. <input id="anker_min_n" type="number" min="10" step="10"></label>
+      <button id="suche_auf" title="Alle geladenen Spieler für ein Rollenpaar durchsuchen (Taste /)">Spielersuche</button>
       <button id="neu_laden">Neu laden</button>
       <button id="erfassen" class="leise" title="Spiellisten (letzte 20 Spiele je Spieler) aus FM27 lesen. Danach im Spiel durch die Leistungsbildschirme (Leistung → Spiele) blättern: neue Listen werden mitgelesen.">Spiele erfassen</button>
       <button id="theme" class="leise" title="Design wechseln: Auto (System) → Hell → Dunkel">Design: Auto</button>
@@ -73,6 +74,30 @@ Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).">i</span>
       <p class="leer">Slot anklicken, um Ranglisten und Verbesserungen zu sehen.</p>
     </aside>
   </main>
+
+  <div id="suche" class="overlay" hidden>
+    <div class="profil-box suche-box" role="dialog" aria-modal="true" aria-label="Spielersuche">
+      <button id="suche_zu" class="schliessen" title="Schließen (Esc)">×</button>
+      <div class="suche-kopf">
+        <h2>Spielersuche <span id="suche_info"></span></h2>
+        <div class="suche-form">
+          <label class="breit">Name oder Verein <input id="s_text" type="search" placeholder="z. B. Wirtz, Bochum …" autocomplete="off"></label>
+          <label>Rolle aus Slot <select id="s_slot"></select></label>
+          <span id="s_rollen" class="hinweis"></span>
+          <label>Alter <input data-s="min_alter" type="number" min="15" max="45" placeholder="von"> –
+            <input data-s="max_alter" type="number" min="15" max="45" placeholder="bis"></label>
+          <label>max. Marktwert (Mio.) <input data-s="max_wert_mio" type="number" min="0" step="0.5" placeholder="–"></label>
+          <label>Liga ab <select data-s="min_stufe"></select></label>
+          <label>Min. Minuten <input data-s="min_minuten" type="number" min="0" step="100"></label>
+          <label class="check"><input data-s="eigene" type="checkbox"> eigene zeigen</label>
+          <label class="check" id="s_nur_suche_box"><input data-s="nur_suche" type="checkbox"> nur Spielersuche</label>
+          <label class="check"><input data-s="nur_volle_daten" type="checkbox"> nur volle Daten</label>
+          <button id="s_reset" class="leise">zurücksetzen</button>
+        </div>
+      </div>
+      <div id="suche_ergebnis"></div>
+    </div>
+  </div>
 
   <div id="profil" class="overlay" hidden>
     <div class="profil-box" role="dialog" aria-modal="true">

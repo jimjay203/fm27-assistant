@@ -341,3 +341,16 @@ details.spiele summary { cursor: pointer; color: var(--muted); }
 
 /* Im Profil keine klebenden Tabellenköpfe (überdecken beim Scrollen Zeilen anderer Tabellen) */
 .profil-box th { position: static; }
+
+/* Spielersuche (Overlay unter dem Profil: das Profil liegt im DOM dahinter und damit darüber) */
+.suche-box { display: grid; gap: 1rem; }
+.suche-kopf { background: var(--card); border: 1px solid var(--line); border-radius: .6rem; padding: .9rem 4.5rem 1rem 1.1rem; }
+.suche-kopf h2 { margin: 0 0 .7rem; display: flex; align-items: baseline; gap: .8rem; }
+#suche_info { font-size: .95rem; font-weight: 400; color: var(--muted); }
+.suche-form { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center; }
+.suche-form label.breit { flex: 1 1 22rem; display: flex; align-items: center; gap: .5rem; }
+.suche-form label.breit input { flex: 1; font-size: 1.1rem; padding: .35rem .6rem; }
+.suche-form input[type="number"] { width: 5rem; }
+#suche_ergebnis { display: grid; gap: 1rem; }
+#suche_ergebnis .karte h3 { margin-top: 0; }
+#suche_ergebnis td.grund { color: var(--muted); }

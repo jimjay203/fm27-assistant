@@ -536,8 +536,8 @@ function standardVergleich(s, uid) {
   return s.verbesserungen.find((z) => z.uid !== uid)?.uid || s.eigene.find((z) => z.uid !== uid)?.uid || "";
 }
 
-async function profilOeffnen(uid, vergleich) {
-  const s = PLAN && PLAN.slots[aktiverSlot];
+async function profilOeffnen(uid, vergleich, slot = aktiverSlot) {
+  const s = PLAN && PLAN.slots[slot];
   if (!s) return;
   const nr = ++profilNr;
   if (vergleich === undefined) vergleich = standardVergleich(s, uid);
@@ -549,8 +549,8 @@ async function profilOeffnen(uid, vergleich) {
   try {
     const p = await api(`/api/spieler/${encodeURIComponent(uid)}?${q}`);
     if (nr !== profilNr) return;
-    profilAktuell = { p, uid, vergleich };
-    $("#profil_inhalt").innerHTML = profilHtml(p, aktiverSlot);
+    profilAktuell = { p, uid, vergleich, slot };
+    $("#profil_inhalt").innerHTML = profilHtml(p, slot);
     profilVerdrahten();
   } catch (e) {
     if (nr === profilNr) $("#profil_inhalt").innerHTML = `<p class="meldung fehler">${esc(e.message)}</p>`;
@@ -559,7 +559,7 @@ async function profilOeffnen(uid, vergleich) {
 
 function profilVerdrahten() {
   const sel = $("#vergleich_wahl");
-  if (sel) sel.addEventListener("change", () => profilOeffnen(profilAktuell.uid, sel.value));
+  if (sel) sel.addEventListener("change", () => profilOeffnen(profilAktuell.uid, sel.value, profilAktuell.slot));
   chartVerdrahten();
 }
 
@@ -994,6 +994,163 @@ async function erfassungStarten() {
   erfassung.timer = setTimeout(weiter, 4000);
 }
 
+// ------------------------------------------------------------------ Spielersuche
+
+const SUCHE_STANDARD = { text: "", min_minuten: 900, eigene: true, nur_suche: false, nur_volle_daten: false };
+let sucheTimer = null;
+let sucheNr = 0;
+
+function sucheZustand() {
+  zustand.suche = { ...SUCHE_STANDARD, ...(zustand.suche || {}) };
+  return zustand.suche;
+}
+
+function sucheSlot() {
+  const slots = Object.keys(META.formationen[zustand.formation].slots);
+  const w = sucheZustand().slot;
+  return slots.includes(w) ? w : aktiverSlot && slots.includes(aktiverSlot) ? aktiverSlot : slots[0];
+}
+
+function sucheOeffnen() {
+  if (!META) return;
+  const z = sucheZustand();
+  const form = META.formationen[zustand.formation].slots;
+  const wahl = rollenWahl();
+  if (aktiverSlot && form[aktiverSlot]) z.slot = aktiverSlot; // aktiver Slot gibt die Rolle vor
+  const slot = sucheSlot();
+  $("#s_slot").innerHTML = Object.entries(form).map(([sn, m]) =>
+    `<option value="${esc(sn)}"${sn === slot ? " selected" : ""}>${esc(m.label)} – ${esc(wahl[sn].mit)} / ${esc(wahl[sn].ohne)}</option>`).join("");
+  optionen(document.querySelector('[data-s="min_stufe"]'), META.stufen, z.min_stufe, "alle");
+  $("#s_text").value = z.text || "";
+  document.querySelectorAll("[data-s]").forEach((el) => {
+    const v = z[el.dataset.s];
+    if (el.type === "checkbox") el.checked = !!v;
+    else el.value = v ?? "";
+  });
+  $("#s_nur_suche_box").hidden = META.stand.quelle !== "live";
+  $("#suche").hidden = false;
+  $("#s_text").focus();
+  $("#s_text").select();
+  sucheHolen();
+}
+
+function sucheSchliessen() {
+  sucheNr++;
+  $("#suche").hidden = true;
+}
+
+function sucheLesen() {
+  const z = sucheZustand();
+  z.text = $("#s_text").value;
+  z.slot = $("#s_slot").value;
+  document.querySelectorAll("[data-s]").forEach((el) => {
+    const k = el.dataset.s;
+    if (el.type === "checkbox") z[k] = el.checked;
+    else if (el.type === "number") z[k] = el.value === "" ? null : Number(el.value);
+    else z[k] = el.value === "" ? null : el.value;
+  });
+  if (z.min_minuten == null) z.min_minuten = SUCHE_STANDARD.min_minuten;
+  speichern();
+  return z;
+}
+
+function sucheAnfordern(ms = 250) {
+  clearTimeout(sucheTimer);
+  sucheTimer = setTimeout(sucheHolen, ms);
+}
+
+async function sucheHolen() {
+  const nr = ++sucheNr;
+  const z = sucheLesen();
+  const slot = z.slot;
+  const wahl = rollenWahl()[slot];
+  $("#suche_info").textContent = "sucht …";
+  try {
+    const r = await api("/api/suche", {
+      mit: wahl.mit, ohne: wahl.ohne, text: z.text, min_alter: z.min_alter, max_alter: z.max_alter,
+      max_wert_mio: z.max_wert_mio, min_stufe: z.min_stufe, min_minuten: z.min_minuten, eigene: z.eigene,
+      nur_suche: META.stand.quelle === "live" && z.nur_suche, nur_volle_daten: z.nur_volle_daten,
+      gewichtung: (zustand.filter && zustand.filter.gewichtung) || null,
+    });
+    if (nr !== sucheNr) return;
+    sucheZeichnen(r, slot);
+  } catch (e) {
+    if (nr === sucheNr) {
+      $("#suche_info").textContent = "";
+      $("#suche_ergebnis").innerHTML = `<p class="meldung fehler">${esc(e.message)}</p>`;
+    }
+  }
+}
+
+function sucheZeichnen(r, slot) {
+  const ps = PLAN && PLAN.slots[slot];
+  const basis = ps ? ps.basis : null;
+  const gesetzt = ps ? ps.gesetzt : null;
+  const zeilen = r.treffer.map((z) => ({ ...z, delta: basis == null || z.paar_gew == null ? null : z.paar_gew - basis }));
+  const gw = r.gewertet_als;
+  const alias = [r.mit !== gw.mit ? `mit Ball gewertet wie ${gw.mit}` : "", r.ohne !== gw.ohne ? `ohne Ball gewertet wie ${gw.ohne}` : ""];
+  $("#s_rollen").textContent = alias.filter(Boolean).join(" · ");
+  $("#suche_info").textContent = `${zahl(r.n_treffer)} mit Score` + (r.n_treffer > r.limit ? `, die besten ${r.limit} gezeigt` : "") +
+    (basis != null ? ` · Δ gegenüber dem Gesetzten (${zahl(basis)})` : "");
+  const spalten = [
+    SP_NAME,
+    { k: "club", l: "Verein", f: (z) => esc(z.club ?? "–") },
+    { k: "liga_stufe", l: "Liga", f: (z) => esc(z.liga_stufe ?? "–"), titel: "Ansehen der Liga", sort: (z) => (z.liga_stufe ? META.stufen.indexOf(z.liga_stufe) : null) },
+    { k: "position", l: "Pos.", f: (z) => esc(z.position ?? "–") },
+    { k: "age", l: "Alter", num: true },
+    { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+    ...SP_SCORES,
+    { k: "delta", l: "Δ", num: true, titel: "Abstand zum gesetzten Spieler dieses Slots",
+      f: (z) => { if (z.delta == null) return "–"; const d = Math.round(z.delta) || 0; return `<b>${d > 0 ? "+" : ""}${zahl(d)}</b>`; } },
+    { k: "value", l: "Marktwert", num: true, f: (z) => spanne(z.value, z.value_min, z.value_max), sort: (z) => z.value ?? z.value_max },
+    { k: "wage", l: "Gehalt/J.", num: true, f: (z) => spanne(z.wage, z.wage_min, z.wage_max), sort: (z) => z.wage ?? z.wage_max },
+    { k: "contract_end", l: "Vertrag" },
+  ];
+  const erkl = "Score = Paar-Score des Rollenpaars × Liga-Gewicht (0 = Schlecht, 50 = OK, 100 = Gut), Rollen wie im gewählten Slot. " +
+    "Fremde Marktwerte und Gehälter sind Scouting-Spannen. Zeile anklicken öffnet das Profil (Vergleich: gesetzter Spieler), Spaltenkopf sortiert.";
+  const el = $("#suche_ergebnis");
+  el.innerHTML = `<section class="karte"><h3>Treffer ${info(erkl)}</h3><div id="s_treffer"></div></section>` +
+    (r.ohne_score.length
+      ? `<section class="karte"><h3>Gefunden, aber ohne Score (${r.ohne_score.length}) ${info("Passen zum Suchtext, " +
+        "sind für diese Rollen aber nicht bewertbar; Grund in der letzten Spalte.")}</h3><div id="s_ohne"></div></section>`
+      : "");
+  $("#s_treffer").appendChild(zeilen.length
+    ? tabelle(spalten, zeilen, { gesetzt, beiKlick: (uid) => profilOeffnen(uid, undefined, slot) })
+    : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Keine Spieler mit Score für diese Kriterien." }));
+  if (r.ohne_score.length) {
+    $("#s_ohne").appendChild(tabelle([
+      SP_NAME,
+      { k: "club", l: "Verein", f: (z) => esc(z.club ?? "–") },
+      { k: "position", l: "Pos.", f: (z) => esc(z.position ?? "–") },
+      { k: "age", l: "Alter", num: true },
+      { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+      { k: "grund", l: "Grund", f: (z) => `<span class="hinweis">${esc(z.grund)}</span>` },
+    ], r.ohne_score, {}));
+  }
+}
+
+function sucheVerdrahten() {
+  $("#suche_auf").addEventListener("click", sucheOeffnen);
+  $("#suche_zu").addEventListener("click", sucheSchliessen);
+  $("#suche").addEventListener("click", (e) => { if (e.target.id === "suche") sucheSchliessen(); });
+  $("#s_text").addEventListener("input", () => sucheAnfordern(300));
+  $("#s_slot").addEventListener("change", () => sucheAnfordern(0));
+  document.querySelectorAll("[data-s]").forEach((el) => el.addEventListener("change", () => sucheAnfordern(0)));
+  $("#s_reset").addEventListener("click", () => {
+    zustand.suche = { ...SUCHE_STANDARD, slot: $("#s_slot").value };
+    speichern();
+    sucheOeffnen();
+  });
+  // Taste "/" öffnet die Suche (nicht beim Tippen in Feldern)
+  document.addEventListener("keydown", (e) => {
+    const tippt = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "");
+    if (e.key === "/" && !tippt && $("#suche").hidden && $("#profil").hidden) {
+      e.preventDefault();
+      sucheOeffnen();
+    }
+  });
+}
+
 // ------------------------------------------------------------------ Ablauf
 
 function planAnfordern() {
@@ -1039,6 +1196,7 @@ function themeSetzen(t) {
 
 function init() {
   infoVerdrahten();
+  sucheVerdrahten();
   themeSetzen(THEMES[zustand.theme] ? zustand.theme : "auto");
   $("#theme").addEventListener("click", () => {
     const folge = Object.keys(THEMES);
@@ -1089,7 +1247,9 @@ function init() {
     if (e.target.id === "profil") profilSchliessen();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !$("#profil").hidden) profilSchliessen();
+    if (e.key !== "Escape") return;
+    if (!$("#profil").hidden) profilSchliessen();
+    else if (!$("#suche").hidden) sucheSchliessen();
   });
   metaHolen().catch((e) => meldung(e.message, true));
 }

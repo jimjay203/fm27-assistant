@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import math
 import sys
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
@@ -397,6 +398,85 @@ def ohne_wertung(ctx: Kontext, mit: str, bewertet: pd.DataFrame, f: Filter) -> l
         out.append({"uid": str(r["uid"]), "name": r["name"], "position": r["position"],
                     "minutes": _wert(mins), "eigen": _wert(r.get("eigen")), "grund": grund})  # fmt: skip
     return out
+
+
+# --------------------------------------------------------------------------- Spielersuche
+
+
+@dataclass
+class Suche:
+    text: str = ""  # Teil von Name oder Verein (ohne Groß-/Kleinschreibung und Akzente)
+    min_alter: int | None = None
+    max_alter: int | None = None
+    max_wert_mio: float | None = None
+    min_stufe: str | None = None  # nur Ligen ab dieser Stufe (eigene Spieler immer)
+    gewichtung: str | None = None
+    min_minuten: int = 900
+    nur_volle_daten: bool = False
+    nur_suche: bool = False  # nur Spieler aus der letzten Spielersuche (eigene immer)
+    eigene: bool = True  # eigene Spieler mit anzeigen
+    limit: int = 150
+
+
+def _norm(s) -> str:
+    s = unicodedata.normalize("NFKD", str(s) if isinstance(s, str) else "")
+    return "".join(c for c in s if not unicodedata.combining(c)).casefold()
+
+
+def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
+    """Alle Spieler der geladenen Daten für ein Rollenpaar, nach Score; mit Text: dazu Treffer ohne Score + Grund."""
+    filter_pruefen(ctx, Filter(min_stufe=s.min_stufe, gewichtung=s.gewichtung))
+    mit, ohne = _rolle(ctx, mit_name), _rolle(ctx, ohne_name)
+    df = ctx.df
+    text = _norm(s.text.strip())
+    if text:
+        treffer = df["name"].map(_norm).str.contains(text, regex=False)
+        if "club" in df:
+            treffer |= df["club"].map(_norm).str.contains(text, regex=False)
+        df = df[treffer]
+    a = SimpleNamespace(
+        min_minuten=s.min_minuten, nur_volle_daten=s.nur_volle_daten, max_alter=s.max_alter,
+        max_wert_mio=s.max_wert_mio, gewichtung=s.gewichtung, min_stufe=s.min_stufe,
+    )  # fmt: skip
+    own, cand = rollen.kandidaten_slot(
+        df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, s.min_minuten
+    )
+    if s.nur_suche and "in_suche" in cand:
+        cand = cand[cand["in_suche"]]
+    if s.min_alter is not None:
+        cand = cand[cand["age"] >= s.min_alter]
+    teile = [cand]
+    if s.eigene:
+        if s.min_alter is not None:
+            own = own[own["age"] >= s.min_alter]
+        if s.max_alter is not None:
+            own = own[own["age"] <= s.max_alter]
+        teile.insert(0, own)
+    alle = pd.concat(teile).sort_values(["paar_gew", "paar"], ascending=False, na_position="last")
+    ohne_score = []
+    if text:
+        rules = ctx.rk["positionsgruppen"][ctx.rk["rollen"][mit]["gruppe"]]
+        rest = df[~df["uid"].astype(str).isin(set(alle["uid"].astype(str)))]
+        for _, r in rest.sort_values("minutes", ascending=False).head(30).iterrows():
+            mins = r.get("minutes")
+            if r.get("team") != "Senior Team":
+                grund = "nicht im Profikader"
+            elif not b.position_ok(r.get("position"), rules):
+                grund = "Position passt nicht zur Rolle"
+            elif pd.isna(mins) or mins < s.min_minuten:
+                grund = f"{0 if pd.isna(mins) else int(mins)} Min. (< {s.min_minuten})"
+            else:
+                grund = "Filter oder zu wenige Statistiken"
+            ohne_score.append({
+                "uid": str(r["uid"]), "name": r.get("name"), "club": _wert(r.get("club")),
+                "position": _wert(r.get("position")), "age": _wert(r.get("age")), "minutes": _wert(mins),
+                "eigen": _wert(r.get("eigen")), "grund": grund,
+            })  # fmt: skip
+    return {
+        "mit": mit_name, "ohne": ohne_name, "gewertet_als": {"mit": mit, "ohne": ohne},
+        "treffer": _zeilen(ctx, alle.head(s.limit), mit, ohne), "n_treffer": len(alle),
+        "ohne_score": ohne_score, "limit": s.limit,
+    }  # fmt: skip
 
 
 def aufstellung(eigene: dict[str, pd.DataFrame]) -> dict[str, str | None]:

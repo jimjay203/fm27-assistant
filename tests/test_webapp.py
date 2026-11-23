@@ -145,3 +145,13 @@ def test_spiele_erfassen_endpoint():
     assert r.status_code == 200 and r.json()["modus"] == "quick" and aufrufe == [True]
     ohne = TestClient(webapp.create_app(laden, start))
     assert ohne.post("/api/spiele/erfassen").status_code == 400
+
+
+def test_suche_endpoint(client):
+    r = client.post("/api/suche", json={"mit": "Mit", "ohne": "Ohne", "text": "Eigen", "limit": 10})
+    assert r.status_code == 200
+    j = r.json()
+    assert {z["uid"] for z in j["treffer"]} == {"A", "B"}
+    assert j["ohne_score"][0]["uid"] == "C"
+    assert client.post("/api/suche", json={"mit": "X", "ohne": "Ohne"}).status_code == 400
+    assert client.post("/api/suche", json={"mit": "Mit", "ohne": "Ohne", "limit": 0}).status_code == 422

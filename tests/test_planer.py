@@ -252,3 +252,26 @@ def test_daten_db_nimmt_letzten_kader_und_letzte_suche():
     assert (df["team"] == "Senior Team").all()
     assert set(df["datenbasis"]) <= {"voll", "reduziert"}
     assert "uid" in df
+
+
+def test_suche_nach_text_alter_und_eigenen(mini_ctx):
+    r = planer.suche(mini_ctx, "Neuer Name", "Ohne", planer.Suche(text="kandidat 1", min_alter=30))
+    assert r["gewertet_als"] == {"mit": "Mit", "ohne": "Ohne"}
+    namen = [z["name"] for z in r["treffer"]]
+    assert namen and all(n.startswith("Kandidat 1") for n in namen)
+    assert all(z["age"] >= 30 for z in r["treffer"])
+    scores = [z["paar_gew"] for z in r["treffer"]]
+    assert scores == sorted(scores, reverse=True)
+    # Groß-/Kleinschreibung und Akzente egal; eigene Spieler mit Score, C ohne (zu wenig Minuten) mit Grund
+    r = planer.suche(mini_ctx, "Mit", "Ohne", planer.Suche(text="éigen"))
+    assert {z["uid"] for z in r["treffer"]} == {"A", "B"}
+    assert [(o["uid"], o["grund"]) for o in r["ohne_score"]] == [("C", "100 Min. (< 900)")]
+    r = planer.suche(mini_ctx, "Mit", "Ohne", planer.Suche(text="eigen", eigene=False))
+    assert r["treffer"] == [] and len(r["ohne_score"]) == 3
+
+
+def test_suche_limit_und_unbekannte_rolle(mini_ctx):
+    r = planer.suche(mini_ctx, "Mit", "Ohne", planer.Suche(limit=5))
+    assert len(r["treffer"]) == 5 and r["n_treffer"] > 5
+    with pytest.raises(SystemExit):
+        planer.suche(mini_ctx, "Gibt es nicht", "Ohne", planer.Suche())

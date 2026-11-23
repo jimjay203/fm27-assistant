@@ -30,7 +30,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
@@ -71,6 +71,24 @@ class PlanIn(BaseModel):
     slots: dict[str, dict[str, str]] = {}
     filter: FilterIn = FilterIn()
     aufstellung: str = "einsaetze"  # "einsaetze" (wie bisher gespielt, Standard) oder "score"
+
+
+class SucheIn(BaseModel):
+    """Spielersuche: Rollenpaar plus Kriterien (siehe planer.Suche)."""
+
+    mit: str
+    ohne: str
+    text: str = ""
+    min_alter: int | None = None
+    max_alter: int | None = None
+    max_wert_mio: float | None = None
+    min_stufe: str | None = None
+    gewichtung: str | None = None
+    min_minuten: int = 900
+    nur_volle_daten: bool = False
+    nur_suche: bool = False
+    eigene: bool = True
+    limit: int = Field(150, ge=1, le=1000)
 
 
 class ReloadIn(BaseModel):
@@ -144,6 +162,14 @@ def create_app(
         f = planer.Filter(**{k.name: getattr(body.filter, k.name) for k in fields(planer.Filter)})
         try:
             return planer.plan(state["ctx"], body.formation, body.slots, f, body.aufstellung)
+        except SystemExit as e:
+            raise _fehler(e) from None
+
+    @app.post("/api/suche")
+    def suche(body: SucheIn):
+        kriterien = planer.Suche(**body.model_dump(exclude={"mit", "ohne"}))
+        try:
+            return planer.suche(state["ctx"], body.mit, body.ohne, kriterien)
         except SystemExit as e:
             raise _fehler(e) from None
 
