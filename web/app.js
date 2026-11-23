@@ -128,7 +128,7 @@ function steuerungAufbauen() {
   const formen = Object.keys(META.formationen);
   if (!formen.includes(zustand.formation)) zustand.formation = META.standard || formen[0];
   optionen($("#formation"), formen, zustand.formation);
-  $("#aufstellung").value = zustand.aufstellung === "einsaetze" ? "einsaetze" : "score";
+  $("#aufstellung").value = zustand.aufstellung === "score" ? "score" : "einsaetze";
   optionen($("#pool_min_stufe"), META.stufen, META.einstellungen.pool_min_stufe);
   $("#quelle").value = META.einstellungen.quelle;
   $("#anker_min_n").value = META.einstellungen.anker_min_n;
@@ -1008,7 +1008,7 @@ async function planHolen() {
   try {
     const plan = await api("/api/plan", {
       formation: zustand.formation, slots: rollenWahl(), filter: zustand.filter,
-      aufstellung: zustand.aufstellung === "einsaetze" ? "einsaetze" : "score",
+      aufstellung: zustand.aufstellung === "score" ? "score" : "einsaetze",
     });
     if (nr !== planNr) return; // überholt
     PLAN = plan;

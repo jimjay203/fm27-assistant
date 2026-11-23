@@ -70,7 +70,7 @@ class PlanIn(BaseModel):
     formation: str
     slots: dict[str, dict[str, str]] = {}
     filter: FilterIn = FilterIn()
-    aufstellung: str = "score"  # "score" oder "einsaetze" (wie bisher gespielt)
+    aufstellung: str = "einsaetze"  # "einsaetze" (wie bisher gespielt, Standard) oder "score"
 
 
 class ReloadIn(BaseModel):
