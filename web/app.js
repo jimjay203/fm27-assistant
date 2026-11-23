@@ -65,9 +65,53 @@ const STATUS = { kader: "", leihe_ein: "Leihe", leihe_aus: "verliehen" };
 const kurzName = (n) => (n || "").split(" ").slice(-1)[0];
 const initialen = (n) => (n || "?").split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 // Spielerbild aus dem FM27-Faces-Ordner; fehlt es, bleiben die Initialen darunter sichtbar
+// Größe in "px bei 14 px Grundschrift", wird in rem umgerechnet und wächst so mit der Schrift
 const gesicht = (uid, name, px) =>
-  `<span class="gesicht" style="--g:${px}px"><span class="ini">${esc(initialen(name))}</span>` +
+  `<span class="gesicht" style="--g:${(px / 14).toFixed(3)}rem"><span class="ini">${esc(initialen(name))}</span>` +
   `<img src="/api/face/${encodeURIComponent(uid)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+// (i)-Symbol: Erklärtext erscheint beim Darüberfahren, Fokussieren oder Antippen (Popover #info_tip)
+const info = (text) =>
+  `<span class="info-i" tabindex="0" role="button" aria-label="Info: ${esc(text)}" data-info="${esc(text)}">i</span>`;
+
+function infoVerdrahten() {
+  const tip = document.createElement("div");
+  tip.id = "info_tip";
+  tip.className = "info-tip";
+  tip.hidden = true;
+  document.body.appendChild(tip);
+  let offen = null;
+  const zeigen = (el) => {
+    offen?.classList.remove("offen");
+    offen = el;
+    el.classList.add("offen");
+    tip.textContent = el.dataset.info;
+    tip.hidden = false;
+    const r = el.getBoundingClientRect();
+    const rand = 8;
+    let x = r.left + r.width / 2 - tip.offsetWidth / 2;
+    x = Math.max(rand, Math.min(x, window.innerWidth - tip.offsetWidth - rand));
+    let y = r.bottom + 6;
+    if (y + tip.offsetHeight > window.innerHeight - rand) y = r.top - tip.offsetHeight - 6;
+    tip.style.left = x + "px";
+    tip.style.top = Math.max(rand, y) + "px";
+  };
+  const verbergen = () => {
+    offen?.classList.remove("offen");
+    offen = null;
+    tip.hidden = true;
+  };
+  const ziel = (e) => e.target.closest?.(".info-i");
+  document.addEventListener("mouseover", (e) => { const el = ziel(e); if (el) zeigen(el); });
+  document.addEventListener("mouseout", (e) => { if (ziel(e) && !ziel(e).contains(e.relatedTarget)) verbergen(); });
+  document.addEventListener("focusin", (e) => { const el = ziel(e); if (el) zeigen(el); });
+  document.addEventListener("focusout", (e) => { if (ziel(e)) verbergen(); });
+  document.addEventListener("click", (e) => {
+    const el = ziel(e);
+    if (el) { e.stopPropagation(); el === offen && !tip.hidden ? verbergen() : zeigen(el); }
+  }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") verbergen(); }, true);
+  window.addEventListener("scroll", verbergen, true);
+}
 
 // ------------------------------------------------------------------ Steuerung
 
@@ -84,6 +128,7 @@ function steuerungAufbauen() {
   const formen = Object.keys(META.formationen);
   if (!formen.includes(zustand.formation)) zustand.formation = META.standard || formen[0];
   optionen($("#formation"), formen, zustand.formation);
+  $("#aufstellung").value = zustand.aufstellung === "einsaetze" ? "einsaetze" : "score";
   optionen($("#pool_min_stufe"), META.stufen, META.einstellungen.pool_min_stufe);
   $("#quelle").value = META.einstellungen.quelle;
   $("#anker_min_n").value = META.einstellungen.anker_min_n;
@@ -162,10 +207,12 @@ function feldZeichnen() {
 
 // Feldgröße aus der freien Bildschirmhöhe: alle Positionen ohne Scrollen sichtbar (Filterzeile darf umbrechen)
 // Unter 440 px Breite überlappen die Karten (4 nebeneinander); bis 68:89 gestaucht bleiben alle Formationen frei.
+// Alle Maße in rem-Vielfachen (Basis 14 px), damit Feld und Karten mit der Grundschrift wachsen.
 function feldGroesse() {
+  const em = parseFloat(getComputedStyle(document.documentElement).fontSize) / 14;
   const oben = $("main").getBoundingClientRect().top + window.scrollY;
-  const frei = window.innerHeight - oben - 24;
-  const w = Math.min(700, Math.max(440, frei * 0.68));
+  const frei = window.innerHeight - oben - 24 * em - $(".legende").offsetHeight;
+  const w = Math.min(700 * em, Math.max(440 * em, frei * 0.68));
   const h = Math.min(w / 0.68, Math.max(frei, w / 0.76));
   document.documentElement.style.setProperty("--feld-w", Math.round(w) + "px");
   document.documentElement.style.setProperty("--feld-h-px", Math.round(h) + "px");
@@ -182,6 +229,16 @@ function stufe(v) {
   return v >= 66 ? "t-hoch" : v >= 40 ? "t-mittel" : "t-tief";
 }
 
+// Warum ist der Spieler gesetzt? (Aufstellung nach Score oder wie gespielt)
+function gesetztGrund(s) {
+  const g = s.gesetzt_grund;
+  if (!g || g.art === "keiner") return "niemand gesetzt";
+  if (g.art === "einsaetze") return `wie gespielt: ${zahl(g.minuten)} Min. in ${g.spiele} Spielen auf ${g.position}`;
+  return PLAN.aufstellung_nach === "einsaetze"
+    ? "nach Score: niemand mit mindestens 270 erfassten Minuten auf dieser Position"
+    : "nach Score (beste Elf ohne Doppelbesetzung)";
+}
+
 function slotsAktualisieren() {
   if (!PLAN) return;
   for (const [sn, s] of Object.entries(PLAN.slots)) {
@@ -195,8 +252,10 @@ function slotsAktualisieren() {
     el.querySelector("[data-warn]").innerHTML = warn
       ? '<span class="warn" title="Rolle nur teilweise bewertbar, Details im Panel">!</span>' : "";
     el.querySelector("[data-pill]").innerHTML = g ? `<span class="pill ${stufe(g.paar_gew)}">${zahl(g.paar_gew)}</span>` : "";
+    const gr = gesetztGrund(s);
+    el.classList.toggle("rueckfall", PLAN.aufstellung_nach === "einsaetze" && s.gesetzt_grund?.art === "score");
     el.querySelector("[data-spieler]").innerHTML = g
-      ? `${gesicht(g.uid, g.name, 28)}<span class="name" title="${esc(g.name)}">${esc(kurzName(g.name))}</span>`
+      ? `${gesicht(g.uid, g.name, 28)}<span class="name" title="${esc(g.name + " – " + gr)}">${esc(kurzName(g.name))}</span>`
       : `<span class="leer">niemand bewertbar</span>`;
     // Schattenteam: bester Kandidat, der den Gesetzten übertrifft
     const best = s.verbesserungen[0];
@@ -332,23 +391,35 @@ function panelZeichnen() {
   const gw = s.gewertet_als;
   const alias = (n, z) => (n === z ? "" : ` (gewertet wie ${esc(z)})`);
   const g = s.eigene.find((z) => z.uid === s.gesetzt);
+  const slotInfo = `Verlässlichkeit der Rollenbewertung: mit Ball ${s.verlaesslichkeit.mit}, ohne Ball ${s.verlaesslichkeit.ohne}.\n` +
+    `Vergleichspool: ${s.n_pool.mit}${s.n_pool.ohne !== s.n_pool.mit ? " / " + s.n_pool.ohne : ""} Spieler.\n` +
+    `Score = Paar-Score (mit und ohne Ball) × Liga-Gewicht; 0 = Schlecht, 50 = OK, 100 = Gut.\n` +
+    `Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).`;
+  const aliasText = alias(s.mit, gw.mit) || alias(s.ohne, gw.ohne)
+    ? `<div class="rollen">${s.mit !== gw.mit ? `mit Ball${alias(s.mit, gw.mit)}` : ""}` +
+      `${s.mit !== gw.mit && s.ohne !== gw.ohne ? " · " : ""}${s.ohne !== gw.ohne ? `ohne Ball${alias(s.ohne, gw.ohne)}` : ""}</div>`
+    : "";
+  const ohneWertung = s.ohne_wertung.length
+    ? `<h3>Eigene ohne Wertung ${info(s.ohne_wertung
+        .map((o) => `${o.name} (${o.grund}${STATUS[o.eigen] ? ", " + STATUS[o.eigen] : ""})`).join("\n"))}</h3>` +
+      `<p class="hinweis">${s.ohne_wertung.map((o) => esc(kurzName(o.name))).join(", ")}</p>`
+    : "";
   p.innerHTML =
-    `<div class="panel-kopf"><h2>${esc(meta.label)}</h2>` +
-    (g ? `<span class="gesetzt-info">${gesicht(g.uid, g.name, 28)}gesetzt: <b>${esc(g.name)}</b> ${score(g.paar_gew)}</span>` : "") +
-    `</div>` + rollenWahlHtml(aktiverSlot) +
-    `<div class="rollen">Verlässlichkeit: mit Ball ${esc(s.verlaesslichkeit.mit)}${alias(s.mit, gw.mit)} · ohne Ball ` +
-    `${esc(s.verlaesslichkeit.ohne)}${alias(s.ohne, gw.ohne)} · Vergleichspool ${s.n_pool.mit}` +
-    `${s.n_pool.ohne !== s.n_pool.mit ? " / " + s.n_pool.ohne : ""} Spieler</div>` +
+    `<div class="panel-kopf"><h2>${esc(meta.label)} ${info(slotInfo)}</h2>` +
+    (g ? `<span class="gesetzt-info">${gesicht(g.uid, g.name, 32)}gesetzt: <b>${esc(g.name)}</b> ${score(g.paar_gew)}` +
+      `<span class="hinweis">${esc(gesetztGrund(s))}</span></span>` : "") +
+    `</div>` + rollenWahlHtml(aktiverSlot) + aliasText +
     s.hinweise.map((h) => `<p class="hinweis">Hinweis: ${esc(h)}</p>`).join("") +
     lueckenHtml(s) +
-    `<h3>Preis-Leistung</h3>${streuHtml(s)}` +
-    `<h3>Verbesserungen (${s.n_verbesserungen} von ${s.n_kandidaten} Kandidaten${s.basis != null ? ", besser als " + zahl(s.basis) : ""})</h3>` +
-    `<div id="t_kand"></div>` +
-    `<h3>Eigene Spieler (${s.n_eigene} bewertet)</h3><div id="t_eigene"></div>` +
-    (s.ohne_wertung.length
-      ? `<h3>Eigene ohne Wertung</h3><p class="hinweis">${s.ohne_wertung
-          .map((o) => `${esc(o.name)} (${esc(o.grund)}${STATUS[o.eigen] ? ", " + STATUS[o.eigen] : ""})`).join(" · ")}</p>`
-      : "");
+    `<div class="panel-raster">` +
+    `<section class="pr-streu"><h3>Preis-Leistung ${info(streuInfo(s))}</h3>${streuHtml(s)}</section>` +
+    `<section class="pr-kand"><h3>Verbesserungen (${s.n_verbesserungen} von ${s.n_kandidaten} Kandidaten` +
+    `${s.basis != null ? ", besser als " + zahl(s.basis) : ""}) ${info("Kandidaten aus der Spielersuche, deren Score über dem " +
+      "gesetzten eigenen Spieler liegt. Δ = Abstand zum Gesetzten. Zeile anklicken öffnet das Profil, Spaltenkopf sortiert.")}</h3>` +
+    `<div id="t_kand"></div></section>` +
+    `<section class="pr-eigene"><h3>Eigene Spieler (${s.n_eigene} bewertet) ${info("„auf Pos.“ = Minuten auf der " +
+      "FM-Position dieses Slots in den erfassten Spielen (letzte 20 je Spieler); orange unter 25 % der erfassten Minuten.")}</h3>` +
+    `<div id="t_eigene"></div>${ohneWertung}</section></div>`;
   p.querySelectorAll(".rollen-wahl select").forEach((se) =>
     se.addEventListener("change", () => {
       rollenWahl()[aktiverSlot][se.dataset.phase] = se.value;
@@ -420,9 +491,13 @@ function streuHtml(s) {
     `<span><span class="punkt s1"></span>Eigene Spieler</span>` +
     (s.basis != null ? `<span class="hinweis">blass = schwächer als der Gesetzte</span>` : "") + `</div>` +
     `<div class="streu-wrap"><div class="chart"><svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="Score über Marktwert">` +
-    g + marken + treffer + `</svg></div><div class="tooltip" id="streu_tip" hidden></div></div>` +
-    `<p class="hinweis">Oben links = besser und günstiger. Punkt anklicken öffnet das Profil.` +
-    (ohne ? ` ${ohne} Spieler ohne Marktwert sind nicht eingezeichnet.` : "") + `</p>`;
+    g + marken + treffer + `</svg></div><div class="tooltip" id="streu_tip" hidden></div></div>`;
+}
+
+function streuInfo(s) {
+  const { ohne } = streuDaten(s);
+  return "Score über Marktwert (logarithmisch). Oben links = besser und günstiger. Gestrichelte Linie = gesetzter " +
+    "Spieler. Punkt anklicken öffnet das Profil." + (ohne ? `\n${ohne} Spieler ohne Marktwert sind nicht eingezeichnet.` : "");
 }
 
 function streuVerdrahten(s) {
@@ -485,15 +560,6 @@ async function profilOeffnen(uid, vergleich) {
 function profilVerdrahten() {
   const sel = $("#vergleich_wahl");
   if (sel) sel.addEventListener("change", () => profilOeffnen(profilAktuell.uid, sel.value));
-  document.querySelectorAll("[data-form]").forEach((b) =>
-    b.addEventListener("click", () => {
-      zustand.chartForm = b.dataset.form;
-      speichern();
-      $("#chart_bereich").innerHTML = chartHtml(profilAktuell.p);
-      chartVerdrahten();
-      document.querySelectorAll("[data-form]").forEach((x) => x.classList.toggle("an", x.dataset.form === zustand.chartForm));
-    }),
-  );
   chartVerdrahten();
 }
 
@@ -503,78 +569,122 @@ function profilSchliessen() {
 }
 
 const statWert = (v, art) => (v == null ? "–" : zahl(v, art === "p90" ? 2 : 1));
+// Stufen wie im FM-Farbschema: ab 15, 12, 10, 7, 4, darunter (Spannen nach ihrer Mitte)
+const ATTR_STUFEN = [15, 12, 10, 7, 4, 1];
 function attrKlasse(v) {
   if (v == null) return "";
-  return v >= 16 ? "a-top" : v >= 13 ? "a-gut" : v >= 10 ? "a-mittel" : "a-schwach";
+  return "a-" + (ATTR_STUFEN.find((s) => v >= s) ?? 1);
+}
+// Perzentil als farbige Pille (gleiche Schwellen wie der Score)
+const badge = (v) => (v == null ? '<span class="hinweis">–</span>' : `<span class="badge ${stufe(v)}">${zahl(v)}</span>`);
+const perz = badge;
+
+// Statistik-Bezeichnung und Wert lesbar machen: "Tacklingquote %" -> "Tacklingquote" / "55,6 %",
+// "Sprints pro 90" -> "Sprints" / "10,8 /90"
+function statAnzeige(label, wert, pro90) {
+  let name = label;
+  const pct = /\s*%$/.test(name);
+  const p90 = pro90 || /\s+pro 90$/.test(name);
+  name = name.replace(/\s*%$/, "").replace(/\s+pro 90$/, "");
+  if (wert == null) return { name, text: "–" };
+  if (pct) return { name, text: `${zahl(wert, 1)}<span class="einheit"> %</span>` };
+  if (p90) return { name, text: `${zahl(wert, 2)}<span class="einheit"> /90</span>` };
+  return { name, text: zahl(wert, Number.isInteger(wert) ? 0 : 2) };
 }
 
-function kachel(label, wert, titel = "") {
-  return `<div class="kachel" title="${esc(titel)}"><div class="k-label">${esc(label)}</div><div class="k-wert">${wert}</div></div>`;
+// ------------------------------------------------------------------ Profil: linke Spalte
+
+const FUSS = ["Sehr schwach", "Schwach", "Durchschnitt", "Gut", "Stark", "Sehr stark"];
+// Ampel für Textwerte aus dem Spiel (nur die Wörter, die das Spiel anzeigt; nichts geschätzt)
+const AMPEL = {
+  gut: ["Begeistert", "Sehr glücklich", "Glücklich", "Zufrieden", "Sehr gering", "Gering", "Unterdurchschnittlich", "0 Tage"],
+  ok: ["Eher zufrieden", "Normal", "Durchschnittlich"],
+  warn: ["Leicht unzufrieden", "Beunruhigt", "Erhöht", "Überdurchschnittlich"],
+  schlecht: ["Unzufrieden", "Sehr unzufrieden", "Tief bestürzt", "Sehr verstimmt", "Hoch", "Sehr hoch"],
+};
+function ampel(text) {
+  const stufe = Object.keys(AMPEL).find((k) => AMPEL[k].includes(text));
+  return stufe ? `<span class="ampel a-${stufe}"></span>${esc(text)}` : esc(text);
+}
+function fussSkala(text) {
+  const n = FUSS.indexOf(text) + 1;
+  if (!n) return esc(text ?? "–");
+  return `<span class="fuss" title="${esc(text)}">` +
+    FUSS.map((_, i) => `<i class="${i < n ? "an" : ""}"></i>`).join("") + `</span>`;
 }
 
-function profilKopf(p, slot) {
+function kv(label, wert, titel = "") {
+  return wert == null || wert === "" ? "" :
+    `<div class="kv"${titel ? ` title="${esc(titel)}"` : ""}><span class="k">${esc(label)}</span><span class="v">${wert}</span></div>`;
+}
+function block(titel, inhalt) {
+  return inhalt ? `<section class="p-block"><h4>${esc(titel)}</h4>${inhalt}</section>` : "";
+}
+
+function profilSeite(p, slot) {
   const z = p.spieler, v = p.vergleich;
+  const inf = Object.fromEntries((p.attribute.info || []).map((i) => [i.feld, i.text]));
+  const t = (f) => (inf[f] == null ? null : esc(inf[f]));
   const tags = [
     STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : "",
     z.eigen ? '<span class="tag">eigener Spieler</span>' : z.in_suche ? '<span class="tag">Spielersuche</span>' : "",
   ].join("");
-  const zeile = [esc(z.club), `${esc(z.league ?? "–")}${z.liga_stufe ? ` (${esc(z.liga_stufe)})` : ""}`,
-    `${zahl(z.age)} Jahre`, esc(z.position), `${zahl(z.minutes)} Min.`, `Datenbasis ${esc(z.datenbasis ?? "–")}`].join(" · ");
   const delta = v && z.paar_gew != null && v.paar_gew != null ? z.paar_gew - v.paar_gew : null;
-  const kacheln = [
-    kachel("Score", score(z.paar_gew), "Paar-Score × Liga-Gewicht"),
-    kachel("Paar", score(z.paar), "Mittel aus mit und ohne Ball"),
-    kachel("mit Ball", score(z.mit)), kachel("ohne Ball", score(z.ohne)),
-    kachel("vs Top", zahl(z.vs_top), "50 = Median der Topclub-Spieler"),
-    kachel("Liga-Gewicht", zahl(z.liga_gewicht, 2)),
-    v ? kachel(`Δ zu ${v.name}`, `<b>${delta == null ? "–" : (delta > 0 ? "+" : "") + zahl(delta)}</b>`,
-      `gesetzt auf ${slot}: Score ${zahl(v.paar_gew)}`) : "",
-  ].join("");
-  const geldZeile = [
-    `Marktwert ${spanne(z.value, z.value_min, z.value_max)}`, `Gehalt/J. ${spanne(z.wage, z.wage_min, z.wage_max)}`,
-    `Vertrag bis ${esc(z.contract_end ?? "–")}`, z.loan_end ? `Leihe bis ${esc(z.loan_end)}` : "",
-  ].filter(Boolean).join(" · ");
-  const info = p.attribute.info || [];
-  return `<div class="profil-kopf">${gesicht(z.uid, z.name, 88)}<div><h2>${esc(z.name)} ${tags}</h2>` +
-    `<div class="rollen">${zeile}</div></div></div>` +
-    `<div class="kacheln">${kacheln}</div><div class="rollen">${geldZeile}</div>` +
-    (info.length ? `<dl class="info">${info.map((i) => `<dt>${esc(i.label)}</dt><dd>${esc(i.text)}</dd>`).join("")}</dl>` : "");
+  const kopf = `<div class="p-kopf">${gesicht(z.uid, z.name, 84)}<div class="p-name"><h2>${esc(z.name)}</h2>${tags}` +
+    `<div class="p-meta">${esc(z.club ?? "–")}</div>` +
+    `<div class="p-meta">${esc(z.league ?? "–")}${z.liga_stufe ? ` · ${esc(z.liga_stufe)}` : ""}</div>` +
+    `<div class="p-meta">${zahl(z.age)} J. · ${esc(z.position ?? "–")}</div></div></div>`;
+  const scoreInfo = `Score = Paar-Score ${zahl(z.paar)} (Mittel aus mit und ohne Ball) × Liga-Gewicht ${zahl(z.liga_gewicht, 2)}.\n` +
+    `0 = Schlecht, 50 = OK, 100 = Gut. vs Top: 50 = Median der Topclub-Spieler.\n` +
+    `${zahl(z.minutes)} Min., Datenbasis ${z.datenbasis ?? "–"}.`;
+  const scores = `<div class="p-scores">` +
+    `<div class="p-score-gross"><span class="pill ${stufe(z.paar_gew)}">${zahl(z.paar_gew)}</span>` +
+    `<span class="k">Score ${info(scoreInfo)}</span></div>` +
+    `<div class="p-score"><span class="k">mit Ball</span>${score(z.mit)}</div>` +
+    `<div class="p-score"><span class="k">ohne Ball</span>${score(z.ohne)}</div>` +
+    `<div class="p-score"><span class="k">vs Top</span><span class="score">${zahl(z.vs_top)}</span></div></div>` +
+    (v ? `<div class="p-delta" title="${esc(`${slot}: ${v.name} Score ${zahl(v.paar_gew)}`)}">Δ zu ${esc(kurzName(v.name))} ` +
+      `<b class="${delta == null ? "" : delta >= 0 ? "s-hoch" : "s-tief"}">${delta == null ? "–" : (delta > 0 ? "+" : "") + zahl(delta)}</b></div>` : "");
+
+  const einsatz = inf.rolle && inf.rolle_tatsaechlich && inf.rolle !== inf.rolle_tatsaechlich
+    ? `${t("rolle")} <span class="hinweis">→ tatsächlich</span> ${t("rolle_tatsaechlich")}` : t("rolle") ?? t("rolle_tatsaechlich");
+  const nation = inf.geburtsland && inf.geburtsland !== inf.nation
+    ? `${t("nation") ?? "–"} <span class="hinweis">(geb. ${t("geburtsland")})</span>` : t("nation");
+  const fuesse = inf.fuss_links || inf.fuss_rechts
+    ? `<span class="fuesse"><span>L ${fussSkala(inf.fuss_links)}</span><span>R ${fussSkala(inf.fuss_rechts)}</span></span>` : null;
+  const vertrag = block("Vertrag",
+    kv("Marktwert", spanne(z.value, z.value_min, z.value_max)) + kv("Gehalt/J.", spanne(z.wage, z.wage_min, z.wage_max)) +
+    kv("Vertrag bis", esc(z.contract_end ?? "–")) + kv("Leihe bis", z.loan_end ? esc(z.loan_end) : null) +
+    kv("Ausgeliehen von", t("ausgeliehen_von")) + kv("Seit", t("vertragsbeginn")) + kv("Status", t("vertragsstatus")) +
+    kv("Ablöse", t("abloeseforderung")));
+  const person = block("Person",
+    kv("Nation", nation) + kv("Größe", t("groesse")) +
+    kv("Füße", fuesse, `Links: ${inf.fuss_links ?? "–"}, rechts: ${inf.fuss_rechts ?? "–"}`) +
+    kv("Idealposition", t("idealpos")) + kv("Persönlichkeit", t("persoenlichkeit")) + kv("Medien", t("medienumgang")) +
+    kv("Eigengewächs", t("eigengewaechs")));
+  const kader = block("Kader und Stimmung",
+    kv("Einsatzzeit", einsatz, "zugesagt → tatsächlich") + kv("Hierarchie", t("hierarchie")) +
+    kv("Zufriedenheit", inf.zufriedenheit ? ampel(inf.zufriedenheit) : null) +
+    kv("Gesamt", inf.gesamtzufriedenheit ? ampel(inf.gesamtzufriedenheit) : null, "Gesamtzufriedenheit") +
+    kv("Mit Einsätzen", inf.zufriedenheit_einsaetze ? ampel(inf.zufriedenheit_einsaetze) : null));
+  const fitness = block("Fitness",
+    kv("Verletzung", inf.verletzung ? `<span class="warn-text">${t("verletzung")}</span>` : null) +
+    kv("Ausfallzeit", inf.ausfallszeit ? ampel(inf.ausfallszeit) : null) +
+    kv("Risiko", inf.verletzungsrisiko ? ampel(inf.verletzungsrisiko) : null, "Verletzungsrisiko") +
+    kv("Anfälligkeit", inf.verletzungsanfaelligkeit ? ampel(inf.verletzungsanfaelligkeit) : null, "Verletzungsanfälligkeit") +
+    kv("Belastung", inf.spielbelastung || inf.trainingsbelastung
+      ? `Spiel ${t("spielbelastung") ?? "–"} · Training ${t("trainingsbelastung") ?? "–"}` : null));
+  return `<aside class="p-seite karte">${kopf}${scores}${vertrag}${person}${kader}${fitness}</aside>`;
 }
 
-function profilScores(p) {
-  const v = p.vergleich;
-  const vk = v ? `<th class="num" title="${esc(v.name)}">${esc(v.name.split(" ").slice(-1)[0])}</th>` : "";
-  return p.rollen.map((r) => {
-    const kopf = `<h3>${r.phase === "mit" ? "Mit Ball" : "Ohne Ball"}: ${esc(r.rolle)}` +
-      (r.rolle !== r.gewertet_als ? ` <span class="tag">gewertet wie ${esc(r.gewertet_als)}</span>` : "") +
-      ` · ${score(r.score[0])}${v ? ` <span class="vgl">(${esc(v.name)}: ${zahl(r.score[1])})</span>` : ""}</h3>` +
-      `<p class="hinweis">Verlässlichkeit ${esc(r.verlaesslichkeit ?? "–")}${r.luecken ? " · " + esc(r.luecken) : ""}</p>`;
-    const zeilen = r.bausteine.map((bs) => {
-      const bz = `<tr class="baustein"><td>${esc(bs.label)} <span class="tag">×${zahl(bs.gewicht)}</span></td>` +
-        `<td></td><td></td><td class="num">${score(bs.score[0])}</td><td></td>${v ? `<td class="num">${score(bs.score[1])}</td>` : ""}</tr>`;
-      const sz = bs.stats.map((st) => {
-        if (st.fehlt) {
-          return `<tr class="stat"><td>${esc(st.label)}</td><td colspan="${v ? 5 : 4}" class="fehlt">nicht bewertet: ${esc(st.fehlt)}</td></tr>`;
-        }
-        const anker = `${statWert(st.schlecht, st.art)} / ${statWert(st.ok, st.art)} / ${statWert(st.gut, st.art)}`;
-        return `<tr class="stat"><td>${esc(st.label)}${st.niedrig ? ' <span class="tag">weniger ist besser</span>' : ""}</td>` +
-          `<td class="num">${statWert(st.wert[0], st.art)}</td><td class="num anker">${anker}</td>` +
-          `<td class="num">${score(st.score[0])}</td><td class="num">${zahl(st.vs_top[0])}</td>` +
-          (v ? `<td class="num">${statWert(st.wert[1], st.art)} · ${score(st.score[1])}</td>` : "") + `</tr>`;
-      }).join("");
-      return bz + sz;
-    }).join("");
-    return kopf + `<div class="tabelle-wrap"><table class="aufschl"><thead><tr><th>Baustein / Statistik</th>` +
-      `<th class="num">Wert</th><th class="num" title="Anker Schlecht / OK / Gut (Perzentile 25/55/90 des Pools)">Schlecht / OK / Gut</th>` +
-      `<th class="num">Score</th><th class="num" title="Anteil der Topclub-Spieler, den er übertrifft">vs Top</th>${vk}</tr></thead>` +
-      `<tbody>${zeilen}</tbody></table></div>`;
-  }).join("");
-}
+// ------------------------------------------------------------------ Profil: Attribute und Kennzahlen der Rolle
 
 function profilAttribute(a) {
   if (!a.gruppen.length) return `<h3>Attribute</h3><p class="hinweis">${esc(a.grund || "Keine Attribute vorhanden.")}</p>`;
-  const quelle = `Export „${esc(a.quelle.ansicht)}“ vom ${esc(a.quelle.datum)}: ${a.n_exakt} exakt, ${a.n_spanne} als Spanne ` +
-    `(Scouting-Kenntnisstand im Spiel, kein geschätzter Wert).`;
+  const quelle = `Export „${a.quelle.ansicht}“ vom ${a.quelle.datum}: ${a.n_exakt} exakt, ${a.n_spanne} als Spanne ` +
+    `(Scouting-Kenntnisstand im Spiel, kein geschätzter Wert; gestrichelt, Farbe nach der Mitte der Spanne).\n` +
+    `Farben wie im FM-Farbschema: ab 15, ab 12, ab 10, ab 7, ab 4, darunter.`;
+  const legende = `<span class="attr-legende">${ATTR_STUFEN.map((st) => `<span class="a-${st}">${st}</span>`).join("")}</span>`;
   const spalten = a.gruppen.map((g) =>
     `<div class="attr-gruppe"><h4>${esc(g.gruppe)}</h4>` + g.attribute.map((x) => {
       const exakt = x.wert != null;
@@ -583,24 +693,96 @@ function profilAttribute(a) {
       const klasse = attrKlasse(exakt ? x.wert : lo != null ? (lo + hi) / 2 : null) + (exakt ? "" : " spanne");
       return `<div class="attr"><span>${esc(x.name)}</span><span class="a-wert ${klasse}">${anzeige}</span></div>`;
     }).join("") + `</div>`).join("");
-  return `<h3>Attribute</h3><p class="hinweis">${quelle}</p><div class="attr-raster">${spalten}</div>`;
+  return `<h3>Attribute ${info(quelle)} ${legende}</h3><div class="attr-raster">${spalten}</div>`;
 }
 
+// Die Statistiken der beiden gewählten Rollen, nach Baustein gruppiert: Wert, Perzentil, ggf. Vergleich
+function profilKennzahlen(p) {
+  const v = p.vergleich;
+  const chart = Object.fromEntries((p.chart || []).map((d) => [d.stat, d]));
+  const vName = v ? esc(kurzName(v.name)) : "";
+  const spalten = p.rollen.map((r) => {
+    const zeilen = r.bausteine.map((bs) => {
+      const kopf = `<tr class="baustein"><td>${esc(bs.label)}${bs.gewicht !== 1 ? ` <span class="tag">×${zahl(bs.gewicht)}</span>` : ""}</td>` +
+        `<td></td><td class="num">${badge(bs.score[0])}</td>${v ? `<td class="num vgl-z">${badge(bs.score[1])}</td>` : ""}</tr>`;
+      const stats = bs.stats.map((st) => {
+        if (st.fehlt) {
+          return `<tr><td class="hinweis" title="${esc(st.fehlt)}">${esc(st.label)}</td><td colspan="${v ? 3 : 2}" class="hinweis">nicht bewertet</td></tr>`;
+        }
+        const d = chart[st.stat];
+        const a0 = statAnzeige(st.label, st.wert[0], st.art === "p90");
+        const a1 = v ? statAnzeige(st.label, st.wert[1], st.art === "p90") : null;
+        return `<tr><td>${esc(a0.name)}${st.niedrig ? ' <span class="tag" title="weniger ist besser">↓</span>' : ""}</td>` +
+          `<td class="num">${a0.text}</td><td class="num">${perz(d ? d.perzentil[0] : null)}</td>` +
+          (v ? `<td class="num vgl-z"><span class="vgl-wert">${a1.text}</span> ${perz(d ? d.perzentil[1] : null)}</td>` : "") + `</tr>`;
+      }).join("");
+      return kopf + stats;
+    }).join("");
+    return `<div class="kz"><h4>${r.phase === "mit" ? "Mit Ball" : "Ohne Ball"}: ${esc(r.rolle)} ${badge(r.score[0])}` +
+      `${v ? ` <span class="vgl">${vName} ${zahl(r.score[1])}</span>` : ""}</h4>` +
+      `<table class="kz-t"><thead><tr><th></th><th class="num">Wert</th><th class="num">Perz.</th>${v ? `<th class="num">${vName}</th>` : ""}</tr></thead>` +
+      `<tbody>${zeilen}</tbody></table></div>`;
+  }).join("");
+  const erkl = "Statistiken der gewählten Rollen, nach Baustein. Fettgedruckte Zeile = Score des Bausteins (0 = Schlecht, " +
+    "50 = OK, 100 = Gut). Perz. = Perzentil im Pool der Positionsgruppe (wie im Radar); ↓ = weniger ist besser, " +
+    "Perzentil schon gespiegelt. Anker und vs Top: Score-Aufschlüsselung weiter unten.";
+  return `<h3>Kennzahlen der Rolle ${info(erkl)}</h3><div class="kz-raster">${spalten}</div>`;
+}
+
+// Score-Aufschlüsselung mit Ankern (aufklappbar, für die Herleitung)
+function profilScores(p) {
+  const v = p.vergleich;
+  const vk = v ? `<th class="num" title="${esc(v.name)}">${esc(kurzName(v.name))}</th>` : "";
+  const teile = p.rollen.map((r) => {
+    const kopf = `<h4>${r.phase === "mit" ? "Mit Ball" : "Ohne Ball"}: ${esc(r.rolle)}` +
+      (r.rolle !== r.gewertet_als ? ` <span class="tag">gewertet wie ${esc(r.gewertet_als)}</span>` : "") +
+      ` ${badge(r.score[0])}${v ? ` <span class="vgl">${esc(kurzName(v.name))} ${zahl(r.score[1])}</span>` : ""} ` +
+      info(`Verlässlichkeit der Rollenbewertung: ${r.verlaesslichkeit ?? "–"}.` + (r.luecken ? `\nNicht erfasst: ${r.luecken}` : "")) +
+      `</h4>`;
+    const zeilen = r.bausteine.map((bs) => {
+      const bz = `<tr class="baustein"><td>${esc(bs.label)} <span class="tag">×${zahl(bs.gewicht)}</span></td>` +
+        `<td></td><td></td><td class="num">${badge(bs.score[0])}</td><td></td>${v ? `<td class="num vgl-z">${badge(bs.score[1])}</td>` : ""}</tr>`;
+      const sz = bs.stats.map((st) => {
+        if (st.fehlt) {
+          return `<tr class="stat"><td>${esc(st.label)}</td><td colspan="${v ? 5 : 4}" class="fehlt">nicht bewertet: ${esc(st.fehlt)}</td></tr>`;
+        }
+        const anker = `${statWert(st.schlecht, st.art)} / ${statWert(st.ok, st.art)} / ${statWert(st.gut, st.art)}`;
+        return `<tr class="stat"><td>${esc(st.label)}${st.niedrig ? ' <span class="tag">weniger ist besser</span>' : ""}</td>` +
+          `<td class="num">${statWert(st.wert[0], st.art)}</td><td class="num anker">${anker}</td>` +
+          `<td class="num">${badge(st.score[0])}</td><td class="num">${zahl(st.vs_top[0])}</td>` +
+          (v ? `<td class="num vgl-z"><span class="vgl-wert">${statWert(st.wert[1], st.art)}</span> ${badge(st.score[1])}</td>` : "") + `</tr>`;
+      }).join("");
+      return bz + sz;
+    }).join("");
+    return kopf + `<div class="tabelle-wrap"><table class="aufschl"><thead><tr><th></th>` +
+      `<th class="num">Wert</th><th class="num">Schlecht / OK / Gut</th>` +
+      `<th class="num">Score</th><th class="num">vs Top</th>${vk}</tr></thead>` +
+      `<tbody>${zeilen}</tbody></table></div>`;
+  }).join("");
+  return `<h3>Score-Aufschlüsselung ${info("Anker Schlecht / OK / Gut = Perzentile 25 / 55 / 90 des Pools; daraus der Score 0 / 50 / 100 je Statistik. " +
+      "Baustein-Score = Mittel seiner Statistiken, Rollen-Score = gewichtetes Mittel der Bausteine. " +
+      "vs Top = Anteil der Topclub-Spieler, den er übertrifft.")}</h3>${teile}`;
+}
+
+// Alle Statistiken: je Gruppe eine schmale Tabelle; Hauptwert pro 90 (sonst Gesamt bzw. Quote), Perzentil als Pille
 function profilStatistiken(p) {
-  const pool = `Perzentil: Anteil der ${zahl(p.pool.n)} Spieler der Positionsgruppe „${esc(p.pool.gruppe)}“ ` +
-    `(ab 900 Min., Ligen ab ${esc(p.pool.min_stufe)}), die er übertrifft; hoch = gut, auch bei „weniger ist besser“.`;
+  const pool = `Perz. = Perzentil: Anteil der ${zahl(p.pool.n)} Spieler der Positionsgruppe „${p.pool.gruppe}“ ` +
+    `(ab 900 Min., Ligen ab ${p.pool.min_stufe}), die er übertrifft. Hoch = gut, auch bei „weniger ist besser“ ` +
+    `(Fouls, Ballverluste …). Wert = pro 90 Minuten, wo es den gibt, sonst Quote oder Gesamtwert; Gesamt = Saisonsumme.`;
   const gruppen = p.statistiken.map((g) =>
-    `<div class="stat-gruppe"><h4>${esc(g.gruppe)}</h4><table><thead><tr><th>Statistik</th><th class="num">Gesamt</th>` +
-    `<th class="num">pro 90</th><th class="num">Perzentil</th></tr></thead><tbody>` +
-    g.stats.map((st) =>
-      `<tr><td>${esc(st.label)}</td><td class="num">${zahl(st.gesamt, Number.isInteger(st.gesamt) ? 0 : 2)}</td>` +
-      `<td class="num">${st.pro90 == null ? "–" : zahl(st.pro90, 2)}</td>` +
-      `<td class="num">${st.perzentil == null ? "–" : score(st.perzentil)}</td></tr>`,
-    ).join("") + `</tbody></table></div>`).join("");
-  return `<h3>Statistiken</h3><p class="hinweis">${pool}</p><div class="stat-raster">${gruppen}</div>`;
+    `<div class="stat-gruppe"><h4>${esc(g.gruppe)}</h4><table class="stat-t"><thead><tr><th></th>` +
+    `<th class="num">Wert</th><th class="num">Gesamt</th><th class="num">Perz.</th></tr></thead><tbody>` +
+    g.stats.map((st) => {
+      const mit90 = st.pro90 != null;
+      const a = statAnzeige(st.label, mit90 ? st.pro90 : st.gesamt, mit90);
+      return `<tr><td>${esc(a.name)}</td><td class="num">${a.text}</td>` +
+        `<td class="num hinweis">${mit90 ? zahl(st.gesamt, Number.isInteger(st.gesamt) ? 0 : 1) : ""}</td>` +
+        `<td class="num">${perz(st.perzentil)}</td></tr>`;
+    }).join("") + `</tbody></table></div>`).join("");
+  return `<h3>Statistiken ${info(pool)}</h3><div class="stat-raster">${gruppen}</div>`;
 }
 
-// ------------------------------------------------------------------ Vergleichschart (Pizza / Radar)
+// ------------------------------------------------------------------ Vergleichschart (Radar)
 
 function profilVergleich(p, slot) {
   const s = PLAN.slots[slot];
@@ -610,13 +792,15 @@ function profilVergleich(p, slot) {
     `<option value="${esc(z.uid)}"${z.uid === akt ? " selected" : ""}>${esc(z.name)}${zusatz} · ${zahl(z.paar_gew)}</option>`;
   const eigene = s.eigene.filter((z) => z.uid !== uid).map((z) => opt(z, z.uid === s.gesetzt ? " (gesetzt)" : "")).join("");
   const kand = s.verbesserungen.filter((z) => z.uid !== uid).map((z) => opt(z)).join("");
-  const form = zustand.chartForm || "pizza";
-  return `<div class="vergleich-kopf"><h3>Vergleich</h3>` +
-    `<label>mit <select id="vergleich_wahl"><option value=""${akt ? "" : " selected"}>– kein Vergleich –</option>` +
+  const erkl = p.chart && p.chart.length
+    ? `Perzentil je Statistik der beiden Rollen im Pool der Positionsgruppe (${zahl(p.chart[0].n_pool)} Spieler, ` +
+      `ab 900 Min., Ligen ab ${p.pool.min_stufe}). 100 = besser als alle, 50 = Median; bei „weniger ist besser“ ` +
+      `gespiegelt, also immer: weiter außen = besser.`
+    : "";
+  return `<div class="vergleich-kopf"><h3>Radar ${erkl ? info(erkl) : ""}</h3>` +
+    `<label>Vergleich <select id="vergleich_wahl"><option value=""${akt ? "" : " selected"}>– kein Vergleich –</option>` +
     (eigene ? `<optgroup label="Eigene Spieler (${esc(slot)})">${eigene}</optgroup>` : "") +
-    (kand ? `<optgroup label="Kandidaten">${kand}</optgroup>` : "") + `</select></label>` +
-    `<span class="umschalter"><button data-form="pizza" class="${form === "pizza" ? "an" : ""}">Pizza</button>` +
-    `<button data-form="radar" class="${form === "radar" ? "an" : ""}">Radar</button></span></div>` +
+    (kand ? `<optgroup label="Kandidaten">${kand}</optgroup>` : "") + `</select></label></div>` +
     `<div id="chart_bereich">${chartHtml(p)}</div>`;
 }
 
@@ -624,17 +808,10 @@ function chartHtml(p) {
   const daten = p.chart || [];
   if (!daten.length) return '<p class="hinweis">Keine bewertbaren Statistiken für diese Rollen.</p>';
   const zwei = !!p.vergleich;
-  const legende = zwei
-    ? `<div class="legende-chart"><span><span class="punkt s1"></span>${esc(p.spieler.name)}</span>` +
-      `<span><span class="punkt s2"></span>${esc(p.vergleich.name)}</span></div>`
-    : "";
-  const svg = (zustand.chartForm || "pizza") === "radar" ? radarSvg(daten, zwei) : pizzaSvg(daten, zwei);
-  const n = daten[0].n_pool;
-  return legende + `<div class="chart-wrap"><div class="chart">${svg}</div>` +
-    `<div class="hinweis">Perzentil je Statistik der beiden Rollen im Pool der Positionsgruppe (${zahl(n)} Spieler, ` +
-    `ab 900 Min., Ligen ab ${esc(p.pool.min_stufe)}). 100 = besser als alle, 50 = Median; bei „weniger ist besser“ ` +
-    `gespiegelt, also immer: weiter außen = besser. Werte und Anker stehen in der Score-Aufschlüsselung darunter.` +
-    `<div class="tooltip" id="chart_tip" hidden></div></div></div>`;
+  const legende = `<div class="legende-chart"><span><span class="punkt s1"></span>${esc(p.spieler.name)}</span>` +
+    (zwei ? `<span><span class="punkt s2"></span>${esc(p.vergleich.name)}</span>` : "") + `</div>`;
+  return legende + `<div class="chart-wrap"><div class="chart">${radarSvg(daten, zwei)}</div>` +
+    `<div class="tooltip" id="chart_tip" hidden></div></div>`;
 }
 
 // Geometrie: Mittelpunkt C, innerer Ring R0, 100. Perzentil bei R1, Beschriftung außerhalb
@@ -665,19 +842,17 @@ function beschriftung(daten, n) {
     const a = winkel(i + 0.5, n);
     const [x, y] = punkt(a, RL);
     const cos = Math.cos(a);
-    const anker = Math.abs(cos) < 0.25 ? "middle" : cos > 0 ? "start" : "end";
+    const anker = Math.abs(cos) < 0.08 ? "middle" : cos > 0 ? "start" : "end";
     const zeilen = umbrechen(d.label);
-    const dy0 = Math.sin(a) < -0.5 ? -(zeilen.length - 1) * 12 : Math.sin(a) > 0.5 ? 6 : -((zeilen.length - 1) * 6) + 3;
+    const dy0 = Math.sin(a) < -0.5 ? -(zeilen.length - 1) * 15 : Math.sin(a) > 0.5 ? 9 : -((zeilen.length - 1) * 7.5) + 4;
     return `<text x="${x.toFixed(1)}" y="${(y + dy0).toFixed(1)}" text-anchor="${anker}">` +
-      zeilen.map((z, k) => `<tspan x="${x.toFixed(1)}" dy="${k ? 12 : 0}">${esc(z)}</tspan>`).join("") + `</text>`;
+      zeilen.map((z, k) => `<tspan x="${x.toFixed(1)}" dy="${k ? 15 : 0}">${esc(z)}</tspan>`).join("") + `</text>`;
   }).join("");
 }
 
-function gitter(n, radar) {
+function gitter(n) {
   return [25, 50, 75, 100].map((pz) => {
-    const r = radius(pz);
-    if (!radar) return `<circle class="gitter" cx="${C}" cy="${C}" r="${r}"${pz === 100 ? "" : ' stroke-dasharray="2 3"'}/>`;
-    const pts = Array.from({ length: n }, (_, i) => punkt(winkel(i + 0.5, n), r).map((v) => v.toFixed(1)).join(",")).join(" ");
+    const pts = Array.from({ length: n }, (_, i) => punkt(winkel(i + 0.5, n), radius(pz)).map((v) => v.toFixed(1)).join(",")).join(" ");
     return `<polygon class="gitter" points="${pts}"${pz === 100 ? "" : ' stroke-dasharray="2 3"'}/>`;
   }).join("") + `<text x="${C + 3}" y="${(C - radius(50) + 11).toFixed(1)}">50</text>` +
     `<text x="${C + 3}" y="${(C - radius(100) + 11).toFixed(1)}">100</text>`;
@@ -688,25 +863,6 @@ function treffer(daten, n) {
     `<path class="treffer" data-i="${i}" d="${sektor(winkel(i, n), winkel(i + 1, n), 0, R1 + 12)}"/>`).join("");
 }
 
-function pizzaSvg(daten, zwei) {
-  const n = daten.length, breite = (2 * Math.PI) / n;
-  let marken = "";
-  daten.forEach((d, i) => {
-    const a0 = winkel(i, n);
-    const teile = zwei ? 2 : 1;
-    for (let k = 0; k < teile; k++) {
-      const pz = d.perzentil[k];
-      if (pz == null) continue;
-      const s0 = a0 + (k * breite) / teile, s1 = a0 + ((k + 1) * breite) / teile;
-      marken += `<path class="s${k + 1}" d="${sektor(s0, s1, R0, radius(pz))}"/>`;
-    }
-    const [x0, y0] = punkt(a0, R0), [x1, y1] = punkt(a0, R1);
-    marken += `<line class="achse" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}"/>`;
-  });
-  return `<svg viewBox="0 0 560 560" role="img" aria-label="Pizza-Chart der Perzentile">` +
-    gitter(n, false) + marken + beschriftung(daten, n) + treffer(daten, n) + `</svg>`;
-}
-
 function radarSvg(daten, zwei) {
   const n = daten.length;
   let speichen = "";
@@ -715,7 +871,6 @@ function radarSvg(daten, zwei) {
     const [x0, y0] = punkt(winkel(i + 0.5, n), R0);
     speichen += `<line class="achse" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
   }
-  // Radar: Achsen in der Sektormitte, damit Beschriftung und Trefferflächen zur Pizza passen
   const flaeche = (k) => {
     const pts = daten.map((d, i) => punkt(winkel(i + 0.5, n), radius(d.perzentil[k] ?? 0)));
     const poly = `<polygon class="f${k + 1}" points="${pts.map((q) => q.map((v) => v.toFixed(1)).join(",")).join(" ")}"/>`;
@@ -723,8 +878,8 @@ function radarSvg(daten, zwei) {
       `<circle class="p${k + 1}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="4.5"/>`)).join("");
     return poly + dots;
   };
-  return `<svg viewBox="0 0 560 560" role="img" aria-label="Radar-Chart der Perzentile">` +
-    gitter(n, true) + speichen + (zwei ? flaeche(1) : "") + flaeche(0) + beschriftung(daten, n) + treffer(daten, n) + `</svg>`;
+  return `<svg viewBox="-60 -10 680 580" role="img" aria-label="Radar-Chart der Perzentile">` +
+    gitter(n) + speichen + (zwei ? flaeche(1) : "") + flaeche(0) + beschriftung(daten, n) + treffer(daten, n) + `</svg>`;
 }
 
 function chartVerdrahten() {
@@ -770,17 +925,26 @@ function profilEinsaetze(p, slot) {
         `${g.einwechslung ? ` <span class="tag">Einw ${g.einwechslung}</span>` : ""}${g.auswechslung ? ` <span class="tag">Ausw ${g.auswechslung}</span>` : ""}</td>` +
         `<td class="num">${g.note == null ? "–" : zahl(g.note, 1)}</td><td class="num">${g.tore}</td><td class="num">${g.vorlagen}</td><td class="num">${zahl(g.xg, 2)}</td>`
       : `<td colspan="7" class="hinweis">nicht eingesetzt</td>`) + `</tr>`).join("");
-  return `<h3>Einsätze je Position</h3><p class="hinweis">Aus den erfassten Spielen (letzte 20, Stand ${esc(e.erfasst_am.replace("T", " "))}). ` +
-    (ziel ? `Hervorgehoben: Position dieses Slots (${esc(ziel)}).` : "") + `</p>` +
+  const erkl = `Aus den erfassten Spielen (letzte 20, Stand ${e.erfasst_am.replace("T", " ")}).` +
+    (ziel ? `\nHervorgehoben: Position dieses Slots (${ziel}).` : "");
+  return `<h3>Einsätze je Position ${info(erkl)}</h3>` +
     `<div class="tabelle-wrap"><table><thead><tr><th>Position</th><th>Rolle</th><th class="num">Spiele</th><th class="num">Min.</th>` +
     `<th class="num">Ø Note</th><th class="num">Tore</th><th class="num">Vorl.</th><th class="num">xG</th></tr></thead><tbody>${zeilen}</tbody></table></div>` +
     `<details class="spiele"><summary>Einzelne Spiele (${e.spiele.length})</summary><div class="tabelle-wrap"><table><thead><tr><th>Datum</th><th>Wettb.</th><th>Pos.</th><th>Rolle</th>` +
     `<th class="num">Min.</th><th class="num">Note</th><th class="num">Tore</th><th class="num">Vorl.</th><th class="num">xG</th></tr></thead><tbody>${spiele}</tbody></table></div></details>`;
 }
 
+// Auf einen Blick: links Steckbrief, Mitte Attribute und Kennzahlen der Rolle, rechts Radar.
+// Darunter: Einsätze, Score-Herleitung, alle Statistiken.
 function profilHtml(p, slot) {
-  return profilKopf(p, slot) + profilEinsaetze(p, slot) + profilVergleich(p, slot) + profilScores(p) +
-    profilAttribute(p.attribute) + profilStatistiken(p);
+  // Jeder Bereich eine Karte (.karte), damit sich die Bereiche klar voneinander abheben
+  return `<div class="profil-oben">${profilSeite(p, slot)}` +
+    `<div class="p-stapel"><section class="karte">${profilAttribute(p.attribute)}</section>` +
+    `<section class="karte">${profilKennzahlen(p)}</section></div>` +
+    `<section class="p-radar karte">${profilVergleich(p, slot)}</section></div>` +
+    `<div class="profil-unten"><section class="karte">${profilStatistiken(p)}</section>` +
+    `<div class="p-stapel"><section class="karte">${profilEinsaetze(p, slot)}</section>` +
+    `<section class="karte">${profilScores(p)}</section></div></div>`;
 }
 
 // ------------------------------------------------------------------ Spiele erfassen
@@ -842,7 +1006,10 @@ async function planHolen() {
   zustand.filter = filterLesen();
   speichern();
   try {
-    const plan = await api("/api/plan", { formation: zustand.formation, slots: rollenWahl(), filter: zustand.filter });
+    const plan = await api("/api/plan", {
+      formation: zustand.formation, slots: rollenWahl(), filter: zustand.filter,
+      aufstellung: zustand.aufstellung === "einsaetze" ? "einsaetze" : "score",
+    });
     if (nr !== planNr) return; // überholt
     PLAN = plan;
     meldung("");
@@ -871,6 +1038,7 @@ function themeSetzen(t) {
 }
 
 function init() {
+  infoVerdrahten();
   themeSetzen(THEMES[zustand.theme] ? zustand.theme : "auto");
   $("#theme").addEventListener("click", () => {
     const folge = Object.keys(THEMES);
@@ -885,6 +1053,11 @@ function init() {
     planAnfordern();
   });
   document.querySelectorAll("[data-f]").forEach((el) => el.addEventListener("change", planAnfordern));
+  $("#aufstellung").addEventListener("change", (e) => {
+    zustand.aufstellung = e.target.value;
+    speichern();
+    planAnfordern();
+  });
   $("#filter_reset").addEventListener("click", () => {
     zustand.filter = {};
     speichern();

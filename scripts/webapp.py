@@ -70,6 +70,7 @@ class PlanIn(BaseModel):
     formation: str
     slots: dict[str, dict[str, str]] = {}
     filter: FilterIn = FilterIn()
+    aufstellung: str = "score"  # "score" oder "einsaetze" (wie bisher gespielt)
 
 
 class ReloadIn(BaseModel):
@@ -142,7 +143,7 @@ def create_app(
     def plan(body: PlanIn):
         f = planer.Filter(**{k.name: getattr(body.filter, k.name) for k in fields(planer.Filter)})
         try:
-            return planer.plan(state["ctx"], body.formation, body.slots, f)
+            return planer.plan(state["ctx"], body.formation, body.slots, f, body.aufstellung)
         except SystemExit as e:
             raise _fehler(e) from None
 

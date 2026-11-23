@@ -156,6 +156,32 @@ def test_aufstellung_ueberspringt_verliehene():
     assert planer.aufstellung(eigene) == {"S1": None, "S2": "Y"}
 
 
+def test_aufstellung_nach_einsaetzen_mit_seite_und_rueckfall_auf_score():
+    meta = {
+        "IV l": {"position": "IV", "x": 37, "y": 78}, "IV r": {"position": "IV", "x": 63, "y": 78},
+        "LV": {"position": "AV", "x": 12, "y": 72}, "TW": {"position": "TW", "x": 50, "y": 92},
+    }  # fmt: skip
+    ivs = pd.DataFrame({"uid": ["A", "B", "C"], "paar_gew": [90.0, 50.0, 40.0], "eigen": ["kader"] * 3})
+    eigene = {
+        "IV l": ivs, "IV r": ivs,
+        "LV": pd.DataFrame({"uid": ["A", "D"], "paar_gew": [95.0, 30.0], "eigen": ["kader"] * 2}),
+        "TW": pd.DataFrame({"uid": ["T", "S"], "paar_gew": [60.0, 50.0], "eigen": ["kader"] * 2}),
+    }  # fmt: skip
+    links, rechts, ohne = (1 << 28) | (1 << 12), (1 << 29) | (1 << 12), 1 << 12  # V (Z) = Bit 12 (+Seite)
+    info = {
+        "B": pd.DataFrame({"position": ["V (Z)"] * 3, "position_bits": [rechts] * 3, "minuten": [90, 90, 90]}),
+        "C": pd.DataFrame({"position": ["V (Z)"] * 3, "position_bits": [links, links, ohne], "minuten": [90, 90, 90]}),
+        "D": pd.DataFrame({"position": ["V (L)"] * 3, "position_bits": [1 << 11] * 3, "minuten": [90, 90, 90]}),
+        "S": pd.DataFrame({"position": ["TW"], "position_bits": [1 << 8], "minuten": [90]}),  # zu wenig
+    }  # fmt: skip
+    elf, grund = planer.aufstellung_einsaetze(eigene, meta, info)
+    # B spielte rechts, C links; A (bester Score) ohne Einsätze -> nicht gesetzt, D statt A links hinten;
+    # S hat nur 90 Min. im Tor -> TW nach Score (T)
+    assert elf == {"IV l": "C", "IV r": "B", "LV": "D", "TW": "T"}
+    assert grund["IV r"] == {"art": "einsaetze", "minuten": 270, "spiele": 3, "position": "V (Z)"}
+    assert grund["TW"] == {"art": "score"}
+
+
 # ------------------------------------------------------------------ Datenbasis und DB-Adapter
 
 

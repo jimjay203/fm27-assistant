@@ -21,6 +21,12 @@
     </div>
     <div class="steuerung">
       <label>Formation <select id="formation"></select></label>
+      <label title="Wer gesetzt ist: beste Elf nach Score oder wie bisher gespielt (erfasste Spiele, ab 270 Min. auf der Position)">Aufstellung
+        <select id="aufstellung">
+          <option value="score">nach Score</option>
+          <option value="einsaetze">wie gespielt</option>
+        </select>
+      </label>
       <label>Quelle
         <select id="quelle">
           <option value="db">DB (Exporte)</option>
@@ -55,9 +61,13 @@
         <div class="linie mitte"></div><div class="kreis"></div>
         <div class="strafraum oben"></div><div class="strafraum unten"></div>
       </div>
-      <p class="legende">Karte: gesetzter eigener Spieler mit Score (Paar-Score × Liga-Gewicht; 0 = Schlecht, 50 = OK,
-        100 = Gut). Randfarbe: grün ab 66, gelb ab 40, rot darunter. ▲ = bester Kandidat mit Abstand zum Gesetzten.
-        Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).</p>
+      <p class="legende">
+        <span><span class="farbe t-hoch"></span>ab 66</span><span><span class="farbe t-mittel"></span>ab 40</span>
+        <span><span class="farbe t-tief"></span>darunter</span><span>▲ bester Kandidat</span>
+        <span class="info-i" tabindex="0" role="button" aria-label="Info zur Karte" data-info="Karte: gesetzter eigener Spieler mit Score (Paar-Score × Liga-Gewicht; 0 = Schlecht, 50 = OK, 100 = Gut). Randfarbe: grün ab 66, gelb ab 40, rot darunter.
+▲ = bester Kandidat aus der Spielersuche mit Abstand zum Gesetzten. ! = eine Rolle nur teilweise bewertbar.
+Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).">i</span>
+      </p>
     </div>
     <aside id="panel" class="panel">
       <p class="leer">Slot anklicken, um Ranglisten und Verbesserungen zu sehen.</p>

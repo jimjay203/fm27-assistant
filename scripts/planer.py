@@ -419,6 +419,58 @@ def aufstellung(eigene: dict[str, pd.DataFrame]) -> dict[str, str | None]:
     return out
 
 
+SEITEN_BIT = {"L": 28, "R": 29}  # Seite innerhalb einer zentralen Position (config/spiel_codes.yaml)
+MIN_MINUTEN_POSITION = 270  # darunter zählt ein Spieler auf der Position nicht als "dort gespielt" (3 volle Spiele)
+
+
+def slot_seite(slot: dict) -> str | None:
+    """Seite eines Slots auf dem Feld: L/R nach x (50 = Mitte, keine Seite)."""
+    return "L" if slot["x"] < 50 else "R" if slot["x"] > 50 else None
+
+
+def aufstellung_einsaetze(
+    eigene: dict[str, pd.DataFrame], meta: dict[str, dict], info: dict[str, pd.DataFrame]
+) -> tuple[dict[str, str | None], dict[str, dict]]:
+    """Elf wie bisher gespielt: je Slot der Spieler mit den meisten erfassten Minuten auf der FM-Position des Slots.
+
+    Gewicht = Minuten auf der Position + halbe Minuten auf derselben Seite (trennt z. B. linken und rechten IV).
+    Zählt erst ab MIN_MINUTEN_POSITION, damit Kurzeinsätze nicht einen nicht erfassten Stammspieler verdrängen.
+    Greedy ohne Doppelbesetzung; nur Spieler, die für den Slot bewertet sind. Slots ohne passende Einsätze
+    werden mit den übrigen Spielern nach Score besetzt. Rückgabe: Elf und je Slot der Grund."""
+    paare = []
+    for slot, df in eigene.items():
+        label, seite = fm_position(meta[slot]), slot_seite(meta[slot])
+        for _, r in df.iterrows():
+            uid = str(r["uid"])
+            t = info.get(uid)
+            if t is None or r.get("eigen") == "leihe_aus" or pd.isna(r.get("paar_gew")):
+                continue
+            m = t[t["position"] == label]
+            minuten = float(m["minuten"].sum())
+            if minuten < MIN_MINUTEN_POSITION:
+                continue
+            gleiche_seite = 0.0
+            if seite:
+                bits = m["position_bits"].fillna(0).to_numpy(dtype="int64")
+                gleiche_seite = float(m["minuten"].to_numpy()[((bits >> SEITEN_BIT[seite]) & 1) == 1].sum())
+            paare.append((minuten + 0.5 * gleiche_seite, slot, uid, minuten, len(m)))
+    paare.sort(key=lambda t: -t[0])
+    elf: dict[str, str | None] = {s: None for s in eigene}
+    grund: dict[str, dict] = {}
+    vergeben: set[str] = set()
+    for _, slot, uid, minuten, spiele_n in paare:
+        if elf[slot] is None and uid not in vergeben:
+            elf[slot] = uid
+            vergeben.add(uid)
+            grund[slot] = {"art": "einsaetze", "minuten": int(minuten), "spiele": spiele_n,
+                           "position": fm_position(meta[slot])}  # fmt: skip
+    offen = {s: df[~df["uid"].astype(str).isin(vergeben)] for s, df in eigene.items() if elf[s] is None}
+    for slot, uid in aufstellung(offen).items():
+        elf[slot] = uid
+        grund[slot] = {"art": "score" if uid else "keiner"}
+    return elf, grund
+
+
 PUNKT_FELDER = [
     "uid",
     "name",
@@ -481,8 +533,14 @@ def auf_position(zeilen: list[dict], label: str | None, info: dict[str, pd.DataF
         )  # fmt: skip
 
 
-def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> dict:
-    """Je Slot: eigene Rangliste, Verbesserungen gegenüber dem gesetzten Spieler, Datenlücken; dazu die Elf."""
+def plan(
+    ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter, aufstellung_nach: str = "score"
+) -> dict:
+    """Je Slot: eigene Rangliste, Verbesserungen gegenüber dem gesetzten Spieler, Datenlücken; dazu die Elf.
+
+    aufstellung_nach: "score" = beste Elf nach Paar-Score, "einsaetze" = wie bisher gespielt (erfasste Spiele)."""
+    if aufstellung_nach not in ("score", "einsaetze"):
+        common.die(f"Unbekannte Aufstellung '{aufstellung_nach}' (score oder einsaetze).")
     filter_pruefen(ctx, f)
     form = (ctx.formationen.get("formationen") or {}).get(formation)
     if not form:
@@ -498,7 +556,12 @@ def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> d
         mit, ohne, own, cand = slot_bewerten(ctx, mit_n, ohne_n, f)
         bewertet[sn] = (mit_n, ohne_n, mit, ohne, own, cand)
         eigene[sn] = own
-    elf = aufstellung(eigene)
+    info = einsaetze_je_spieler(ctx)
+    if aufstellung_nach == "einsaetze":
+        elf, gruende = aufstellung_einsaetze(eigene, meta, info)
+    else:
+        elf = aufstellung(eigene)
+        gruende = {s: {"art": "score" if u else "keiner"} for s, u in elf.items()}
     slots = {}
     for sn, (mit_n, ohne_n, mit, ohne, own, cand) in bewertet.items():
         gesetzt = elf[sn]
@@ -517,7 +580,7 @@ def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> d
             "gewertet_als": {"mit": mit, "ohne": ohne},
             "verlaesslichkeit": {"mit": rm.get("verlaesslichkeit"), "ohne": ro.get("verlaesslichkeit")},
             "hinweise": [r["luecken"] for r in (rm, ro) if r.get("luecken")],
-            "gesetzt": gesetzt, "basis": _wert(basis),
+            "gesetzt": gesetzt, "gesetzt_grund": gruende.get(sn), "basis": _wert(basis),
             "eigene": _zeilen(ctx, top_own, mit, ohne), "n_eigene": len(own),
             "ohne_wertung": ohne_wertung(ctx, mit, own, f),
             "verbesserungen": kand, "n_verbesserungen": len(besser), "n_kandidaten": len(cand),
@@ -525,9 +588,8 @@ def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> d
             "n_pool": {"mit": ctx.anker[rm["gruppe"]]["n_pool"], "ohne": ctx.anker[ro["gruppe"]]["n_pool"]},
             "punkte": {"kandidaten": punkte(cand), "eigene": punkte(own)},
         }  # fmt: skip
-    info = einsaetze_je_spieler(ctx)
     for sn, sl in slots.items():
         sl["fm_position"] = fm_position(meta[sn])
         auf_position(sl["eigene"], sl["fm_position"], info)
     return {"formation": formation, "slots": slots, "elf": elf, "stand": ctx.stand,
-            "einsaetze_erfasst": len(info)}  # fmt: skip
+            "einsaetze_erfasst": len(info), "aufstellung_nach": aufstellung_nach}  # fmt: skip

@@ -19,8 +19,9 @@ formationen:
       "IV r":        {position: IV, x: 63, y: 78}
       "IV l":        {position: IV, x: 37, y: 78}
       LV:            {position: AV, x: 12, y: 72}
-      "DM Lynen":    {position: DM, label: "DM r", x: 62, y: 56}
-      "DM Svanberg": {position: DM, label: "DM l", x: 38, y: 56}
+      # Seiten wie taktik.md (Svanberg/Reis rechts hinter Weiser) und die erfassten Spiele (Lynen: DM links)
+      "DM Lynen":    {position: DM, label: "DM l", x: 38, y: 56}
+      "DM Svanberg": {position: DM, label: "DM r", x: 62, y: 56}
       "OM r":        {position: FL, x: 85, y: 32}
       "OM z":        {position: OM, x: 50, y: 34}
       "OM l":        {position: FL, x: 15, y: 32}
