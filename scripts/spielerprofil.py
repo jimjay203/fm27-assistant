@@ -22,6 +22,7 @@ import common
 import per90
 import planer
 import rollen
+import spiele
 
 # Anzeige der Statistiken: Gruppe -> [(interner Name, Bezeichnung)]. Nicht gelistete Statistiken: "Weitere".
 STAT_GRUPPEN: dict[str, list[tuple[str, str]]] = {
@@ -327,6 +328,32 @@ def chart_daten(ctx: planer.Kontext, sub: pd.DataFrame, aufschl: list[dict]) -> 
     return out
 
 
+def einsatz_profil(ctx: planer.Kontext, uid: str) -> dict | None:
+    """Erfasste Spiele (scripts/spiele.py): je Position und Rolle zusammengefasst und die einzelnen Spiele."""
+    if not ctx.db:
+        return None
+    conn = common.connect(ctx.db_path)
+    try:
+        df = spiele.einsaetze(conn, ctx.save, uid)
+    finally:
+        conn.close()
+    if df.empty:
+        return None
+    c = spiele.codes()
+    wb = c.get("wettbewerbe") or {}
+    liste = [{
+        "datum": r.datum, "eingesetzt": bool(r.eingesetzt), "position": r.position, "rolle": r.rolle,
+        "rolle_kurz": r.rolle_kurz, "minuten": _w(r.minuten), "einwechslung": _w(r.einwechslung),
+        "auswechslung": _w(r.auswechslung), "note": _w(r.note), "tore": _w(r.tore), "vorlagen": _w(r.vorlagen),
+        "xg": _w(r.xg), "wettbewerb": (wb.get(int(r.wettbewerb)) or {}).get("label") if pd.notna(r.wettbewerb) else None,
+    } for r in df.itertuples()]  # fmt: skip
+    return {
+        "je_position": spiele.je_position(df),
+        "spiele": liste[::-1],
+        "erfasst_am": df["erfasst_am"].max(),
+    }
+
+
 # --------------------------------------------------------------------------- Profil
 
 
@@ -372,5 +399,6 @@ def profil(
         "chart": chart_daten(ctx, sub, aufschl),
         "statistiken": statistiken(ctx, row, gruppe),
         "attribute": attribute_und_info(ctx, row),
+        "einsaetze": einsatz_profil(ctx, str(row.iloc[0]["uid"])),
         "pool": {"gruppe": gruppe, "n": len(_pool(ctx, gruppe)), "min_stufe": ctx.pool_min_stufe},
     }

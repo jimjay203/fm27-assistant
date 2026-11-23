@@ -111,3 +111,30 @@ def test_plan_liefert_punkte_und_label(client):
     assert {z["uid"] for z in s["punkte"]["eigene"]} == {"A", "B"}
     m = client.get("/api/meta").json()
     assert m["formationen"]["2er"]["slots"]["ST r"]["label"] == "ST r"  # ohne label: Schlüssel
+
+
+def test_spiele_erfassen_endpoint():
+    aufrufe = []
+
+    def laden(e):
+        return planer.kontext_bauen(
+            mini_df(), mini_rk(), ligen.Ligen.laden(), {"min_minuten": 900}, MINI_FORMATIONEN
+        )
+
+    def erfassen(schnell):
+        aufrufe.append(schnell)
+        return {
+            "listen": 3,
+            "gespeichert": [],
+            "offen": [],
+            "modus": "quick" if schnell else "full",
+            "sekunden": 1,
+        }
+
+    start = {"quelle": "db", "pool_min_stufe": "Gut", "anker_min_n": 100}
+    c = TestClient(webapp.create_app(laden, start, None, erfassen))
+    assert c.get("/api/meta").json()["erfassen_moeglich"] is True
+    r = c.post("/api/spiele/erfassen?schnell=true")
+    assert r.status_code == 200 and r.json()["modus"] == "quick" and aufrufe == [True]
+    ohne = TestClient(webapp.create_app(laden, start))
+    assert ohne.post("/api/spiele/erfassen").status_code == 400

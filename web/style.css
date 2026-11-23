@@ -246,3 +246,8 @@ details.luecken ul { margin: 4px 0; padding-left: 18px; color: var(--warn); }
 /* ---------------------------------------------------------------- Profil-Kopf mit Bild */
 .profil-kopf { display: flex; gap: 14px; align-items: center; padding-right: 36px; }
 .profil-kopf h2 { margin-bottom: 2px; }
+
+/* ---------------------------------------------------------------- Erfasste Spiele */
+.warn-text { color: var(--warn); font-weight: 600; }
+details.spiele { margin-top: 8px; font-size: 12px; }
+details.spiele summary { cursor: pointer; color: var(--muted); }

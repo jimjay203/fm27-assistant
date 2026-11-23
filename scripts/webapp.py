@@ -37,6 +37,7 @@ import common
 import fmmt
 import live
 import planer
+import spiele
 import spielerprofil
 
 WEB = common.ROOT / "web"
@@ -83,11 +84,13 @@ def _fehler(e: SystemExit, status: int = 400) -> HTTPException:
 
 
 def create_app(
-    laden: Callable[[dict], planer.Kontext], start: dict, faces: Path | None = None
-) -> FastAPI:
+    laden: Callable[[dict], planer.Kontext], start: dict, faces: Path | None = None,
+    erfassen: Callable[[bool], dict] | None = None,
+) -> FastAPI:  # fmt: skip
     """`laden(einstellungen) -> Kontext`; `start` = Einstellungen der ersten Ladung (quelle, pool_min_stufe, ...).
 
-    `faces`: Ordner mit face_<uid>.png (None = keine Bilder, die Oberfläche zeigt Initialen)."""
+    `faces`: Ordner mit face_<uid>.png (None = keine Bilder, die Oberfläche zeigt Initialen).
+    `erfassen(schnell) -> Ergebnis`: Spiellisten aus FM27 lesen und speichern (scripts/spiele.py); None = aus."""
     app = FastAPI(title="FM27 Kaderplaner")
     state = {"ctx": laden(start), "einstellungen": dict(start)}
     lock = threading.Lock()
@@ -104,7 +107,34 @@ def create_app(
             "stufen": ctx.lg.stufen,
             "gewichtungen": ["aus", *ctx.lg.schemata()],
             "filter_standard": asdict(planer.Filter()),
+            "einsaetze": einsatz_stand(ctx),
+            "erfassen_moeglich": erfassen is not None,
         }
+
+    def einsatz_stand(ctx) -> dict | None:
+        if not ctx.db:
+            return None
+        conn = common.connect(ctx.db_path)
+        try:
+            return spiele.stand(conn, ctx.save)
+        finally:
+            conn.close()
+
+    erfass_lock = threading.Lock()
+
+    @app.post("/api/spiele/erfassen")
+    def spiele_erfassen(schnell: bool = False):
+        if erfassen is None:
+            raise HTTPException(status_code=400, detail="Erfassen ist nicht eingerichtet.")
+        if not erfass_lock.acquire(blocking=False):
+            raise HTTPException(status_code=409, detail="Eine Erfassung läuft bereits.")
+        try:
+            res = erfassen(schnell)
+        except SystemExit as e:
+            raise _fehler(e, 503) from None
+        finally:
+            erfass_lock.release()
+        return {**res, "stand": einsatz_stand(state["ctx"])}
 
     @app.post("/api/plan")
     def plan(body: PlanIn):
@@ -201,6 +231,17 @@ def main(argv=None) -> None:
             pool_min_stufe=e["pool_min_stufe"], anker_min_n=e["anker_min_n"],
         )  # fmt: skip
 
+    def erfassen(schnell: bool) -> dict:
+        if reader:
+            reader.sicherstellen()
+        antwort = spiele.abrufen(a.url, schnell)
+        conn = common.connect(a.db)
+        try:
+            res = spiele.erfassen(conn, save, antwort["lists"])
+        finally:
+            conn.close()
+        return {**res, "modus": antwort.get("mode"), "sekunden": antwort.get("seconds")}
+
     quelle = a.quelle
     if quelle == "auto":
         quelle = "live" if fmmt.spiel_bereit(a.url) else "db"
@@ -209,13 +250,13 @@ def main(argv=None) -> None:
     if faces is None:
         print("Hinweis: kein Faces-Ordner gefunden, Spielerbilder werden durch Initialen ersetzt.")
     try:
-        app = create_app(laden, start, faces)
+        app = create_app(laden, start, faces, erfassen)
     except SystemExit as e:
         if quelle != "live" or a.quelle == "live":
             raise
         print(f"Live-Daten nicht ladbar ({getattr(e, 'meldung', e)}), weiter mit der DB.")
         start["quelle"] = "db"
-        app = create_app(laden, start, faces)
+        app = create_app(laden, start, faces, erfassen)
     print(f"Quelle: {start['quelle']}")
 
     import uvicorn

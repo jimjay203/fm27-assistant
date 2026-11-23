@@ -106,7 +106,10 @@ function steuerungAufbauen() {
     `Pool ab ${s.pool_min_stufe}`,
   ];
   if (s.verein) teile.splice(1, 0, s.verein);
+  const e = META.einsaetze;
+  if (e) teile.push(e.spieler ? `Spiele erfasst: ${e.spieler} Spieler` : "Spiele nicht erfasst");
   $("#stand").textContent = teile.join(" · ");
+  $("#erfassen").hidden = !META.erfassen_moeglich;
 }
 
 function filterLesen() {
@@ -265,10 +268,19 @@ const SP_SCORES = [
   { k: "paar_gew", l: "Score", num: true, f: (z) => score(z.paar_gew), titel: "Paar-Score × Liga-Gewicht" },
   { k: "vs_top", l: "vs Top", num: true, f: (z) => zahl(z.vs_top), titel: "50 = Median der Topclub-Spieler" },
 ];
+function aufPosition(z) {
+  if (z.pos_min == null) return '<span class="hinweis">–</span>';
+  const anteil = z.erfasst_min ? z.pos_min / z.erfasst_min : 0;
+  const kl = anteil < 0.25 ? "warn-text" : "";
+  return `<span class="${kl}" title="${z.pos_spiele} von ${z.erfasst_spiele} erfassten Spielen auf dieser Position` +
+    `${z.pos_note != null ? ", Ø Note " + zahl(z.pos_note, 2) : ""}">${zahl(z.pos_min)} Min. (${zahl(anteil * 100)} %)</span>`;
+}
 const SP_EIGENE = [
   SP_NAME,
   { k: "age", l: "Alter", num: true },
   { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+  { k: "pos_min", l: "auf Pos.", num: true, f: aufPosition,
+    titel: "Minuten auf dieser Position in den erfassten Spielen (letzte 20 je Spieler, „Spiele erfassen“)" },
   ...SP_SCORES,
   { k: "contract_end", l: "Vertrag" },
 ];
@@ -740,8 +752,82 @@ function chartVerdrahten() {
   });
 }
 
+function profilEinsaetze(p, slot) {
+  const e = p.einsaetze;
+  if (!e) {
+    return '<h3>Einsätze je Position</h3><p class="hinweis">Noch nicht erfasst. In FM27 „Leistung → Spiele“ des Spielers ' +
+      'öffnen und oben „Spiele erfassen“ klicken.</p>';
+  }
+  const ziel = PLAN && PLAN.slots[slot] ? PLAN.slots[slot].fm_position : null;
+  const zeilen = e.je_position.map((r) =>
+    `<tr${r.position === ziel ? ' class="gesetzt"' : ""}><td>${esc(r.position ?? "–")}</td><td>${esc(r.rolle ?? "–")}</td>` +
+    `<td class="num">${r.spiele}</td><td class="num">${zahl(r.minuten)}</td><td class="num">${r.note == null ? "–" : zahl(r.note, 2)}</td>` +
+    `<td class="num">${r.tore}</td><td class="num">${r.vorlagen}</td><td class="num">${zahl(r.xg, 2)}</td></tr>`).join("");
+  const spiele = e.spiele.map((g) =>
+    `<tr><td>${esc(g.datum.split("-").reverse().join("."))}</td><td>${esc(g.wettbewerb ?? "")}</td>` +
+    (g.eingesetzt
+      ? `<td>${esc(g.position ?? "–")}</td><td>${esc(g.rolle_kurz ?? "–")}</td><td class="num">${zahl(g.minuten)}` +
+        `${g.einwechslung ? ` <span class="tag">Einw ${g.einwechslung}</span>` : ""}${g.auswechslung ? ` <span class="tag">Ausw ${g.auswechslung}</span>` : ""}</td>` +
+        `<td class="num">${g.note == null ? "–" : zahl(g.note, 1)}</td><td class="num">${g.tore}</td><td class="num">${g.vorlagen}</td><td class="num">${zahl(g.xg, 2)}</td>`
+      : `<td colspan="7" class="hinweis">nicht eingesetzt</td>`) + `</tr>`).join("");
+  return `<h3>Einsätze je Position</h3><p class="hinweis">Aus den erfassten Spielen (letzte 20, Stand ${esc(e.erfasst_am.replace("T", " "))}). ` +
+    (ziel ? `Hervorgehoben: Position dieses Slots (${esc(ziel)}).` : "") + `</p>` +
+    `<div class="tabelle-wrap"><table><thead><tr><th>Position</th><th>Rolle</th><th class="num">Spiele</th><th class="num">Min.</th>` +
+    `<th class="num">Ø Note</th><th class="num">Tore</th><th class="num">Vorl.</th><th class="num">xG</th></tr></thead><tbody>${zeilen}</tbody></table></div>` +
+    `<details class="spiele"><summary>Einzelne Spiele (${e.spiele.length})</summary><div class="tabelle-wrap"><table><thead><tr><th>Datum</th><th>Wettb.</th><th>Pos.</th><th>Rolle</th>` +
+    `<th class="num">Min.</th><th class="num">Note</th><th class="num">Tore</th><th class="num">Vorl.</th><th class="num">xG</th></tr></thead><tbody>${spiele}</tbody></table></div></details>`;
+}
+
 function profilHtml(p, slot) {
-  return profilKopf(p, slot) + profilVergleich(p, slot) + profilScores(p) + profilAttribute(p.attribute) + profilStatistiken(p);
+  return profilKopf(p, slot) + profilEinsaetze(p, slot) + profilVergleich(p, slot) + profilScores(p) +
+    profilAttribute(p.attribute) + profilStatistiken(p);
+}
+
+// ------------------------------------------------------------------ Spiele erfassen
+
+let erfassung = null; // { bis, timer, bekannt }
+
+async function erfassenSchritt(schnell) {
+  const r = await api(`/api/spiele/erfassen?schnell=${schnell ? "true" : "false"}`, {});
+  const neu = r.gespeichert.filter((g) => !erfassung.bekannt.has(g.uid));
+  r.gespeichert.forEach((g) => erfassung.bekannt.add(g.uid));
+  const offen = r.offen.length ? ` · ${r.offen.length} Listen nicht eindeutig zuordenbar` : "";
+  meldung(`Erfassung läuft (${r.modus === "quick" ? "schnell" : "voller Durchlauf"}, ${zahl(r.sekunden, 1)} s): ` +
+    `${r.stand.spieler} Spieler erfasst${neu.length ? ", neu: " + neu.map((g) => kurzName(g.name)).join(", ") : ""}${offen}. ` +
+    `In FM27 durch die Leistungsbildschirme blättern; „Erfassung stoppen“ beendet.`);
+  if (META) META.einsaetze = r.stand;
+  if (neu.length) planAnfordern();
+}
+
+function erfassungStoppen(text) {
+  if (!erfassung) return;
+  clearTimeout(erfassung.timer);
+  erfassung = null;
+  $("#erfassen").textContent = "Spiele erfassen";
+  meldung(text || "");
+  metaHolen().catch((e) => meldung(e.message, true));
+}
+
+async function erfassungStarten() {
+  erfassung = { bis: Date.now() + 15 * 60 * 1000, timer: null, bekannt: new Set() };
+  $("#erfassen").textContent = "Erfassung stoppen";
+  meldung("Lese alle Spiellisten aus FM27 (voller Durchlauf, etwa eine Minute) …");
+  try {
+    await erfassenSchritt(false);
+  } catch (e) {
+    return erfassungStoppen(`Erfassen fehlgeschlagen: ${e.message}`);
+  }
+  const weiter = async () => {
+    if (!erfassung) return;
+    if (Date.now() > erfassung.bis) return erfassungStoppen("Erfassung nach 15 Minuten beendet.");
+    try {
+      await erfassenSchritt(true);
+    } catch (e) {
+      meldung(`Erfassen: ${e.message}`, true);
+    }
+    if (erfassung) erfassung.timer = setTimeout(weiter, 4000);
+  };
+  erfassung.timer = setTimeout(weiter, 4000);
 }
 
 // ------------------------------------------------------------------ Ablauf
@@ -805,6 +891,7 @@ function init() {
     steuerungAufbauen();
     planAnfordern();
   });
+  $("#erfassen").addEventListener("click", () => (erfassung ? erfassungStoppen() : erfassungStarten()));
   $("#neu_laden").addEventListener("click", async () => {
     const knopf = $("#neu_laden");
     knopf.disabled = true;

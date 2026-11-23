@@ -92,6 +92,14 @@ CREATE TABLE IF NOT EXISTS leagues(league TEXT PRIMARY KEY, reputation_or_streng
 CREATE TABLE IF NOT EXISTS league_ranking(  -- config/ligen.yaml: rang = Listenposition (1 = oben)
   league TEXT NOT NULL, country TEXT NOT NULL, rang INTEGER NOT NULL, ansehen TEXT, pos INTEGER,
   PRIMARY KEY(league, country));
+CREATE TABLE IF NOT EXISTS spieleinsaetze(  -- scripts/spiele.py: Spiellisten aus FM27 (FMMT /api/matchlists)
+  save TEXT NOT NULL, player_uid TEXT NOT NULL, datum TEXT NOT NULL,
+  gegner_id INTEGER, wettbewerb INTEGER, eingesetzt INTEGER NOT NULL,
+  position_bits INTEGER, rolle_id INTEGER, minuten INTEGER, einwechslung INTEGER, auswechslung INTEGER,
+  note REAL, tore INTEGER, vorlagen INTEGER, xg REAL,
+  roh TEXT,             -- alle 0x37 Bytes als Hex: noch nicht zugeordnete Felder bleiben erhalten
+  erfasst_am TEXT NOT NULL,
+  PRIMARY KEY(save, player_uid, datum));
 """
 
 

@@ -29,6 +29,7 @@ import live
 import per90
 import rollen
 import sellkeep
+import spiele
 
 SPIELER_FELDER = [
     "uid", "name", "club", "league", "liga_stufe", "position", "age", "minutes", "eigen", "datenbasis",
@@ -440,6 +441,46 @@ def punkte(df: pd.DataFrame, n_max: int = 600) -> list[dict]:
     ]
 
 
+def fm_position(slot: dict) -> str | None:
+    """Positionsbezeichnung des Slots wie in der Spalte "Pos." im FM27-Spielbildschirm, z. B. "OM (R)", "V (Z)"."""
+    pos, x, y = slot.get("position"), slot["x"], slot["y"]
+    seite = "R" if x > 60 else "L" if x < 40 else "Z"
+    return {
+        "TW": "TW", "IV": "V (Z)", "AV": f"V ({seite})", "FV": f"FV ({seite})", "DM": "DM", "ZM": "M (Z)",
+        "OM": "OM (Z)", "ST": "ST (Z)", "FL": f"OM ({seite})" if y < 40 else f"M ({seite})",
+    }.get(pos)  # fmt: skip
+
+
+def einsaetze_je_spieler(ctx: Kontext) -> dict[str, pd.DataFrame]:
+    """Erfasste, gespielte Spiele (Tabelle spieleinsaetze) je Spieler-UID; leer ohne DB oder ohne Erfassung."""
+    if not ctx.db:
+        return {}
+    conn = common.connect(ctx.db_path)
+    try:
+        df = spiele.einsaetze(conn, ctx.save)
+    finally:
+        conn.close()
+    if df.empty:
+        return {}
+    df = df[df["eingesetzt"] == 1]
+    return {str(u): t for u, t in df.groupby("player_uid")}
+
+
+def auf_position(zeilen: list[dict], label: str | None, info: dict[str, pd.DataFrame]) -> None:
+    """Ergänzt je Spieler: Minuten/Spiele/Note auf der Slot-Position und erfasste Minuten insgesamt."""
+    for z in zeilen:
+        t = info.get(z["uid"])
+        if t is None:
+            z.update(erfasst_min=None, pos_min=None, pos_spiele=None, pos_note=None)
+            continue
+        m = t[t["position"] == label] if label else t.iloc[0:0]
+        noten = m["note"].dropna()
+        z.update(
+            erfasst_min=int(t["minuten"].sum()), erfasst_spiele=len(t), pos_min=int(m["minuten"].sum()),
+            pos_spiele=len(m), pos_note=round(float(noten.mean()), 2) if len(noten) else None,
+        )  # fmt: skip
+
+
 def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> dict:
     """Je Slot: eigene Rangliste, Verbesserungen gegenüber dem gesetzten Spieler, Datenlücken; dazu die Elf."""
     filter_pruefen(ctx, f)
@@ -484,4 +525,9 @@ def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> d
             "n_pool": {"mit": ctx.anker[rm["gruppe"]]["n_pool"], "ohne": ctx.anker[ro["gruppe"]]["n_pool"]},
             "punkte": {"kandidaten": punkte(cand), "eigene": punkte(own)},
         }  # fmt: skip
-    return {"formation": formation, "slots": slots, "elf": elf, "stand": ctx.stand}
+    info = einsaetze_je_spieler(ctx)
+    for sn, sl in slots.items():
+        sl["fm_position"] = fm_position(meta[sn])
+        auf_position(sl["eigene"], sl["fm_position"], info)
+    return {"formation": formation, "slots": slots, "elf": elf, "stand": ctx.stand,
+            "einsaetze_erfasst": len(info)}  # fmt: skip

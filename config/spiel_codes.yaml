@@ -1,0 +1,99 @@
+# Codes in den Spiellisten von FM27 ("Leistung -> Spiele", gelesen über den FMMT-Fork, /api/matchlists).
+#
+# Quelle der Tabellen: die Enums des Spiels selbst, gelesen aus den BepInEx-Interop-Assemblies
+# (BepInEx\interop\FM.UI.dll, nur Metadaten, nichts ausgeführt; 2026-11-23, Build 6AF5C68F-18878000):
+#   Rolle    = Bitnummer im Flags-Enum FM.UI.InPossessionRole (Rolle 41 -> 2^41 = SecondStriker)
+#   Position = Bitnummer im Flags-Enum PositionMask + 8 (das Byte davor ist ein eigenes Feld, immer 2)
+# Gegenprobe am Spielbildschirm (Grüll, Lynen, Weiser, Svanberg, Deman, Stark, Reis): alle 12 dort gesehenen Rollen
+# und alle 9 gesehenen Positionen passen zu dieser Rechnung.
+#
+# status: bestaetigt = Spiel für Spiel gegen den Bildschirm geprüft; enum = Code aus dem Spiel-Enum, deutsche
+#   Bezeichnung von Claude zugeordnet (Rollenkatalog config/rollen_kpis.yaml / wissen/rollen.md, FM26-Namen).
+# name: null = Rolle aus dem Enum ohne Gegenstück im FM27-Rollenkatalog (ältere Rollen); angezeigt wird dann `enum`.
+
+# Position: Bit im u32-Feld (Spieldatensatz +16). Bezeichnung wie in der Spalte "Pos." des Spiels.
+positionen:
+  8: {enum: Goalkeeper, label: "TW", status: enum}
+  9: {enum: SweeperCentreNotInUse, label: "LIB", status: enum}
+  10: {enum: DefenderRight, label: "V (R)", status: bestaetigt}
+  11: {enum: DefenderLeft, label: "V (L)", status: bestaetigt}
+  12: {enum: DefenderCentre, label: "V (Z)", status: bestaetigt}
+  13: {enum: WingBackRight, label: "FV (R)", status: enum}
+  14: {enum: WingBackLeft, label: "FV (L)", status: enum}
+  15: {enum: DefensiveMidfielderCentre, label: "DM", status: bestaetigt}
+  16: {enum: MidfielderRight, label: "M (R)", status: enum}
+  17: {enum: MidfielderLeft, label: "M (L)", status: enum}
+  18: {enum: MidfielderCentre, label: "M (Z)", status: bestaetigt}
+  19: {enum: AttackingMidfielderRight, label: "OM (R)", status: bestaetigt}
+  20: {enum: AttackingMidfielderLeft, label: "OM (L)", status: bestaetigt}
+  21: {enum: AttackingMidfielderCentre, label: "OM (Z)", status: bestaetigt}
+  22: {enum: AttackerCentre, label: "ST (Z)", status: enum}
+  23: {enum: AttackerRight, label: "ST (Z)", status: enum}   # Spiel zeigt Stürmer als "ST (Z)"
+  24: {enum: AttackerLeft, label: "ST (Z)", status: enum}
+
+# Bits ohne eigene Position. 1: das Byte vor dem Positionsfeld (immer 2). 28/29: Seite innerhalb einer zentralen
+# Position (z. B. linker/rechter IV); das Spiel zeigt sie nicht in "Pos." an.
+ohne_bezeichnung: [1, 28, 29]
+seiten:
+  28: {enum: LeftSidedPosition, label: "links", status: enum}
+  29: {enum: RightSidedPosition, label: "rechts", status: enum}
+
+# Rolle mit Ball (Spieldatensatz +23). name wie in config/rollen_kpis.yaml (oder dessen alias_rollen).
+rollen:
+  0: {enum: Goalkeeper, name: "Torwart", status: enum}
+  1: {enum: CentreBack, name: "Innenverteidiger", kuerzel: "IV", status: bestaetigt}
+  2: {enum: FullBack, name: "Außenverteidiger", kuerzel: "AV", status: bestaetigt}
+  3: {enum: WingBack, name: "Flügelverteidiger", kuerzel: "FV", status: bestaetigt}
+  4: {enum: DefensiveMidfielder, name: "Defensiver Mittelfeldspieler", kuerzel: "DM", status: bestaetigt}
+  5: {enum: CentralMidfielder, name: "Zentraler Mittelfeldspieler", status: enum}
+  6: {enum: WideMidfielder, name: "Äußerer Mittelfeldspieler", status: enum}
+  7: {enum: Winger, name: "Flügelspieler", kuerzel: "FL", status: bestaetigt}
+  9: {enum: AttackingMidfielder, name: "Offensiver Mittelfeldspieler", kuerzel: "OM", status: bestaetigt}
+  10: {enum: DeepLyingForward, name: "Hängende Spitze", status: enum}
+  11: {enum: CentreForward, name: "Mittelstürmer", status: enum}
+  12: {enum: BallPlayingGoalkeeper, name: "Ballspielender Torhüter", status: enum}
+  14: {enum: AdvancedCentreBack, name: "Aufrückender Innenverteidiger", status: enum}
+  15: {enum: DeepLyingPlaymaker, name: "Tiefer Spielmacher", status: enum}
+  16: {enum: BoxToBoxMidfielder, name: "Box-to-Box-Spieler", kuerzel: "B2B", status: bestaetigt}
+  17: {enum: AdvancedPlaymaker, name: "Vorgeschobener Spielmacher", kuerzel: "VSm", status: bestaetigt}
+  18: {enum: TargetForward, name: "Zielspieler", status: enum}
+  19: {enum: Poacher, name: "Knipser", status: enum}
+  20: {enum: CompleteForward, name: null, status: enum}
+  24: {enum: BallPlayingCentreBack, name: "Spielaufbauender Innenverteidiger", kuerzel: "SpIV", status: bestaetigt}
+  27: {enum: InsideForward, name: "Inverser Außenstürmer", kuerzel: "IAS", status: bestaetigt}
+  28: {enum: BallWinningMidfielder, name: null, status: enum}
+  29: {enum: NoNonsenseCentreBack, name: "Kompromissloser Innenverteidiger", status: enum}
+  30: {enum: DefensiveWinger, name: null, status: enum}
+  31: {enum: ChannelForward, name: "Halbraumstürmer", kuerzel: "HRS", status: enum}   # Kürzel: Rayan-Screenshot
+  32: {enum: FreeRole, name: "Freigeist", status: enum}
+  33: {enum: Anchor, name: null, status: enum}
+  35: {enum: HalfBack, name: "Abkippender Sechser", status: enum}
+  36: {enum: NoNonsenseFullBack, name: null, status: enum}
+  37: {enum: Enganche, name: null, status: enum}
+  38: {enum: AdvancedWingBack, name: "Vorgeschobener Flügelverteidiger", status: enum}
+  39: {enum: Regista, name: null, status: enum}
+  40: {enum: FalseNine, name: "Falsche Neun", status: enum}
+  41: {enum: SecondStriker, name: "Zweiter Stürmer", kuerzel: "ZwS", status: bestaetigt}
+  42: {enum: WideTargetForward, name: null, status: enum}
+  43: {enum: PlaymakingWinger, name: "Äußerer Spielmacher", status: enum}
+  44: {enum: InsideWingBack, name: "Inverser Flügelverteidiger", status: enum}
+  45: {enum: WideForward, name: "Außenstürmer", kuerzel: "AS", status: bestaetigt}
+  46: {enum: BoxToBoxPlaymaker, name: "Box-to-Box-Spielmacher", status: enum}
+  47: {enum: Mezzala, name: null, status: enum}
+  48: {enum: WideCentralMidfielder, name: "Weiter Achter", status: enum}
+  49: {enum: InsideWinger, name: "Halbraumflügel", status: enum}
+  50: {enum: SegundoVolante, name: null, status: enum}
+  51: {enum: WideCentreBack, name: "Halbraumverteidiger", status: enum}
+  52: {enum: InsideFullBack, name: "Inverser Außenverteidiger", status: enum}
+  53: {enum: NoNonsenseGoalkeeper, name: "Kompromissloser Torhüter", status: enum}
+  54: {enum: OverlappingCentreBack, name: "Hinterlaufender Halbraumverteidiger", status: enum}
+  55: {enum: PlaymakingWingBack, name: "Spielmachender Flügelverteidiger", status: enum}
+  56: {enum: ChannelMidfielder, name: "Halbraumspieler", status: enum}
+  57: {enum: MidfieldPlaymaker, name: "Spielmacher", status: enum}
+  # 21-23, 25, 26, 34 sind im Enum Aufgaben (Duty), keine Rollen.
+
+# Wettbewerb (Byte +11)
+wettbewerbe:
+  16: {label: "Liga", status: bestaetigt}
+  136: {label: "Pokal", status: bestaetigt}          # Hoffenheim 02.12., Bayern 03.02.
+  131: {label: "Europapokal", status: bestaetigt}    # Benfica 02.01.
