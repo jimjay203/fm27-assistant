@@ -262,7 +262,8 @@ def formationen_meta(ctx: Kontext) -> dict:
             opt = slot_optionen(rk, ctx.positionen, s)
             v = vorbel.get(sn) or s.get("vorbelegung") or {}
             slots[sn] = {
-                "position": s.get("position"), "x": s["x"], "y": s["y"], "optionen": opt,
+                "position": s.get("position"), "label": s.get("label") or sn,
+                "x": s["x"], "y": s["y"], "optionen": opt,
                 "mit": v.get("mit") if v.get("mit") in opt["mit"] else _standardrolle(rk, opt["mit"]),
                 "ohne": v.get("ohne") if v.get("ohne") in opt["ohne"] else _standardrolle(rk, opt["ohne"]),
             }  # fmt: skip
@@ -417,6 +418,28 @@ def aufstellung(eigene: dict[str, pd.DataFrame]) -> dict[str, str | None]:
     return out
 
 
+PUNKT_FELDER = [
+    "uid",
+    "name",
+    "club",
+    "age",
+    "value",
+    "value_min",
+    "value_max",
+    "paar_gew",
+    "liga_stufe",
+    "eigen",
+]
+
+
+def punkte(df: pd.DataFrame, n_max: int = 600) -> list[dict]:
+    """Schlanke Zeilen für den Preis-Leistungs-Chart (Score × Marktwert), beste zuerst, höchstens n_max."""
+    return [
+        {k: (str(r["uid"]) if k == "uid" else _wert(r.get(k))) for k in PUNKT_FELDER}
+        for _, r in df.head(n_max).iterrows()
+    ]
+
+
 def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> dict:
     """Je Slot: eigene Rangliste, Verbesserungen gegenüber dem gesetzten Spieler, Datenlücken; dazu die Elf."""
     filter_pruefen(ctx, f)
@@ -459,5 +482,6 @@ def plan(ctx: Kontext, formation: str, auswahl: dict[str, dict], f: Filter) -> d
             "verbesserungen": kand, "n_verbesserungen": len(besser), "n_kandidaten": len(cand),
             "luecken": slot_luecken(ctx, mit, ohne),
             "n_pool": {"mit": ctx.anker[rm["gruppe"]]["n_pool"], "ohne": ctx.anker[ro["gruppe"]]["n_pool"]},
+            "punkte": {"kandidaten": punkte(cand), "eigene": punkte(own)},
         }  # fmt: skip
     return {"formation": formation, "slots": slots, "elf": elf, "stand": ctx.stand}

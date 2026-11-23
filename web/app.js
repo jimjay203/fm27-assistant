@@ -62,6 +62,12 @@ function scoreKlasse(v) {
 }
 const score = (v) => `<span class="score ${scoreKlasse(v)}">${zahl(v)}</span>`;
 const STATUS = { kader: "", leihe_ein: "Leihe", leihe_aus: "verliehen" };
+const kurzName = (n) => (n || "").split(" ").slice(-1)[0];
+const initialen = (n) => (n || "?").split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+// Spielerbild aus dem FM27-Faces-Ordner; fehlt es, bleiben die Initialen darunter sichtbar
+const gesicht = (uid, name, px) =>
+  `<span class="gesicht" style="--g:${px}px"><span class="ini">${esc(initialen(name))}</span>` +
+  `<img src="/api/face/${encodeURIComponent(uid)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 
 // ------------------------------------------------------------------ Steuerung
 
@@ -133,36 +139,44 @@ function feldZeichnen() {
   const feld = $("#feld");
   feld.querySelectorAll(".slot").forEach((e) => e.remove());
   const form = META.formationen[zustand.formation];
-  const wahl = rollenWahl();
+  rollenWahl();
   for (const [sn, s] of Object.entries(form.slots)) {
-    const el = document.createElement("div");
+    const el = document.createElement("button");
+    el.type = "button";
     el.className = "slot" + (sn === aktiverSlot ? " aktiv" : "");
-    el.style.left = s.x + "%";
-    el.style.top = s.y + "%";
+    el.style.setProperty("--x", s.x + "%");
+    el.style.setProperty("--y", s.y + "%");
     el.dataset.slot = sn;
-    const sel = (phase) =>
-      `<select data-phase="${phase}" title="Rolle ${phase} Ball">` +
-      s.optionen[phase].map((r) => `<option${r === wahl[sn][phase] ? " selected" : ""}>${esc(r)}</option>`).join("") +
-      `</select>`;
     el.innerHTML =
-      `<div class="kopf"><span>${esc(sn)}</span><span class="badge null" data-badge>…</span></div>` +
-      sel("mit") + sel("ohne") +
-      `<div class="spieler" data-spieler><span class="leer">…</span></div>`;
-    el.addEventListener("click", (ev) => {
-      if (ev.target.tagName === "SELECT" || ev.target.tagName === "OPTION") return;
-      aktiverSlot = sn;
-      document.querySelectorAll(".slot").forEach((x) => x.classList.toggle("aktiv", x.dataset.slot === sn));
-      panelZeichnen();
-    });
-    el.querySelectorAll("select").forEach((se) =>
-      se.addEventListener("change", () => {
-        wahl[sn][se.dataset.phase] = se.value;
-        speichern();
-        planAnfordern();
-      }),
-    );
+      `<div class="slot-kopf"><span class="pos" title="${esc(sn)}">${esc(s.label)}</span>` +
+      `<span class="rechts"><span data-warn></span><span data-pill></span></span></div>` +
+      `<div class="slot-spieler" data-spieler><span class="leer">…</span></div>` +
+      `<div class="slot-ziel" data-ziel></div>`;
+    el.addEventListener("click", () => slotWaehlen(sn));
     feld.appendChild(el);
   }
+}
+
+// Feldgröße aus der freien Bildschirmhöhe: alle Positionen ohne Scrollen sichtbar (Filterzeile darf umbrechen)
+// Unter 440 px Breite überlappen die Karten (4 nebeneinander); bis 68:89 gestaucht bleiben alle Formationen frei.
+function feldGroesse() {
+  const oben = $("main").getBoundingClientRect().top + window.scrollY;
+  const frei = window.innerHeight - oben - 24;
+  const w = Math.min(700, Math.max(440, frei * 0.68));
+  const h = Math.min(w / 0.68, Math.max(frei, w / 0.76));
+  document.documentElement.style.setProperty("--feld-w", Math.round(w) + "px");
+  document.documentElement.style.setProperty("--feld-h-px", Math.round(h) + "px");
+}
+
+function slotWaehlen(sn) {
+  aktiverSlot = sn;
+  document.querySelectorAll(".slot").forEach((x) => x.classList.toggle("aktiv", x.dataset.slot === sn));
+  panelZeichnen();
+}
+
+function stufe(v) {
+  if (v == null) return "t-leer";
+  return v >= 66 ? "t-hoch" : v >= 40 ? "t-mittel" : "t-tief";
 }
 
 function slotsAktualisieren() {
@@ -171,17 +185,30 @@ function slotsAktualisieren() {
     const el = document.querySelector(`.slot[data-slot="${CSS.escape(sn)}"]`);
     if (!el) continue;
     const g = s.eigene.find((z) => z.uid === s.gesetzt);
-    const warn = s.luecken.some((l) => l.entfaellt) || s.luecken.some((l) => l.abdeckung != null);
+    el.classList.remove("t-hoch", "t-mittel", "t-tief", "t-leer");
+    el.classList.add(stufe(g ? g.paar_gew : null));
+    // "!" nur bei spürbaren Lücken: eine Rolle zu weniger als 80 % bewertbar (Details im Panel)
+    const warn = s.luecken.some((l) => l.abdeckung != null && l.abdeckung < 0.8);
+    el.querySelector("[data-warn]").innerHTML = warn
+      ? '<span class="warn" title="Rolle nur teilweise bewertbar, Details im Panel">!</span>' : "";
+    el.querySelector("[data-pill]").innerHTML = g ? `<span class="pill ${stufe(g.paar_gew)}">${zahl(g.paar_gew)}</span>` : "";
     el.querySelector("[data-spieler]").innerHTML = g
-      ? `<span class="name" title="${esc(g.name)}">${esc(g.name)}</span>${score(g.paar_gew)}`
-      : `<span class="leer">kein eigener Spieler bewertbar</span>`;
-    const b = el.querySelector("[data-badge]");
-    const n = s.n_verbesserungen;
+      ? `${gesicht(g.uid, g.name, 28)}<span class="name" title="${esc(g.name)}">${esc(kurzName(g.name))}</span>`
+      : `<span class="leer">niemand bewertbar</span>`;
+    // Schattenteam: bester Kandidat, der den Gesetzten übertrifft
     const best = s.verbesserungen[0];
-    b.className = "badge" + (n ? "" : " null");
-    b.textContent = n ? `+${n}${best && best.delta != null ? " · Δ " + zahl(best.delta) : ""}` : "0";
-    b.title = n ? `${n} Kandidaten besser als der gesetzte Spieler` : "keine Verbesserung in den Kandidaten";
-    el.querySelector(".kopf span").innerHTML = esc(sn) + (warn ? ' <span class="warn" title="Datenlücken, siehe Panel">!</span>' : "");
+    const ziel = el.querySelector("[data-ziel]");
+    if (best) {
+      const zusatz = best.delta != null ? `+${zahl(best.delta)}` : zahl(best.paar_gew);
+      ziel.innerHTML = `<span class="pfeil">▲</span>${gesicht(best.uid, best.name, 18)}` +
+        `<span class="name">${esc(kurzName(best.name))}</span><b>${zusatz}</b>`;
+      ziel.title = `${s.n_verbesserungen} Kandidaten besser als der Gesetzte. Bester: ${best.name} (${best.club}), Score ${zahl(best.paar_gew)}`;
+      ziel.classList.remove("leer");
+    } else {
+      ziel.textContent = "kein besserer Kandidat";
+      ziel.title = "Kein Kandidat übertrifft den gesetzten Spieler (mit diesen Filtern).";
+      ziel.classList.add("leer");
+    }
   }
 }
 
@@ -227,7 +254,11 @@ function tabelle(spalten, zeilen, { gesetzt, sortierung, beiKlick } = {}) {
   return wrap;
 }
 
-const SP_NAME = { k: "name", l: "Name", f: (z) => esc(z.name) + (STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : "") };
+const SP_NAME = {
+  k: "name", l: "Name",
+  f: (z) => `<span class="mit-gesicht">${gesicht(z.uid, z.name, 24)}${esc(z.name)}</span>` +
+    (STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : ""),
+};
 const SP_SCORES = [
   { k: "mit", l: "mit", num: true, f: (z) => score(z.mit), titel: "Rolle mit Ball" },
   { k: "ohne", l: "ohne", num: true, f: (z) => score(z.ohne), titel: "Rolle ohne Ball" },
@@ -255,43 +286,156 @@ const SP_KAND = [
 ];
 
 function lueckenHtml(s) {
-  const zeilen = s.luecken.map((l) => {
-    if (l.abdeckung != null) return `<li>${esc(l.rolle)}: nur ${zahl(l.abdeckung * 100)} % des Baustein-Gewichts bewertbar</li>`;
+  if (!s.luecken.length) return "";
+  const weg = s.luecken.filter((l) => l.entfaellt).map((l) => l.baustein);
+  const abd = s.luecken.filter((l) => l.abdeckung != null);
+  const kurz = [
+    weg.length ? `Baustein ${[...new Set(weg)].join(", ")} entfällt` : "",
+    abd.length ? abd.map((l) => `${l.rolle} zu ${zahl(l.abdeckung * 100)} % bewertbar`).join(", ") : "",
+  ].filter(Boolean).join(" · ") || "einzelne Statistiken fehlen";
+  const zeilen = s.luecken.filter((l) => l.abdeckung == null).map((l) => {
     const stats = Object.entries(l.statistiken).map(([k, v]) => `${esc(k)} (${esc(v)})`).join(", ");
     return `<li>${esc(l.rolle)} · ${esc(l.baustein)}${l.entfaellt ? " entfällt" : " teilweise"}: ${stats}</li>`;
   });
-  return zeilen.length ? `<h3>Datenlücken</h3><ul class="luecken">${zeilen.join("")}</ul>` : "";
+  return `<details class="luecken"><summary><span class="warn">!</span> Datenlücken: ${esc(kurz)}</summary>` +
+    `<ul>${zeilen.join("")}</ul></details>`;
+}
+
+function rollenWahlHtml(sn) {
+  const opt = META.formationen[zustand.formation].slots[sn].optionen;
+  const wahl = rollenWahl()[sn];
+  const sel = (phase) => `<select data-phase="${phase}">` +
+    opt[phase].map((r) => `<option${r === wahl[phase] ? " selected" : ""}>${esc(r)}</option>`).join("") + `</select>`;
+  return `<div class="rollen-wahl"><label>mit Ball ${sel("mit")}</label><label>ohne Ball ${sel("ohne")}</label></div>`;
 }
 
 function panelZeichnen() {
   const p = $("#panel");
   if (!PLAN || !aktiverSlot || !PLAN.slots[aktiverSlot]) {
-    p.innerHTML = '<p class="leer">Slot anklicken, um Ranglisten und Verbesserungen zu sehen.</p>';
+    p.innerHTML = '<p class="leer">Position auf dem Spielfeld anklicken: Rollen wählen, Preis-Leistung, Verbesserungen und eigene Spieler.</p>';
     return;
   }
   const s = PLAN.slots[aktiverSlot];
+  const meta = META.formationen[zustand.formation].slots[aktiverSlot];
   const gw = s.gewertet_als;
-  const alias = (n, z) => (n === z ? esc(n) : `${esc(n)} <span class="tag">gewertet wie ${esc(z)}</span>`);
+  const alias = (n, z) => (n === z ? "" : ` (gewertet wie ${esc(z)})`);
+  const g = s.eigene.find((z) => z.uid === s.gesetzt);
   p.innerHTML =
-    `<h2>${esc(aktiverSlot)}</h2>` +
-    `<div class="rollen">mit Ball: ${alias(s.mit, gw.mit)} (Verlässlichkeit ${esc(s.verlaesslichkeit.mit)}) · ` +
-    `ohne Ball: ${alias(s.ohne, gw.ohne)} (Verlässlichkeit ${esc(s.verlaesslichkeit.ohne)}) · ` +
-    `Pool n = ${s.n_pool.mit}${s.n_pool.ohne !== s.n_pool.mit ? " / " + s.n_pool.ohne : ""}</div>` +
+    `<div class="panel-kopf"><h2>${esc(meta.label)}</h2>` +
+    (g ? `<span class="gesetzt-info">${gesicht(g.uid, g.name, 28)}gesetzt: <b>${esc(g.name)}</b> ${score(g.paar_gew)}</span>` : "") +
+    `</div>` + rollenWahlHtml(aktiverSlot) +
+    `<div class="rollen">Verlässlichkeit: mit Ball ${esc(s.verlaesslichkeit.mit)}${alias(s.mit, gw.mit)} · ohne Ball ` +
+    `${esc(s.verlaesslichkeit.ohne)}${alias(s.ohne, gw.ohne)} · Vergleichspool ${s.n_pool.mit}` +
+    `${s.n_pool.ohne !== s.n_pool.mit ? " / " + s.n_pool.ohne : ""} Spieler</div>` +
     s.hinweise.map((h) => `<p class="hinweis">Hinweis: ${esc(h)}</p>`).join("") +
     lueckenHtml(s) +
-    `<h3>Eigene Spieler (${s.n_eigene} bewertet)</h3><div id="t_eigene"></div>` +
+    `<h3>Preis-Leistung</h3>${streuHtml(s)}` +
     `<h3>Verbesserungen (${s.n_verbesserungen} von ${s.n_kandidaten} Kandidaten${s.basis != null ? ", besser als " + zahl(s.basis) : ""})</h3>` +
     `<div id="t_kand"></div>` +
+    `<h3>Eigene Spieler (${s.n_eigene} bewertet)</h3><div id="t_eigene"></div>` +
     (s.ohne_wertung.length
       ? `<h3>Eigene ohne Wertung</h3><p class="hinweis">${s.ohne_wertung
           .map((o) => `${esc(o.name)} (${esc(o.grund)}${STATUS[o.eigen] ? ", " + STATUS[o.eigen] : ""})`).join(" · ")}</p>`
       : "");
+  p.querySelectorAll(".rollen-wahl select").forEach((se) =>
+    se.addEventListener("change", () => {
+      rollenWahl()[aktiverSlot][se.dataset.phase] = se.value;
+      speichern();
+      planAnfordern();
+    }),
+  );
+  streuVerdrahten(s);
   $("#t_eigene").appendChild(s.eigene.length
     ? tabelle(SP_EIGENE, s.eigene, { gesetzt: s.gesetzt, beiKlick: (uid) => profilOeffnen(uid) })
     : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Kein eigener Spieler bewertbar." }));
   $("#t_kand").appendChild(s.verbesserungen.length
     ? tabelle(SP_KAND, s.verbesserungen, { beiKlick: (uid) => profilOeffnen(uid) })
     : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Kein Kandidat übertrifft den gesetzten Spieler (mit diesen Filtern)." }));
+}
+
+// ------------------------------------------------------------------ Preis-Leistung (Score × Marktwert)
+
+const SW = 640, SH = 300, SL = 44, SR = 14, ST = 14, SB = 36;
+const GELD_TICKS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500].map((m) => m * 1e6);
+const mio = (v) => zahl(v / 1e6, v < 1e6 ? 1 : 0);
+let streuCache = [];
+
+function streuDaten(s) {
+  const gueltig = (z) => z.value != null && z.value > 0 && z.paar_gew != null;
+  const kand = s.punkte.kandidaten.filter(gueltig).map((z) => ({ ...z, art: "k" }));
+  const eig = s.punkte.eigene.filter(gueltig).map((z) => ({ ...z, art: "e" }));
+  const ohne = s.punkte.kandidaten.length - kand.length + s.punkte.eigene.length - eig.length;
+  return { punkte: [...kand, ...eig], ohne };
+}
+
+function streuHtml(s) {
+  const { punkte, ohne } = streuDaten(s);
+  streuCache = [];
+  if (!punkte.length) return '<p class="hinweis">Keine Spieler mit Marktwert und Score.</p>';
+  const werte = punkte.map((z) => z.value);
+  const lo = Math.log10(Math.min(...werte) / 1.25), hi = Math.log10(Math.max(...werte) * 1.25);
+  const yMax = Math.max(100, ...punkte.map((z) => z.paar_gew));
+  const x = (v) => SL + ((Math.log10(v) - lo) / (hi - lo)) * (SW - SL - SR);
+  const y = (v) => ST + (1 - v / yMax) * (SH - ST - SB);
+  let g = "";
+  for (const t of [0, 25, 50, 75, 100]) {
+    g += `<line class="gitter" x1="${SL}" x2="${SW - SR}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"/>` +
+      `<text x="${SL - 6}" y="${(y(t) + 3).toFixed(1)}" text-anchor="end">${t}</text>`;
+  }
+  for (const t of GELD_TICKS.filter((t) => Math.log10(t) > lo && Math.log10(t) < hi)) {
+    g += `<line class="gitter" y1="${ST}" y2="${SH - SB}" x1="${x(t).toFixed(1)}" x2="${x(t).toFixed(1)}"/>` +
+      `<text x="${x(t).toFixed(1)}" y="${SH - SB + 14}" text-anchor="middle">${mio(t)}</text>`;
+  }
+  g += `<text x="${(SL + SW - SR) / 2}" y="${SH - 4}" text-anchor="middle">Marktwert in Mio. € (logarithmisch)</text>` +
+    `<text x="12" y="${(ST + SH - SB) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(ST + SH - SB) / 2})">Score</text>`;
+  if (s.basis != null) {
+    const g0 = s.eigene.find((z) => z.uid === s.gesetzt);
+    g += `<line class="basis" x1="${SL}" x2="${SW - SR}" y1="${y(s.basis).toFixed(1)}" y2="${y(s.basis).toFixed(1)}"/>` +
+      `<text class="basis-label" x="${SL + 6}" y="${(y(s.basis) - 5).toFixed(1)}">gesetzt: ${esc(g0 ? kurzName(g0.name) : "")} ${zahl(s.basis)}</text>`;
+  }
+  // Kandidaten unter dem Gesetzten zurücknehmen; eigene Spieler zuletzt, damit sie oben liegen
+  const reihenfolge = [...punkte].sort((a, b) => (a.art === b.art ? a.paar_gew - b.paar_gew : a.art === "k" ? -1 : 1));
+  const marken = reihenfolge.map((z) => {
+    const besser = s.basis == null || z.paar_gew > s.basis;
+    const kl = z.art === "e" ? "p1" : "p2" + (besser ? "" : " blass");
+    return `<circle class="${kl}" cx="${x(z.value).toFixed(1)}" cy="${y(z.paar_gew).toFixed(1)}" r="${z.art === "e" ? 5 : 4}"/>`;
+  }).join("");
+  const treffer = reihenfolge.map((z, i) =>
+    `<circle class="treffer" data-i="${i}" cx="${x(z.value).toFixed(1)}" cy="${y(z.paar_gew).toFixed(1)}" r="9"/>`).join("");
+  streuCache = reihenfolge;
+  const n = punkte.filter((z) => z.art === "k").length;
+  return `<div class="legende-chart"><span><span class="punkt s2"></span>Kandidaten (${n})</span>` +
+    `<span><span class="punkt s1"></span>Eigene Spieler</span>` +
+    (s.basis != null ? `<span class="hinweis">blass = schwächer als der Gesetzte</span>` : "") + `</div>` +
+    `<div class="streu-wrap"><div class="chart"><svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="Score über Marktwert">` +
+    g + marken + treffer + `</svg></div><div class="tooltip" id="streu_tip" hidden></div></div>` +
+    `<p class="hinweis">Oben links = besser und günstiger. Punkt anklicken öffnet das Profil.` +
+    (ohne ? ` ${ohne} Spieler ohne Marktwert sind nicht eingezeichnet.` : "") + `</p>`;
+}
+
+function streuVerdrahten(s) {
+  const tip = $("#streu_tip");
+  const wrap = document.querySelector(".streu-wrap");
+  if (!tip || !wrap) return;
+  wrap.querySelectorAll(".treffer").forEach((el) => {
+    const z = streuCache[Number(el.dataset.i)];
+    el.addEventListener("mousemove", (ev) => {
+      const d = s.basis != null && z.art === "k" ? z.paar_gew - s.basis : null;
+      tip.innerHTML = `<div class="tip-kopf">${gesicht(z.uid, z.name, 36)}<div><b>${esc(z.name)}</b>` +
+        `<div class="hinweis">${esc(z.club ?? "")}${z.age != null ? " · " + zahl(z.age) + " J." : ""}` +
+        `${z.liga_stufe ? " · " + esc(z.liga_stufe) : ""}</div></div></div>` +
+        `<div>Score <b>${zahl(z.paar_gew)}</b>${d != null ? ` (${d > 0 ? "+" : ""}${zahl(d)} zum Gesetzten)` : ""}</div>` +
+        `<div>Marktwert ${spanne(z.value, z.value_min, z.value_max)}</div>`;
+      tip.hidden = false;
+      const box = wrap.getBoundingClientRect();
+      let px = ev.clientX - box.left + 14, py = ev.clientY - box.top + 14;
+      if (px + tip.offsetWidth > box.width) px = ev.clientX - box.left - tip.offsetWidth - 14;
+      tip.style.left = px + "px";
+      tip.style.top = py + "px";
+    });
+    el.addEventListener("mouseleave", () => { tip.hidden = true; });
+    el.addEventListener("click", () => profilOeffnen(z.uid));
+  });
 }
 
 // ------------------------------------------------------------------ Spielerprofil
@@ -379,7 +523,8 @@ function profilKopf(p, slot) {
     `Vertrag bis ${esc(z.contract_end ?? "–")}`, z.loan_end ? `Leihe bis ${esc(z.loan_end)}` : "",
   ].filter(Boolean).join(" · ");
   const info = p.attribute.info || [];
-  return `<h2>${esc(z.name)} ${tags}</h2><div class="rollen">${zeile}</div>` +
+  return `<div class="profil-kopf">${gesicht(z.uid, z.name, 88)}<div><h2>${esc(z.name)} ${tags}</h2>` +
+    `<div class="rollen">${zeile}</div></div></div>` +
     `<div class="kacheln">${kacheln}</div><div class="rollen">${geldZeile}</div>` +
     (info.length ? `<dl class="info">${info.map((i) => `<dt>${esc(i.label)}</dt><dd>${esc(i.text)}</dd>`).join("")}</dl>` : "");
 }
@@ -444,8 +589,6 @@ function profilStatistiken(p) {
 }
 
 // ------------------------------------------------------------------ Vergleichschart (Pizza / Radar)
-
-const kurzName = (n) => (n || "").split(" ").slice(-1)[0];
 
 function profilVergleich(p, slot) {
   const s = PLAN.slots[slot];
@@ -627,6 +770,7 @@ async function planHolen() {
 async function metaHolen() {
   META = await api("/api/meta");
   steuerungAufbauen();
+  feldGroesse();
   feldZeichnen();
   await planHolen();
 }
@@ -679,6 +823,7 @@ function init() {
       knopf.disabled = false;
     }
   });
+  window.addEventListener("resize", feldGroesse);
   $("#profil_zu").addEventListener("click", profilSchliessen);
   $("#profil").addEventListener("click", (e) => {
     if (e.target.id === "profil") profilSchliessen();

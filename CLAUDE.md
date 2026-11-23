@@ -28,6 +28,7 @@ Aktiver Save: saves/werder/ – lies dort immer zuerst kontext.md und taktik.md.
   Attribute gibt es live nur für eigene Spieler.
 - Kaderplaner (Web-App): `uv run python scripts/webapp.py --save werder [--quelle live]` → http://127.0.0.1:8700.
   Formationen in `config/formationen.yaml`, Logik in `scripts/planer.py` (Rollen-Score aus `scripts/rollen.py`).
+  Spielerbilder: `face_<uid>.png` aus dem FM27-Faces-Ordner (`--faces`, sonst `FM27_FACES`, sonst Standardpfad).
 - Save-Auswahl: `--save <name>`, sonst Umgebungsvariable `FM27_SAVE`, sonst Default `werder`.
 
 ## Stil

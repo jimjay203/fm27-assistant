@@ -3,12 +3,17 @@
 Fachlogik: scripts/planer.py (Rollen-Score aus scripts/rollen.py). Oberfläche: web/. Der Server bindet nur an
 127.0.0.1 und schreibt nichts in die DB außer der Schema-Migration von common.connect().
 
-Aufruf:  uv run python scripts/webapp.py --save werder [--quelle live] [--port 8700] [--kein-browser]
+Spielerbilder: face_<uid>.png aus dem FM27-Faces-Ordner (--faces, sonst $FM27_FACES, sonst der Standardpfad unter
+Dokumente). Fehlt ein Bild, zeigt die Oberfläche die Initialen.
+
+Aufruf:  uv run python scripts/webapp.py --save werder [--quelle live] [--port 8700] [--kein-browser] [--faces DIR]
 """
 
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import sys
 import threading
 import webbrowser
@@ -28,6 +33,16 @@ import planer
 import spielerprofil
 
 WEB = common.ROOT / "web"
+FACES_STANDARD = (
+    Path.home() / "Documents" / "Sports Interactive" / "Football Manager 27" / "graphics" / "faces"
+)
+UID = re.compile(r"^\d{1,12}$")
+
+
+def faces_ordner(arg: str | None = None) -> Path | None:
+    """Faces-Ordner: Argument, sonst $FM27_FACES, sonst der FM27-Standardpfad; None, wenn er nicht existiert."""
+    pfad = Path(arg or os.environ.get("FM27_FACES") or FACES_STANDARD)
+    return pfad if pfad.is_dir() else None
 
 
 class FilterIn(BaseModel):
@@ -60,8 +75,12 @@ def _fehler(e: SystemExit, status: int = 400) -> HTTPException:
     return HTTPException(status_code=status, detail=text or "Fehler")
 
 
-def create_app(laden: Callable[[dict], planer.Kontext], start: dict) -> FastAPI:
-    """`laden(einstellungen) -> Kontext`; `start` = Einstellungen der ersten Ladung (quelle, pool_min_stufe, ...)."""
+def create_app(
+    laden: Callable[[dict], planer.Kontext], start: dict, faces: Path | None = None
+) -> FastAPI:
+    """`laden(einstellungen) -> Kontext`; `start` = Einstellungen der ersten Ladung (quelle, pool_min_stufe, ...).
+
+    `faces`: Ordner mit face_<uid>.png (None = keine Bilder, die Oberfläche zeigt Initialen)."""
     app = FastAPI(title="FM27 Kaderplaner")
     state = {"ctx": laden(start), "einstellungen": dict(start)}
     lock = threading.Lock()
@@ -97,6 +116,16 @@ def create_app(laden: Callable[[dict], planer.Kontext], start: dict) -> FastAPI:
         except SystemExit as e:
             raise _fehler(e, 404 if "nicht in den geladenen Daten" in str(e) else 400) from None
 
+    @app.get("/api/face/{uid}")
+    def face(uid: str):
+        # nur Ziffern: kein Pfad außerhalb des Faces-Ordners erreichbar
+        datei = faces / f"face_{uid}.png" if faces and UID.match(uid) else None
+        if not datei or not datei.is_file():
+            raise HTTPException(status_code=404, detail="kein Bild")
+        return FileResponse(
+            datei, media_type="image/png", headers={"Cache-Control": "max-age=86400"}
+        )
+
     @app.post("/api/reload")
     def reload(body: ReloadIn):
         neu = {**state["einstellungen"], **body.model_dump()}
@@ -125,12 +154,19 @@ def main(argv=None) -> None:
     )
     common.add_common_args(ap)
     ap.add_argument("--quelle", choices=["db", "live"], default="db")
-    ap.add_argument("--verein", help="Eigener Verein (Default: häufigster Verein im Kader-Snapshot)")
+    ap.add_argument(
+        "--verein", help="Eigener Verein (Default: häufigster Verein im Kader-Snapshot)"
+    )
     ap.add_argument("--url", default=live.DEFAULT_URL, help="FMMT-27-Server für --quelle live")
     ap.add_argument("--pool-min-stufe", default="Gut", help="Vergleichspool der Anker")
-    ap.add_argument("--anker-min-n", type=int, default=100, help="Mindestwerte je Statistik im Pool")
+    ap.add_argument(
+        "--anker-min-n", type=int, default=100, help="Mindestwerte je Statistik im Pool"
+    )
     ap.add_argument("--port", type=int, default=8700)
     ap.add_argument("--kein-browser", action="store_true")
+    ap.add_argument(
+        "--faces", help=f"Ordner mit face_<uid>.png (Default: $FM27_FACES oder {FACES_STANDARD})"
+    )
     a = ap.parse_args(argv)
     save = common.resolve_save(a.save)
 
@@ -141,7 +177,10 @@ def main(argv=None) -> None:
         )  # fmt: skip
 
     start = {"quelle": a.quelle, "pool_min_stufe": a.pool_min_stufe, "anker_min_n": a.anker_min_n}
-    app = create_app(laden, start)
+    faces = faces_ordner(a.faces)
+    if faces is None:
+        print("Hinweis: kein Faces-Ordner gefunden, Spielerbilder werden durch Initialen ersetzt.")
+    app = create_app(laden, start, faces)
 
     import uvicorn
 

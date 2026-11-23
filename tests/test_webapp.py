@@ -75,3 +75,39 @@ def test_spielerprofil_endpoint(client):
     assert {"rollen", "statistiken", "attribute", "pool"} <= set(j)
     nf = client.get("/api/spieler/xyz", params={"mit": "Mit", "ohne": "Ohne"})
     assert nf.status_code == 404
+
+
+def test_spielerbild_nur_ziffern_und_vorhandene_dateien(tmp_path):
+    (tmp_path / "face_123.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (tmp_path.parent / "face_geheim.png").write_bytes(b"x")
+
+    def laden(e):
+        return planer.kontext_bauen(
+            mini_df(), mini_rk(), ligen.Ligen.laden(), {"min_minuten": 900}, MINI_FORMATIONEN
+        )
+
+    c = TestClient(
+        webapp.create_app(
+            laden, {"quelle": "db", "pool_min_stufe": "Gut", "anker_min_n": 100}, tmp_path
+        )
+    )
+    r = c.get("/api/face/123")
+    assert r.status_code == 200 and r.headers["content-type"] == "image/png"
+    assert c.get("/api/face/999").status_code == 404  # fehlt -> Initialen in der Oberfläche
+    assert c.get("/api/face/..%2Fface_geheim").status_code == 404  # kein Pfad außerhalb
+    assert c.get("/api/face/abc").status_code == 404
+
+
+def test_ohne_faces_ordner_immer_404(client):
+    assert client.get("/api/face/123").status_code == 404
+
+
+def test_plan_liefert_punkte_und_label(client):
+    p = client.post("/api/plan", json={"formation": "2er"}).json()
+    s = p["slots"]["ST r"]
+    k = s["punkte"]["kandidaten"]
+    assert k and {"uid", "name", "value", "paar_gew"} <= set(k[0])
+    assert [z["paar_gew"] for z in k] == sorted((z["paar_gew"] for z in k), reverse=True)
+    assert {z["uid"] for z in s["punkte"]["eigene"]} == {"A", "B"}
+    m = client.get("/api/meta").json()
+    assert m["formationen"]["2er"]["slots"]["ST r"]["label"] == "ST r"  # ohne label: Schlüssel
