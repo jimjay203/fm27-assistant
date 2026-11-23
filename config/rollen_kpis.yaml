@@ -47,6 +47,13 @@ bausteine:
       - {stat: npxg, art: p90}
       - {stat: schuesse_aufs_tor, art: p90}
       - {stat: konversionsrate_pct, art: pct}
+  abschlussqualitaet:
+    # xG pro Schuss: wie gut die Abschlusspositionen sind (nicht wie oft). Anregung aus den FM26-Moneyball-Benchmarks
+    # (wissen/benchmarks-fm26.md); in FM27 trennscharf (ST-Pool P25/P55/P90 0,11/0,12/0,17, Stand 21.02.2027).
+    # Ergänzt 2026-11-23. Bei wenigen Schüssen streut der Wert stark.
+    name: Abschlussqualität (xG pro Schuss)
+    stats:
+      - {stat: xg_pro_schuss_avg, art: direkt}
   fernschuss:
     name: Schüsse von außerhalb des Strafraums
     stats:
@@ -103,6 +110,9 @@ bausteine:
     stats:
       - {stat: tacklings_gewonnen, art: p90}
       - {stat: tackling_pct, art: pct}
+      # Entscheidende Tacklings (Key Tackles): Anregung aus den FM26-Moneyball-Benchmarks (wissen/benchmarks-fm26.md),
+      # in FM27 trennscharf (P25/P55/P90 im IV-Pool 0,05/0,10/0,20 pro 90, Stand 21.02.2027). Ergänzt 2026-11-23.
+      - {stat: tacklings_entscheidend, art: p90}
   abfangen:
     name: Abfangen
     stats:
@@ -567,7 +577,7 @@ rollen:
   "Mittelstürmer":
     phase: std
     gruppe: st
-    bausteine: {torgefahr: 3, chancen: 1, luftkampf: 1}
+    bausteine: {torgefahr: 3, abschlussqualitaet: 1, chancen: 1, luftkampf: 1}
     begruendung: "Klassische Nummer neun: Angriffe abschließen, selbst oder durch überlegtes Ablegen."
     verlaesslichkeit: mittel
   "Mitarbeitender Mittelstürmer":
@@ -613,8 +623,8 @@ rollen:
   "Knipser":
     phase: mit
     gruppe: st
-    bausteine: {torgefahr: 4}
-    begruendung: "Lauert auf der Höhe des letzten Verteidigers, wenig Aufbau: Erfolg sind Torgefahr und Verwertung. Quelle: gute Fähigkeiten ohne Ball."
+    bausteine: {torgefahr: 3, abschlussqualitaet: 1}
+    begruendung: "Lauert auf der Höhe des letzten Verteidigers, wenig Aufbau: Erfolg sind Torgefahr und Verwertung, gute Abschlusspositionen (xG pro Schuss). Quelle: gute Fähigkeiten ohne Ball."
     verlaesslichkeit: mittel
     luecken: "Antizipation und Laufwege ohne Ball nicht erfasst."
   "Halbraumstürmer":

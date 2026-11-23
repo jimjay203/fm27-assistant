@@ -10,6 +10,10 @@ Setzungen zur Prüfung durch Jimmy.
 bezieht sich auf die Verteilung der Spieler auf derselben Position (Perzentile, siehe `anker_fm27.yaml`).
 Der Spieler wird mit **beiden** seiner Rollen bewertet (mit Ball und ohne Ball).
 
+**Änderungen:** 2026-11-23 (Auftrag Jimmy): Baustein Zweikampf um entscheidende Tacklings ergänzt, neuer Baustein
+Abschlussqualität (xG pro Schuss) für Mittelstürmer und Knipser. Anregung aus den FM26-Moneyball-Benchmarks, Abgleich
+und verworfene Kandidaten in [benchmarks-fm26.md](benchmarks-fm26.md).
+
 **Grundsätzliche Datenlücken (für alle Rollen):** Positionsspiel und Laufwege ohne Ball, Passlänge und -risiko,
 Ablagen, Kontertore, Zielzonen von Flanken. Defensivwerte hängen vom Teamstil ab (Topclubs haben viel Ballbesitz).
 
@@ -17,6 +21,7 @@ Ablagen, Kontertore, Zielzonen von Flanken. Defensivwerte hängen vom Teamstil a
 | Baustein | Statistiken (↓ = niedriger ist besser) |
 |---|---|
 | torgefahr (Torgefahr) | npxg, schuesse_aufs_tor, konversionsrate_pct |
+| abschlussqualitaet (Abschlussqualität (xG pro Schuss), ergänzt 2026-11-23) | xg_pro_schuss_avg |
 | fernschuss (Schüsse von außerhalb des Strafraums) | schuesse_fern_p90 |
 | chancen (Chancenkreation) | xa, entscheidende_paesse_spiel_p90, grosschancen |
 | ballvortrag (Ballvortrag (Pässe nach vorn und Dribblings)) | progressive_paesse, dribblings |
@@ -27,7 +32,7 @@ Ablagen, Kontertore, Zielzonen von Flanken. Defensivwerte hängen vom Teamstil a
 | luftkampf (Luftkampf) | kopfbaelle_gewonnen, kopfballduelle_gewonnen_pct |
 | tempo (Sprinthäufigkeit (Näherung für Tempo, nicht Schnelligkeit)) | sprints_p90 |
 | laufleistung (Laufleistung) | distanz_km |
-| zweikampf (Zweikampf) | tacklings_gewonnen, tackling_pct |
+| zweikampf (Zweikampf) | tacklings_gewonnen, tackling_pct, tacklings_entscheidend (ergänzt 2026-11-23) |
 | abfangen (Abfangen) | abgefangen |
 | raumsicherung (Raumsicherung (Klären, Blocken)) | klaerungen, geblockt, schuesse_geblockt |
 | pressing (Pressing) | pressing_erfolgreich, pressingquote_pct |
@@ -135,14 +140,14 @@ Ablagen, Kontertore, Zielzonen von Flanken. Defensivwerte hängen vom Teamstil a
 
 | Rolle | Phase | Bausteine (Gewicht) | Begründung | Zuverlässigkeit | Lücken |
 |---|---|---|---|---|---|
-| Mittelstürmer | Standard | torgefahr 3, chancen 1, luftkampf 1 | Klassische Nummer neun: Angriffe abschließen, selbst oder durch überlegtes Ablegen. | mittel |  |
+| Mittelstürmer | Standard | torgefahr 3, abschlussqualitaet 1, chancen 1, luftkampf 1 | Klassische Nummer neun: Angriffe abschließen, selbst oder durch überlegtes Ablegen. | mittel |  |
 | Mitarbeitender Mittelstürmer | ohne Ball | pressing 2, zweikampf 1, ballgewinn 1, laufleistung 1 | Positioniert sich tiefer, hilft, das Zentrum abzusichern. | mittel |  |
 | Zentraler Umschaltstürmer | ohne Ball | torgefahr 2, tempo 1, dribbling 1 | Arbeitet nicht nach hinten, ist nach Ballgewinn Anspielstation für Konter. | **gering** | Konterwirkung nicht direkt messbar. Defensive Beiträge werden bewusst nicht verlangt. |
 | Ausweichender Umschaltstürmer | ohne Ball | tempo 2, torgefahr 2, dribbling 1 | Höhere Position, weicht in die Halbräume für Konter über außen aus. | **gering** | Konterwirkung nicht direkt messbar. |
 | Hängende Spitze | mit Ball | chancen 3, aufbau 1, passsicherheit 1 | Verbindet Mittelfeld und Angriff, nimmt Pässe zwischen den Linien an, verteilt auf Nachrückende und Außen. | mittel |  |
 | Falsche Neun | mit Ball | chancen 2, dribbling 1, aufbau 1, torgefahr 1 | Fällt in den Zehnerraum, agiert wie ein vorgeschobener Spielmacher, bindet Verteidiger. | **gering** | Zurückfallen und das Binden von Verteidigern nicht erfasst. |
 | Zielspieler | mit Ball | luftkampf 3, torgefahr 2, chancen 1 | Physis und Größe, Abnehmer langer Bälle (festmachen, weiterleiten), Lufthoheit im Strafraum. Quelle: Physis und Größe als Attribute. | mittel | Festmachen und Weiterleiten (Ablagen) nicht erfasst, nur Kopfbälle und xAssists. |
-| Knipser | mit Ball | torgefahr 4 | Lauert auf der Höhe des letzten Verteidigers, wenig Aufbau: Erfolg sind Torgefahr und Verwertung. Quelle: gute Fähigkeiten ohne Ball. | mittel | Antizipation und Laufwege ohne Ball nicht erfasst. |
+| Knipser | mit Ball | torgefahr 3, abschlussqualitaet 1 | Lauert auf der Höhe des letzten Verteidigers, wenig Aufbau: Erfolg sind Torgefahr und Verwertung, gute Abschlusspositionen (xG pro Schuss). Quelle: gute Fähigkeiten ohne Ball. | mittel | Antizipation und Laufwege ohne Ball nicht erfasst. |
 | Halbraumstürmer | mit Ball | torgefahr 2, tempo 1, dribbling 1 | Läuft ständig die Zwischenräume an, anspielbar in den Fuß oder in die Tiefe. | **gering** | Laufwege nicht erfasst. |
 
 ## Zusammenfassung

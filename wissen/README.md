@@ -13,6 +13,7 @@ Regel: **FM27 > Vorwissen.** Nur FM27-bezogene Inhalte übernehmen; ältere Vers
 - Zweierkette: Rollenkatalog (aus FM26, für FM27 ungeprüft), siehe [rollen.md](rollen.md)
 - Erfolgsmessung je Rolle (Vorschlag von Claude, ungeprüft): [rollen-kpis.md](rollen-kpis.md), maschinenlesbar `config/rollen_kpis.yaml`
 - FM Stag "What does Good look like in FM24?": Benchmarks, siehe [benchmarks-fm24.md](benchmarks-fm24.md) (Anker für FM27 neu berechnet: `config/anker_fm27.yaml`)
+- FM26 Moneyball Stat Benchmarks (Urheber unbekannt): [benchmarks-fm26.md](benchmarks-fm26.md), Schwellen nicht übernommen, Abgleich mit FM27 dort
 
 https://fm.zweierkette.de/handbuch/fm-spielerrollen-liste/
 https://fm.zweierkette.de/handbuch/spielerattribute-football-manager/
