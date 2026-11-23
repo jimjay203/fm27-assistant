@@ -4,9 +4,11 @@ Claude Code als Assistent für Football Manager 27: Subagents (`taktik`, `entwic
 `analyst`), SQLite-Snapshots der Spieldaten und Python-Skripte für Moneyball-Auswertungen.
 Regeln und aktiver Save stehen in [CLAUDE.md](CLAUDE.md).
 
-**Stand:** `config/spalten.yaml` ist für die Kader-Ansicht (Export vom 2026-11-20, 142 Spalten) befüllt
-und gegen einen echten Ausschnitt getestet (`tests/fixtures/echt/`). Team-/Spiel-Ansichten und die
-Spielersuche haben noch keinen echten Export (`TODO(export)`).
+**Stand:** Exporte für Kader, Spielersuche und Spiele sind gemappt (`config/spalten.yaml`) und importiert.
+Hauptquelle ist live das laufende FM27 über den FMMT-27-Reader (`scripts/live.py`); dazu Rollen-Score
+(`scripts/rollen.py`), Benchmarks, Fair Value, Sell/Keep, Spiellisten je Spieler (`scripts/spiele.py`) und der
+Kaderplaner (Web-App). Welche Quelle für welches Thema Pflicht ist: CLAUDE.md, „Quellen je Thema“.
+Aktueller Datenstand: `uv run python scripts/stand.py`.
 
 ## Setup (nur uv)
 
@@ -19,9 +21,10 @@ uv run pytest
 
 | Anlass | Export | Agent-Reihenfolge |
 |---|---|---|
-| Vor Transferfenster | Kader + Spielersuche (Zielpositionen) | analyst → taktik (Bedarf bestätigen) → scouting |
-| Monatlich | Kader inkl. Stats + Attribute | analyst → entwicklung |
-| Nach 3–5 Spielen / Taktikänderung | Team-/Spielstatistiken | analyst → taktik (Messkriterium aus log.md prüfen) |
+| Immer zuerst | – | `stand.py` (Datenstand, Live ja/nein, offene Prüfungen in log.md) |
+| Vor Transferfenster | Kader + Spielersuche (Zielpositionen), live | analyst → taktik (Bedarf bestätigen) → scouting |
+| Monatlich | Kader inkl. Stats + Attribute, Spiellisten (`spiele.py`) | analyst → entwicklung |
+| Nach 3–5 Spielen / Taktikänderung | Team-/Spielstatistiken, Spiellisten | analyst → taktik (Messkriterium aus log.md prüfen) |
 | Vor wichtigem Spiel | Gegner-Analyse-Screen | taktik |
 
 Exporte mit In-Game-Datum und View-Typ ablegen: `saves/werder/data/raw/2027-01-15_suche_stuermer.csv`
@@ -35,6 +38,14 @@ uv run python scripts/import.py --save werder                  # alle Dateien in
 uv run python scripts/per90.py --rolle stuermer_abschluss      # Per-90 + Perzentile (--csv out.csv)
 uv run python scripts/value.py --rolle stuermer_abschluss --max-alter 31 --top 20
 uv run python scripts/team.py --ab 2027-02-01                  # Team-KPIs, Vorher/Nachher
+uv run python scripts/stand.py                                 # Datenstand aller Quellen
+uv run python scripts/live.py                                  # Live-Import aus FM27 (FMMT-27)
+uv run python scripts/rollen.py --alle --top 5                 # Rollen-Score je Slot (--slot, --detail NAME)
+uv run python scripts/benchmark.py --profil stuermer_torjaeger # absolute Maßstäbe (--detail NAME)
+uv run python scripts/value.py --rolle gruppe_st --sort fv --nur-moneyball   # Fair Value
+uv run python scripts/sellkeep.py                              # Sell/Keep eigener Kader
+uv run python scripts/spiele.py [--zeige NAME]                 # Spiellisten erfassen / anzeigen
+uv run python scripts/webapp.py                                # Kaderplaner, http://127.0.0.1:8700
 ```
 
 `--save` fehlt → `$FM27_SAVE`, sonst „Aktiver Save“ aus CLAUDE.md. Weitere Optionen: `--help`.

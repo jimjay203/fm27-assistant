@@ -13,6 +13,21 @@ Aktiver Save: saves/werder/ – lies dort immer zuerst kontext.md und taktik.md.
 - saves/<save>/taktik.md ist die gemeinsame Referenz für Rollen. Nur der Agent `taktik`
   ändert sie, und nur nach Zustimmung.
 
+## Quellen je Thema (Pflicht bei Taktik, Entwicklung, Verpflichtungen)
+Immer zuerst: `uv run python scripts/stand.py` (Datenstand, Live ja/nein, veraltete Quellen, offene log.md-Prüfungen),
+dazu kontext.md, taktik.md, log.md. Live (FMMT-27) bevorzugen; sonst DB-Stand mit Snapshot-Datum nennen.
+
+| Thema | Skripte / Daten | Wissen |
+|---|---|---|
+| Taktik | `team.py` (Team-KPIs, Vorher/Nachher), `spiele.py --zeige NAME` (Einsätze: Position, Rolle, Minuten, Note, xG), `rollen.py --alle` (Rollen-Score der Slots), `planer.py`/Web-App (beste Elf) | wissen/rollen.md, rollen-kpis.md, FM-Arena-Links in wissen/README.md |
+| Entwicklung | `rollen.py --detail NAME`, `benchmark.py --profil … --detail NAME`, `sellkeep.py`, `spiele.py --zeige NAME`, Snapshot-Vergleich (analyst), Attribute live (eigene Spieler exakt) | rollen-kpis.md, attribut-gewichte.md |
+| Verpflichtung | `rollen.py --slot … --max-alter`, `value.py --rolle … --sort fv [--nur-moneyball]` (Kosten, Value-Score, xG-Delta, Fair Value), `benchmark.py` (Gegenprobe), Liga-Stufe (config/ligen.yaml), Budget + Kaufoptionen (kontext.md) | benchmarks-fm24/26.md |
+
+Rangfolge der Bewertungen: Rollen-Fit = `rollen.py` (FM27-Anker, Rollenpaar mit/ohne Ball wie in taktik.md);
+`benchmark.py` = Gegenprobe gegen absolute Maßstäbe (aus FM24, für FM27 ungeprüft); `value.py` (Rollen aus
+config/rollen.yaml) nur für Kosten, Value-Score, xG-Delta, Fair Value. Fremde Attribute sind Scouting-Spannen (lo–hi).
+Jede Antwort zu diesen Themen endet mit einer Zeile „Quellen: … · Fehlt/veraltet: …“.
+
 ## Agents
 - taktik: Taktik-Sparring, Spielanalyse, Gegnervorbereitung
 - entwicklung: Trainingsfokus, Rollen-Fit, Spielzeit, Leihen
