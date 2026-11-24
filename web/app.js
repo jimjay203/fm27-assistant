@@ -64,7 +64,10 @@ const score = (v) => `<span class="score ${scoreKlasse(v)}">${zahl(v)}</span>`;
 const STATUS = { kader: "", leihe_ein: "Leihe", leihe_aus: "verliehen" };
 const datumDE = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ""); return m ? `${m[3]}.${m[2]}.${m[1]}` : (d || ""); };
 // "verliehen bis 29.06.2028" / "Leihe bis 30.06.2027" (Server liefert z.leihe, sonst aus eigen + loan_end)
-const statusText = (z) => z.leihe || (STATUS[z.eigen] ? STATUS[z.eigen] + (z.loan_end ? " bis " + datumDE(z.loan_end) : "") : "");
+const statusText = (z) => [
+  z.leihe || (STATUS[z.eigen] ? STATUS[z.eigen] + (z.loan_end ? " bis " + datumDE(z.loan_end) : "") : ""),
+  z.pos_hinweis, // "Position nicht gelistet": Stammspieler laut taktik_slots.yaml (Umschulung)
+].filter(Boolean).join(", ");
 const kurzName = (n) => (n || "").split(" ").slice(-1)[0];
 const initialen = (n) => (n || "?").split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 // Spielerbild aus dem FM27-Faces-Ordner; fehlt es, bleiben die Initialen darunter sichtbar

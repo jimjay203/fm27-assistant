@@ -229,7 +229,8 @@ def calibration(df: pd.DataFrame, profile: dict, defaults: dict) -> pd.DataFrame
 def topclub_liste(df: pd.DataFrame, n: int = 20) -> list[str]:
     """Die n Vereine mit der größten Summe der Marktwerte im Senior Team (aus den Daten, keine Handliste)."""
     sen = df[df["team"] == "Senior Team"] if "team" in df else df
-    return sen.groupby("club")["value"].sum().nlargest(n).index.tolist()
+    club = vereine_roh(sen)  # ohne "(Stand …)"-Kennzeichnung veralteter Vereinsangaben
+    return sen.groupby(club)["value"].sum().nlargest(n).index.tolist()
 
 
 def topclub_referenz(
@@ -287,13 +288,19 @@ ANKER_DATEI = "anker_fm27.yaml"
 STANDARD_PERZENTILE = {"schlecht": 25, "ok": 55, "gut": 90}
 
 
+def vereine_roh(df: pd.DataFrame) -> pd.Series:
+    """Vereinsname ohne Kennzeichnung (per90.aktueller_stand: club_roh; None = Verein unbekannt), sonst club."""
+    return df["club_roh"] if "club_roh" in df else df["club"]
+
+
 def statistik_liga(df: pd.DataFrame, spalte: str = "league") -> pd.Series:
     """Liga (bzw. Verein mit spalte="club"), in der die Statistiken überwiegend entstanden sind (Saisonbasis): die
     der Vorsaison, solange deren gewichtete Minuten überwiegen, sonst die aktuelle. Ohne Saisonspalten: aktuell."""
+    aktuell = vereine_roh(df) if spalte == "club" else df[spalte]
     if f"{spalte}_vs" not in df or "min_vs_w" not in df:
-        return df[spalte]
+        return aktuell
     vs = df[f"{spalte}_vs"].notna() & (df["min_vs_w"].fillna(0) > df["min_neu"].fillna(0))
-    return df[f"{spalte}_vs"].where(vs, df[spalte])
+    return df[f"{spalte}_vs"].where(vs, aktuell)
 
 
 def anker_pool(
@@ -539,7 +546,11 @@ def main(argv=None) -> None:
     sc = sc.assign(vs_topclub=vs_topclub(sc, prof, ref))
 
     if a.detail:
-        hit = sc[sc["name"].fillna("").str.contains(a.detail, case=False)]
+        import rollen  # erst hier: rollen importiert benchmark
+
+        # exakter Name vor Teiltreffer, eigene vor fremden
+        uids, _ = rollen.detail_treffer(sc, a.detail)
+        hit = sc[sc["uid"].astype(str).isin(uids)]
         if hit.empty:
             common.die(
                 f"Kein Spieler mit '{a.detail}' im Profil {prof['name']} (Position/Minuten/Abdeckung)."

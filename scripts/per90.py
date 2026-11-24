@@ -125,7 +125,8 @@ def load_wide(conn, save: str, view: str | None = None, snapshot_ids: list[int] 
 SAISON_VIEWS = ("kader", "suche", "live")
 # Spalten, die weder Kernfeld (CORE_COLS) noch Statistik sind (Exporte, Live-Reader, Planer)
 # Zusatzspalten der Saisonbasis (kombinieren): keine Statistiken
-SAISON_SPALTEN = ("min_neu", "min_vs", "w_vs", "min_vs_w", "league_vs", "club_vs", "minuten_text")
+SAISON_SPALTEN = ("min_neu", "min_vs", "w_vs", "min_vs_w", "league_vs", "club_vs", "minuten_text",
+                  "stand_datum", "club_roh")
 NICHT_STATS = {"view_type", "uid", "own", "eigen", "team", "datenbasis", "in_suche", "quelle",
                *SAISON_SPALTEN}  # fmt: skip
 RATEN = ("_pct", "_avg", "_p90")  # minutengewichtet; alles andere (auch _n) sind Zählwerte
@@ -263,6 +264,8 @@ def saison_info(aktuell: str, vs: str, ids_neu: dict, ids_vs: dict, uebergang: f
 def load_saison(conn, save: str, views=SAISON_VIEWS, config_dir=None):
     """Wie load_wide, aber mit Saisonbasis: je Quelle der letzte Snapshot der laufenden Saison und der Vorsaison,
     kombiniert mit kombinieren(). Laufende Saison = Saison des neuesten Snapshots dieser Quellen.
+    Kernfelder (Verein, Liga, Marktwert, Gehalt, Vertrag) danach mit aktueller_stand() auf den neuesten Stand aller
+    Snapshots der laufenden Saison (Kader, Suche, Live – auch wenn `views` enger ist).
     -> (players, attrs); players.attrs["saison"] = aktuell, vorsaison, Snapshots je Quelle, Übergang."""
     sc = saison_cfg(config_dir)
     snaps = saison_snapshots(conn, save, views, sc["grenze"])
@@ -278,8 +281,109 @@ def load_saison(conn, save: str, views=SAISON_VIEWS, config_dir=None):
     attrs = pd.concat([attrs_neu, attrs_alt], ignore_index=True).merge(
         keys, on=["snapshot_id", "player_uid"]
     )
+    df = aktueller_stand(conn, save, df, aktuell, sc["grenze"])
     df.attrs["saison"] = saison_info(aktuell, vs, ids_neu, ids_vs, sc["uebergang"])
     return df, attrs
+
+
+# Kernfelder, die immer vom neuesten Stand kommen (config/saison.yaml); Statistiken und snapshot_id bleiben.
+STAND_FELDER = ("name", "club", "league", "club_country", "liga_rang", "liga_ansehen", "position", "age",
+                "birthdate", "wage", "wage_min", "wage_max", "value", "value_min", "value_max", "contract_end",
+                "loan_end", "loan_start", "ingame_date")  # fmt: skip
+
+
+def _datum_text(d) -> str:
+    t = pd.to_datetime(d, errors="coerce")
+    return f"{t:%d.%m.%Y}" if pd.notna(t) else str(d or "?")
+
+
+def verein_unbekannt_text(verein: str, loan_end=None, stand=None) -> str:
+    """'Verein unbekannt (zuletzt Werder Bremen, Leihe bis 30.06.2027; Stand 31.05.2027)'."""
+    leihe = f", Leihe bis {_datum_text(loan_end)}" if pd.notna(pd.to_datetime(loan_end, errors="coerce")) else ""
+    st = f"; Stand {_datum_text(stand)}" if stand else ""
+    return f"Verein unbekannt (zuletzt {verein}{leihe}{st})"
+
+
+def aktueller_stand(conn, save: str, df: pd.DataFrame, aktuell: str, grenze: str = "07-01",
+                    key: str = "player_uid") -> pd.DataFrame:  # fmt: skip
+    """Kernfelder je Spieler vom neuesten Stand aller Snapshots der laufenden Saison (Kader, Suche, Live).
+
+    - Steht ein Spieler in einem neueren Snapshot der laufenden Saison als seine Zeile, gelten dessen Kernfelder
+      (Verein, Liga, Marktwert, Gehalt, Vertrag, Position, Alter); Statistiken und snapshot_id bleiben.
+    - Fehlt er in den jeweils letzten Snapshots der laufenden Saison (z. B. nur in der Vorsaison), ist die
+      Vereinsangabe veraltet: Spalte `stand_datum` = Datum der Quelle, Verein "X (Stand TT.MM.JJJJ)".
+    - War der alte Verein der eigene (häufigster Verein im letzten Kader-Export der laufenden Saison) und steht er
+      nicht in diesem Kader: "Verein unbekannt (zuletzt <eigener Verein>[, Leihe bis …]; Stand …)" – kein eigener
+      Spieler mehr. Liga (für das Liga-Gewicht) und league_vs bleiben unverändert. `club_roh` = Verein ohne
+      Kennzeichnung (für Gruppierungen wie die Topclub-Liste)."""
+    if df.empty:
+        return df.assign(stand_datum=None)
+    q = (
+        "SELECT p.*, s.ingame_date, s.view_type, lr.rang AS liga_rang, lr.ansehen AS liga_ansehen "
+        "FROM players p JOIN snapshots s ON s.id = p.snapshot_id "
+        "LEFT JOIN league_ranking lr ON lr.league = p.league AND lr.country = p.club_country "
+        f"WHERE s.save = ? AND s.view_type IN ({','.join('?' * len(SAISON_VIEWS))}) ORDER BY s.ingame_date, s.id"
+    )
+    alle = pd.read_sql_query(q, conn, params=[save, *SAISON_VIEWS])
+    alle = alle[alle["ingame_date"].map(lambda d: saison_von(d, grenze) == aktuell)]
+    letzte = saison_snapshots(conn, save, SAISON_VIEWS, grenze).get(aktuell, {})
+    letzte_ids = {sid for sid, _ in letzte.values()}
+    kader = letzte.get("kader")
+    kader_uids: set[str] = set()
+    verein = None
+    if kader:
+        k = alle[alle["snapshot_id"] == kader[0]]
+        kader_uids = set(k["player_uid"].astype(str))
+        clubs = k["club"].dropna()
+        verein = None if clubs.empty else str(clubs.mode().iat[0])
+    neueste = alle.drop_duplicates("player_uid", keep="last").set_index("player_uid")
+    neueste.index = neueste.index.astype(str)
+
+    out = df.copy()
+    uids = out[key].astype(str)
+    felder = [c for c in STAND_FELDER if c in neueste.columns]
+    for c in felder:
+        if c not in out:
+            out[c] = None
+    datum_zeile = pd.to_datetime(out["ingame_date"], errors="coerce") if "ingame_date" in out else None
+    hit = uids.isin(neueste.index)
+    if hit.any():
+        n = neueste.loc[uids[hit]]
+        n_datum = pd.to_datetime(n["ingame_date"], errors="coerce").to_numpy()
+        n_sid = n["snapshot_id"].to_numpy()
+        z_sid = pd.to_numeric(out.loc[hit, "snapshot_id"], errors="coerce").to_numpy()
+        z_datum = (datum_zeile[hit].to_numpy() if datum_zeile is not None
+                   else np.full(hit.sum(), np.datetime64("NaT")))  # fmt: skip
+        neuer = (pd.isna(z_datum) | (n_datum > z_datum) | ((n_datum == z_datum) & (n_sid > z_sid))) & (
+            n_sid != z_sid
+        )
+        idx = out.index[hit][neuer]
+        for c in felder:
+            if not len(idx):
+                break
+            numerisch = pd.api.types.is_numeric_dtype(out[c]) and c not in ("name",)
+            neu = out[c].astype(object)
+            neu.loc[idx] = n[c].to_numpy()[neuer]
+            out[c] = pd.to_numeric(neu, errors="coerce") if numerisch else neu
+    # Quelle der Kernfelder: in einem der letzten Snapshots der laufenden Saison?
+    src_sid = uids.map(neueste["snapshot_id"]) if len(neueste) else pd.Series(np.nan, index=out.index)
+    aktuell_ok = src_sid.isin(letzte_ids)
+    stand = pd.Series(None, index=out.index, dtype=object)
+    alt = ~aktuell_ok
+    stand[alt] = out.loc[alt, "ingame_date"] if "ingame_date" in out else None
+    out["stand_datum"] = stand
+    if alt.any() and "club" in out:
+        weg = alt & (out["club"] == verein) & ~uids.isin(kader_uids) if verein else pd.Series(False, index=out.index)
+        ende = out["loan_end"] if "loan_end" in out else pd.Series(None, index=out.index)
+        out["club"] = out["club"].astype(object)
+        out["club_roh"] = out["club"]  # Rohname für Berechnungen (Topclubs); Verein unbekannt -> None
+        for i in out.index[alt]:
+            if weg[i]:
+                out.at[i, "club"] = verein_unbekannt_text(verein, ende[i], stand[i])
+                out.at[i, "club_roh"] = None
+            elif pd.notna(out.at[i, "club"]):
+                out.at[i, "club"] = f"{out.at[i, 'club']} (Stand {_datum_text(stand[i])})"
+    return out
 
 
 def mit_vorsaison(conn, save: str, neu: pd.DataFrame, stichtag, views=SAISON_VIEWS,

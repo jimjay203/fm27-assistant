@@ -40,6 +40,8 @@ SPIELER_FELDER = [
     "mit", "ohne", "paar", "liga_gewicht", "paar_gew", "vs_top",
     "value", "value_min", "value_max", "wage", "wage_min", "wage_max", "contract_end", "loan_end",
     "minuten_text", "min_neu", "min_vs", "w_vs",  # Saisonbasis (per90.kombinieren)
+    "stand_datum",  # Vereinsangabe veraltet (per90.aktueller_stand)
+    "pos_hinweis",  # "Position nicht gelistet": eigener Stammspieler des Slots ohne passende Position
 ]  # fmt: skip
 
 
@@ -478,15 +480,19 @@ def key_ergaenzen(ctx: Kontext, zeilen: list[dict], mit_n: str, ohne_n: str) -> 
         z["key"] = kz[z["uid"]]
 
 
-def slot_bewerten(ctx: Kontext, mit_name: str, ohne_name: str, f: Filter):
-    """-> (eigene, kandidaten) als DataFrames, absteigend nach paar_gew."""
+def slot_bewerten(ctx: Kontext, mit_name: str, ohne_name: str, f: Filter, stamm=None):
+    """-> (eigene, kandidaten) als DataFrames, absteigend nach paar_gew.
+
+    `stamm`: Namen laut taktik_slots.yaml; diese eigenen Spieler werden auch ohne passende Position bewertet
+    (pos_hinweis "Position nicht gelistet", z. B. Umschulung)."""
     mit, ohne = _rolle(ctx, mit_name), _rolle(ctx, ohne_name)
     a = SimpleNamespace(
         min_minuten=f.min_minuten, nur_volle_daten=f.nur_volle_daten, max_alter=f.max_alter,
         max_wert_mio=f.max_wert_mio, gewichtung=f.gewichtung, min_stufe=f.min_stufe,
     )  # fmt: skip
     own, cand = rollen.kandidaten_slot(
-        ctx.df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, f.min_minuten_eigene
+        ctx.df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, f.min_minuten_eigene,
+        stamm=stamm,
     )
     if f.nur_suche and "in_suche" in cand:
         cand = cand[cand["in_suche"]]
@@ -563,17 +569,23 @@ def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
     mit, ohne = _rolle(ctx, mit_name), _rolle(ctx, ohne_name)
     df = ctx.df
     text = _norm(s.text.strip())
+    zusatz: set[str] = set()
     if text:
-        treffer = df["name"].map(_norm).str.contains(text, regex=False)
+        im_namen = df["name"].map(_norm).str.contains(text, regex=False).astype(bool)
+        treffer = im_namen.copy()
         if "club" in df:
-            treffer |= df["club"].map(_norm).str.contains(text, regex=False)
+            treffer |= df["club"].map(_norm).str.contains(text, regex=False).astype(bool)
+        # eigene Spieler, die per Name gesucht werden, immer bewerten (auch ohne passende Position)
+        if "own" in df:
+            zusatz = set(df.loc[im_namen & df["own"].fillna(False).astype(bool), "uid"].astype(str))
         df = df[treffer]
     a = SimpleNamespace(
         min_minuten=s.min_minuten, nur_volle_daten=s.nur_volle_daten, max_alter=s.max_alter,
         max_wert_mio=s.max_wert_mio, gewichtung=s.gewichtung, min_stufe=s.min_stufe,
     )  # fmt: skip
     own, cand = rollen.kandidaten_slot(  # Suche: verliehene eigene Spieler mit Hinweis "verliehen bis ..."
-        df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, s.min_minuten, verliehene=True
+        df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, s.min_minuten, verliehene=True,
+        zusatz_uids=zusatz,
     )
     if s.nur_suche and "in_suche" in cand:
         cand = cand[cand["in_suche"]]
@@ -784,7 +796,8 @@ def plan(
         for n, phase in ((mit_n, "mit"), (ohne_n, "ohne")):
             if n not in s["optionen"][phase]:
                 common.die(f"Rolle '{n}' passt nicht zu Slot '{sn}' ({phase} Ball).")
-        mit, ohne, own, cand = slot_bewerten(ctx, mit_n, ohne_n, f)
+        stamm = (ctx.slots_taktik.get(sn) or {}).get("stamm") if form.get("vorbelegung_aus") else None
+        mit, ohne, own, cand = slot_bewerten(ctx, mit_n, ohne_n, f, stamm=stamm)
         bewertet[sn] = (mit_n, ohne_n, mit, ohne, own, cand)
         eigene[sn] = own
     info = einsaetze_je_spieler(ctx)

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -189,15 +190,80 @@ def verliehene_eigene(df, rk, mit) -> list[str]:
     ]
 
 
-def kandidaten_slot(df, mit, ohne, rk, anker, ref, defaults, lg, a, eigene_min, verliehene=False):
+POS_NICHT_GELISTET = "Position nicht gelistet"
+
+
+def name_norm(s) -> str:
+    """Name ohne Akzente und Groß-/Kleinschreibung ('Dinkçi' -> 'dinkci')."""
+    s = unicodedata.normalize("NFKD", s if isinstance(s, str) else "")
+    return "".join(c for c in s if not unicodedata.combining(c)).casefold().strip()
+
+
+def stamm_maske(namen: pd.Series, stamm) -> pd.Series:
+    """True, wenn der Name zu einem Eintrag aus `stamm` (taktik_slots.yaml) passt: ganzer Name oder Nachname
+    ('Arthur' = 'Arthur', 'Grüll' = 'Marco Grüll'). Nur für eigene Spieler gedacht."""
+    ziel = {name_norm(s) for s in (stamm or []) if s}
+    if not ziel:
+        return pd.Series(False, index=namen.index)
+
+    def ok(n) -> bool:
+        n = name_norm(n)
+        return bool(n) and (n in ziel or n.split()[-1] in ziel)
+
+    return namen.map(ok).astype(bool)
+
+
+def detail_treffer(df: pd.DataFrame, name: str) -> tuple[set[str], str]:
+    """uids für --detail NAME: exakter Name vor Teiltreffer, eigene Spieler vor fremden; nur die beste Stufe.
+    -> (uids, Beschreibung der Stufe). Eigene Spieler werden so immer gefunden (auch ohne passende Position)."""
+    n = name_norm(name)
+    namen = df["name"].map(name_norm)
+    exakt = namen == n
+    teil = namen.str.contains(n, regex=False) | namen.str.split().str[-1].eq(n)
+    own = df["own"].fillna(False).astype(bool) if "own" in df else pd.Series(False, index=df.index)
+    for maske, txt in ((own & exakt, "eigener Spieler, exakter Name"), (own & teil, "eigener Spieler"),
+                       (~own & exakt, "fremder Spieler, exakter Name"), (~own & teil, "fremder Spieler")):  # fmt: skip
+        if maske.any():
+            return set(df.loc[maske, "uid"].astype(str)), txt
+    return set(), "kein Treffer"
+
+
+def ohne_score_grund(r, rk, mit, a, eigene_min) -> str:
+    """Warum ein Spieler im Slot keinen Score hat (für --detail)."""
+    rules = rk["positionsgruppen"][rk["rollen"][mit]["gruppe"]]
+    eigen = bool(r.get("own"))
+    mins = r.get("minutes")
+    grenze = eigene_min if eigen else a.min_minuten
+    if r.get("team") != "Senior Team":
+        return "nicht im Profikader"
+    if not eigen and not b.position_ok(r.get("position"), rules):
+        return "Position passt nicht zur Rolle (fremder Spieler)"
+    if not eigen and (pd.isna(mins) or mins < grenze):
+        return f"{0 if pd.isna(mins) else int(mins)} Min. (n<{grenze})"
+    return "Filter (Alter/Wert/Stufe/volle Daten) oder zu wenige Statistiken (Abdeckung < 60 %)"
+
+
+def kandidaten_slot(df, mit, ohne, rk, anker, ref, defaults, lg, a, eigene_min, verliehene=False,
+                    stamm=None, zusatz_uids=None):  # fmt: skip
     """-> (eigene, kandidaten) als bewertete Tabellen für das Rollenpaar.
 
     Eigene = verfügbare eigene Spieler (Kader + an uns geliehene); verliehene (eigen = leihe_aus) nur mit
-    `verliehene=True` (z. B. Spielersuche), Kandidaten sind sie nie."""
+    `verliehene=True` (z. B. Spielersuche), Kandidaten sind sie nie.
+    `stamm` (Namen aus taktik_slots.yaml) und `zusatz_uids` (z. B. --detail): eigene Spieler, die auch ohne
+    passende Position bewertet werden (Umschulung), mit Spalte pos_hinweis = "Position nicht gelistet";
+    für `zusatz_uids` gilt auch die Mindestminuten-Grenze der eigenen nicht."""
     rules = rk["positionsgruppen"][rk["rollen"][mit]["gruppe"]]
-    base = df[df["team"] == "Senior Team"]
-    base = base[base["position"].map(lambda p: b.position_ok(p, rules))]
+    alle = df[df["team"] == "Senior Team"]
+    pos_ok = alle["position"].map(lambda p: b.position_ok(p, rules)).astype(bool)
+    base = alle[pos_ok]  # bool: eine leere object-Series würde Spalten wählen
     own = base[base["own"] & (base["minutes"].fillna(0) >= eigene_min)]
+    if "own" in alle and (stamm or zusatz_uids):
+        eigen_alle = alle["own"].fillna(False).astype(bool) & ~pos_ok
+        zusatz = alle["uid"].astype(str).isin({str(u) for u in (zusatz_uids or [])})
+        st = stamm_maske(alle["name"], stamm) & (alle["minutes"].fillna(0) >= eigene_min)
+        extra = alle[eigen_alle & (zusatz | st)]
+        if len(extra):
+            own = pd.concat([own.assign(pos_hinweis=None), extra.assign(pos_hinweis=POS_NICHT_GELISTET)])
     if not verliehene and "eigen" in own:
         own = own[own["eigen"] != "leihe_aus"]
     cand = base[~base["own"] & (base["minutes"].fillna(0) >= a.min_minuten)]
@@ -291,7 +357,11 @@ def _tabelle(t: pd.DataFrame) -> str:
     else:
         t = t.assign(**{c: np.nan for c in ("key_mit", "key_ohne", "key_fehlt", "key_unsicher")})
     if "eigen" in t and t["own"].any():
-        t = t.assign(status=t["eigen"].fillna(""))
+        hinweis = t["pos_hinweis"] if "pos_hinweis" in t else pd.Series(None, index=t.index)
+        t = t.assign(status=[
+            ", ".join(x for x in (e, h) if isinstance(x, str) and x)
+            for e, h in zip(t["eigen"], hinweis, strict=True)
+        ])  # fmt: skip
         cols = [*COLS[:2], "status", *COLS[2:]]
     else:
         cols = COLS
@@ -399,10 +469,11 @@ def main(argv=None) -> None:
         f"# Rollen-Score (Quelle {quelle}, Daten vom {df.attrs.get('date')}; {per90.saison_text(df.attrs.get('saison'))}; Anker: Perzentile {list(PERZENTILE.values())} der Spieler "
         f"gleicher Positionsgruppe in Ligen ab '{a.pool_min_stufe}'; Rollen-Zuordnung ungeprüft, siehe wissen/rollen-kpis.md)"
     )
+    detail_uids, detail_stufe = detail_treffer(df, a.detail) if a.detail else (set(), "")
     for name, s in todo.items():
         own, cand = kandidaten_slot(  # --detail: auch verliehene eigene Spieler (Entwicklung)
             df, s["mit"], s["ohne"], rk, anker, ref, defaults, lg, a, a.min_minuten_eigene,
-            verliehene=bool(a.detail),
+            verliehene=bool(a.detail), stamm=s.get("stamm"), zusatz_uids=detail_uids,
         )  # fmt: skip
         rm, ro = rk["rollen"][s["mit"]], rk["rollen"][s["ohne"]]
         own_a, _, d_mit, d_ohne = attribut_spalten(own, s, rk, ra, conn, save, schwelle)
@@ -448,14 +519,20 @@ def main(argv=None) -> None:
                 f"({int(cand['key_fehlt'].isna().sum())} ohne Attribute bleiben drin)"
             )
         if a.detail:
+            print(f"\n  --detail '{a.detail}': {len(detail_uids)} Treffer ({detail_stufe})")
+            gefunden = set()
             for sub in (own, cand):
-                hit = sub[sub["name"].fillna("").str.contains(a.detail, case=False)]
+                hit = sub[sub["uid"].astype(str).isin(detail_uids)]
                 for idx, r in hit.iterrows():
+                    gefunden.add(str(r["uid"]))
                     d_m, d_o = paar_bewerten(
                         sub.loc[[idx]], s["mit"], s["ohne"], rk, anker, ref, defaults
                     ).attrs["detail"]
+                    zusatz = [x for x in (r.get("eigen"), r.get("pos_hinweis")) if isinstance(x, str)]
+                    zusatz.append(f"{per90.minuten_anzeige(sub.loc[[idx]]).iat[0]} Min.")
                     print(
-                        f"\n  {r['name']} ({r['club']}): mit {r['mit']:.0f} / ohne {r['ohne']:.0f}"
+                        f"\n  {r['name']} ({r['club']}; {r['position']}; {', '.join(zusatz)}): "
+                        f"mit {r['mit']:.0f} / ohne {r['ohne']:.0f} / paar {r['paar']:.1f} / paar_gew {r['paar_gew']:.1f}"
                     )
                     for lbl, d in ((s["mit"], d_m), (s["ohne"], d_o)):
                         print(
@@ -465,6 +542,10 @@ def main(argv=None) -> None:
                     print(f"    {_attr_detail(r, schwelle)}")
                     if r["ausfaelle"]:
                         print(f"    Ausfälle: {r['ausfaelle']}")
+            rest = df[df["uid"].astype(str).isin(detail_uids - gefunden)]
+            for _, r in rest.iterrows():
+                print(f"\n  {r['name']} ({r['club']}; {r['position']}): kein Score für diesen Slot – "
+                      f"{ohne_score_grund(r, rk, s['mit'], a, a.min_minuten_eigene)}")  # fmt: skip
             continue
         print(f"\nEigene Spieler (ab {a.min_minuten_eigene} Min.), n={len(own)}")
         print(_tabelle(own.sort_values("paar", ascending=False)) if len(own) else "  keine")
