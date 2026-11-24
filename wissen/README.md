@@ -14,6 +14,7 @@ Regel: **FM27 > Vorwissen.** Nur FM27-bezogene Inhalte übernehmen; ältere Vers
 - Erfolgsmessung je Rolle (Vorschlag von Claude, ungeprüft): [rollen-kpis.md](rollen-kpis.md), maschinenlesbar `config/rollen_kpis.yaml`
 - FM Stag "What does Good look like in FM24?": Benchmarks, siehe [benchmarks-fm24.md](benchmarks-fm24.md) (Anker für FM27 neu berechnet: `config/anker_fm27.yaml`)
 - Teamanweisungen mit Ball, alle Stufen und UI-Texte (FM27-Screenshots 03.07.2027): [teamanweisungen.md](teamanweisungen.md)
+- Rollen-Verhalten ohne Ball (Farblogik) und Meta-Attribute je Liga (Tabelle eines erfahrenen Spielers, Version unbekannt): [rollen-meta.md](rollen-meta.md)
 - FM26 Moneyball Stat Benchmarks (Urheber unbekannt): [benchmarks-fm26.md](benchmarks-fm26.md), Schwellen nicht übernommen, Abgleich mit FM27 dort
 
 https://fm.zweierkette.de/handbuch/fm-spielerrollen-liste/
