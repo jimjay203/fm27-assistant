@@ -5,6 +5,15 @@ Dateinamen-Konvention:  YYYY-MM-DD_<view_type>[_beschreibung].csv|html
   Beispiel:  2027-01-15_suche_stuermer.csv
 
 Idempotent: erneuter Import derselben Datei ersetzt den Snapshot (keine Duplikate).
+
+Mehrteil-Suche (FM27-Exporter liefert max. 10.000 Spieler -> Export aufteilen, z. B. nach Ligengruppen):
+  Alle Dateien gleichen Datums der Sicht `suche` im selben Ordner bilden EINEN Snapshot:
+    2027-07-14_suche.csv, 2027-07-14_suche_2.csv, 2027-07-14_suche_<beliebig>.csv
+  Der Import einer Teil-Datei liest immer alle Teile dieses Datums neu ein (Re-Import eines Teils löscht
+  die anderen nicht). Fehlt ein früher importierter Teil im Ordner -> Abbruch für diese Gruppe, außer
+  mit --ohne-fehlende-teile. Spieler in mehreren Teilen (player_uid, sonst Name|Geburtsdatum): identische
+  Zeilen einmal; bei Abweichung gewinnt mehr Minuten, dann mehr gefüllte Zellen (Anzahl wird ausgegeben).
+  Teil-Dateien und Zeilen je Teil: Tabelle snapshot_files. Datei mit >= 9.999 Zeilen -> Limit-Warnung.
 Spalten-Mapping: config/spalten.yaml. Unbekannte Spalten werden geloggt und in player_raw gespeichert.
 Screenshots (png/jpg): kein OCR -> Claude überführt die Tabelle vorher in CSV.
 
@@ -26,6 +35,9 @@ import common
 import fmparse
 
 TABLE_EXT = {".csv", ".html", ".htm"}
+MERGE_VIEWS = ("suche",)  # Teil-Dateien gleichen Datums -> ein Snapshot
+EXPORT_LIMIT = 10_000  # FM27-Exporter: max. Zeilen je Datei
+LIMIT_WARN = EXPORT_LIMIT - 1
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".heic", ".webp"}
 HOME_AWAY = {
     "h": "H",
@@ -107,34 +119,137 @@ def _int(v: float | None) -> int | None:
     return None if v is None else round(v)
 
 
-def _replace_snapshot(conn, save: str, source_file: str, date: str, view_type: str) -> int:
-    old = conn.execute(
-        "SELECT id FROM snapshots WHERE save=? AND source_file=?", (save, source_file)
-    ).fetchone()
-    if old:
-        sid = old[0]
-        conn.execute(
-            "DELETE FROM team_match_stats WHERE match_id IN "
-            "(SELECT id FROM team_matches WHERE snapshot_id=?)",
-            (sid,),
+def _delete_snapshot(conn, sid: int) -> None:
+    conn.execute(
+        "DELETE FROM team_match_stats WHERE match_id IN "
+        "(SELECT id FROM team_matches WHERE snapshot_id=?)",
+        (sid,),
+    )
+    conn.execute("DELETE FROM team_matches WHERE snapshot_id=?", (sid,))
+    for t in (
+        "players",
+        "player_stats",
+        "player_attributes",
+        "player_info",
+        "player_raw",
+        "unmapped_columns",
+        "snapshot_files",
+    ):
+        conn.execute(f"DELETE FROM {t} WHERE snapshot_id=?", (sid,))
+    conn.execute("DELETE FROM snapshots WHERE id=?", (sid,))
+
+
+def _group_snapshots(conn, save: str, date: str, view_type: str) -> dict[int, list[str]]:
+    """{snapshot_id: [Teil-Dateien]} aller Snapshots dieses Datums und dieser Sicht (Altbestand ohne
+    snapshot_files -> nur source_file)."""
+    out = {}
+    for sid, src in conn.execute(
+        "SELECT id, source_file FROM snapshots WHERE save=? AND ingame_date=? AND view_type=?",
+        (save, date, view_type),
+    ).fetchall():
+        teile = [r[0] for r in conn.execute(
+            "SELECT source_file FROM snapshot_files WHERE snapshot_id=?", (sid,))]  # fmt: skip
+        out[sid] = teile or [src]
+    return out
+
+
+def _replace_snapshot(
+    conn, save: str, source_file: str, date: str, view_type: str,
+    parts: list[tuple[str, int]] | None = None,
+) -> int:  # fmt: skip
+    """Löscht den alten Snapshot (gleiche Datei; bei Mehrteil-Sichten alle Snapshots gleichen Datums)
+    und legt ihn neu an. `parts`: [(Dateiname, Zeilen)] -> snapshot_files."""
+    old = {
+        r[0]
+        for r in conn.execute(
+            "SELECT id FROM snapshots WHERE save=? AND source_file=?", (save, source_file)
         )
-        conn.execute("DELETE FROM team_matches WHERE snapshot_id=?", (sid,))
-        for t in (
-            "players",
-            "player_stats",
-            "player_attributes",
-            "player_info",
-            "player_raw",
-            "unmapped_columns",
-        ):
-            conn.execute(f"DELETE FROM {t} WHERE snapshot_id=?", (sid,))
-        conn.execute("DELETE FROM snapshots WHERE id=?", (sid,))
+    }
+    if view_type in MERGE_VIEWS:
+        old |= set(_group_snapshots(conn, save, date, view_type))
+    for sid in sorted(old):
+        _delete_snapshot(conn, sid)
     cur = conn.execute(
         "INSERT INTO snapshots(save, ingame_date, source_file, view_type, imported_at) "
         "VALUES(?,?,?,?,?)",
         (save, date, source_file, view_type, datetime.now().isoformat(timespec="seconds")),
     )
-    return cur.lastrowid
+    sid = cur.lastrowid
+    for name, rows in parts or [(source_file, None)]:
+        conn.execute("INSERT INTO snapshot_files VALUES(?,?,?)", (sid, name, rows))
+    return sid
+
+
+def part_files(path: Path) -> list[Path]:
+    """Alle Teil-Dateien (gleiches Datum + Sicht, Tabellenformat) im Ordner von `path`; Basisdatei
+    `YYYY-MM-DD_<sicht>.csv` zuerst, dann alphabetisch. `path` ist immer enthalten."""
+    date, view = parse_filename(path)
+    found = {path.resolve(): path}
+    for p in path.parent.glob(f"{date}_{view}*"):
+        if p.suffix.lower() not in TABLE_EXT:
+            continue
+        try:
+            if parse_filename(p) == (date, view):
+                found.setdefault(p.resolve(), p)
+        except ValueError:
+            continue
+    return sorted(found.values(), key=lambda p: (p.stem != f"{date}_{view}", p.name))
+
+
+def _row_key(rec: dict, cols: dict[str, str]) -> str | None:
+    """Gleiche Spieler-ID wie import_players: uid, sonst Name|Geburtsdatum bzw. Name."""
+    uid = _text(rec.get(cols["uid"])) if "uid" in cols else None
+    if uid:
+        return uid
+    name = _text(rec.get(cols["name"])) if "name" in cols else None
+    if name is None:
+        return None
+    bday = fmparse.parse_date(rec.get(cols["birthdate"])) if "birthdate" in cols else None
+    return f"{name}|{bday}" if bday else name
+
+
+def merge_parts(parts: list[tuple[str, pd.DataFrame]], mp: Mapping) -> tuple[pd.DataFrame, dict]:
+    """Teil-Exporte zu einer Tabelle (Spaltenvereinigung). Doppelte Spieler über Teile hinweg:
+    identisch -> einmal; abweichend -> mehr Minuten, dann mehr gefüllte Zellen, sonst erster Teil."""
+    columns: list[str] = []
+    for _, df in parts:
+        columns += [c for c in df.columns if c not in columns]
+    cols, _ = mp.split(columns)
+    mspec = mp.by_internal.get("minutes", {})
+
+    def minutes(rec) -> float:
+        if "minutes" not in cols:
+            return 0.0
+        v = fmparse.parse_number(rec.get(cols["minutes"]), mspec.get("dezimal", mp.decimal))
+        return v or 0.0
+
+    def filled(rec) -> int:
+        return sum(not fmparse.is_null(v) for v in rec.values())
+
+    best: dict[str, tuple[dict, int]] = {}
+    ohne_id: list[dict] = []
+    stats = {"doppelt_gleich": 0, "doppelt_abweichend": 0, "doppelt_intern": 0}
+    for i, (_, df) in enumerate(parts):
+        for rec in df.reindex(columns=columns, fill_value="").to_dict("records"):
+            key = _row_key(rec, cols)
+            if key is None:
+                ohne_id.append(rec)
+                continue
+            if key not in best:
+                best[key] = (rec, i)
+                continue
+            alt, j = best[key]
+            if j == i:  # Duplikat innerhalb einer Datei: letzter Eintrag gewinnt (wie Einzelimport)
+                stats["doppelt_intern"] += 1
+                best[key] = (rec, i)
+            elif rec == alt:
+                stats["doppelt_gleich"] += 1
+            else:
+                stats["doppelt_abweichend"] += 1
+                if (minutes(rec), filled(rec)) > (minutes(alt), filled(alt)):
+                    best[key] = (rec, i)
+    rows = [r for r, _ in best.values()] + ohne_id
+    return pd.DataFrame(rows, columns=columns), stats
 
 
 def import_players(conn, sid: int, df: pd.DataFrame, mp: Mapping, warn) -> dict:
@@ -402,19 +517,61 @@ def import_file(
     sep: str | None = None,
     encoding: str = "utf-8-sig",
     warn=None,
+    log=print,
+    fehlende_teile_ok: bool = False,
 ) -> dict:
+    """Importiert `path`; bei Mehrteil-Sichten (suche) alle Teil-Dateien gleichen Datums als EIN Snapshot."""
     warn = warn or (lambda m: print(f"  WARNUNG: {m}", file=sys.stderr))
     date, view = parse_filename(path)
-    df = read_table(path, sep, encoding)
+    files = part_files(path) if view in MERGE_VIEWS else [path]
+    if view in MERGE_VIEWS:
+        da = {p.name for p in files}
+        fehlt = sorted(
+            {t for teile in _group_snapshots(conn, save, date, view).values() for t in teile} - da
+        )
+        if fehlt and not fehlende_teile_ok:
+            raise ValueError(
+                f"früher importierte Teil-Datei(en) fehlen in {path.parent}: {', '.join(fehlt)} – "
+                "Re-Import würde deren Spieler löschen (zurücklegen oder --ohne-fehlende-teile)"
+            )
+        if fehlt:
+            warn(f"Teil-Datei(en) entfallen, Spieler daraus werden entfernt: {', '.join(fehlt)}")
+    parts = [(p.name, read_table(p, sep, encoding)) for p in files]
+    for name, df in parts:
+        if len(df) >= LIMIT_WARN:
+            warn(
+                f"{name}: {len(df)} Zeilen – Exporter-Limit ({EXPORT_LIMIT}) erreicht, Liste "
+                "vermutlich abgeschnitten – Export aufteilen (z. B. nach Ligengruppen, "
+                f"{date}_{view}_2.csv …)"
+            )
     mp = Mapping(cfg)
+    merge = {}
+    if len(parts) > 1:
+        df, merge = merge_parts(parts, mp)
+        log(
+            f"  {len(parts)} Teile: "
+            + ", ".join(f"{n} ({len(d)})" for n, d in parts)
+            + f" -> {len(df)} Zeilen; doppelt: {merge['doppelt_gleich']} identisch, "
+            f"{merge['doppelt_abweichend']} abweichend (mehr Minuten/vollständiger gewählt)"
+        )
+        if merge["doppelt_intern"]:
+            warn(f"{merge['doppelt_intern']} doppelte Spieler-IDs innerhalb einer Teil-Datei "
+                 "(letzter Eintrag gewinnt)")  # fmt: skip
+    else:
+        df = parts[0][1]
     with conn:
-        sid = _replace_snapshot(conn, save, path.name, date, view)
+        sid = _replace_snapshot(
+            conn, save, files[0].name, date, view, [(n, len(d)) for n, d in parts]
+        )
         if view in common.PLAYER_VIEWS:
             res = import_players(conn, sid, df, mp, warn)
             _warn_unranked(conn, sid, warn)
         else:
             res = import_team(conn, sid, save, date, df, mp, warn)
-    return {"file": path.name, "view": view, "date": date, "snapshot": sid, **res}
+    out = {"file": files[0].name, "view": view, "date": date, "snapshot": sid, **res}
+    if len(parts) > 1:
+        out |= {"teile": len(parts), **{k: v for k, v in merge.items() if k != "doppelt_intern"}}
+    return out
 
 
 def load_leagues(conn, ligen_cfg: dict) -> tuple[int, int]:
@@ -463,6 +620,11 @@ def main(argv=None) -> None:
     ap.add_argument("--raw-dir", type=Path, help="Default: saves/<save>/data/raw")
     ap.add_argument("--sep", help="CSV-Trennzeichen (Default: automatisch erkennen)")
     ap.add_argument("--encoding", default="utf-8-sig")
+    ap.add_argument(
+        "--ohne-fehlende-teile",
+        action="store_true",
+        help="Mehrteil-Suche: früher importierte, jetzt fehlende Teil-Dateien bewusst entfernen",
+    )
     a = ap.parse_args(argv)
 
     save = common.resolve_save(a.save)
@@ -471,7 +633,7 @@ def main(argv=None) -> None:
     conn = common.connect(a.db)
     n_strength, n_ranking = load_leagues(conn, common.load_yaml("ligen.yaml", a.config_dir))
 
-    results = []
+    results, erledigt = [], set()
     for f in files:
         ext = f.suffix.lower()
         if ext in IMAGE_EXT:
@@ -481,8 +643,17 @@ def main(argv=None) -> None:
             )
         elif ext in TABLE_EXT:
             try:
+                date, view = parse_filename(f)
+                gruppe = (f.parent.resolve(), date, view)
+                if view in MERGE_VIEWS and gruppe in erledigt:
+                    print(f"{f.name}: Teil eines bereits importierten Mehrteil-Snapshots")
+                    continue
+                erledigt.add(gruppe)
                 print(f"Importiere {f.name} …")
-                results.append(import_file(conn, save, f, cfg, a.sep, a.encoding))
+                res = import_file(
+                    conn, save, f, cfg, a.sep, a.encoding, fehlende_teile_ok=a.ohne_fehlende_teile
+                )
+                results.append(res)
             except ValueError as e:
                 print(f"  ÜBERSPRUNGEN: {e}", file=sys.stderr)
     if results:

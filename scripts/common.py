@@ -54,6 +54,9 @@ CREATE TABLE IF NOT EXISTS snapshots(
   id INTEGER PRIMARY KEY, save TEXT NOT NULL, ingame_date TEXT NOT NULL,
   source_file TEXT NOT NULL, view_type TEXT NOT NULL, imported_at TEXT NOT NULL,
   UNIQUE(save, source_file));
+CREATE TABLE IF NOT EXISTS snapshot_files(  -- Teil-Dateien eines Snapshots (Mehrteil-Suche); source_file = 1. Teil
+  snapshot_id INTEGER NOT NULL, source_file TEXT NOT NULL, rows INTEGER,
+  PRIMARY KEY(snapshot_id, source_file));
 CREATE TABLE IF NOT EXISTS players(
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id), player_uid TEXT NOT NULL,
   name TEXT, club TEXT, league TEXT, position TEXT, age INTEGER,

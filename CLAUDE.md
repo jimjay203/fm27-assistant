@@ -50,6 +50,9 @@ Jede Antwort zu diesen Themen endet mit einer Zeile „Quellen: … · Fehlt/ver
   Formationen in `config/formationen.yaml`, Logik in `scripts/planer.py` (Rollen-Score aus `scripts/rollen.py`).
   Spielerbilder: `face_<uid>.png` aus dem FM27-Faces-Ordner (`--faces`, sonst `FM27_FACES`, sonst Standardpfad).
 - Save-Auswahl: `--save <name>`, sonst Umgebungsvariable `FM27_SAVE`, sonst Default `werder`.
+- Such-Export > 10.000 Spieler (Exporter-Limit): in Teile splitten (`YYYY-MM-DD_suche.csv`, `…_suche_2.csv`,
+  `…_suche_<x>.csv`, gleiches Datum, gleicher Ordner); `import.py` führt sie zu einem Snapshot zusammen
+  (Duplikate per UID), `stand.py` zeigt die Teile und warnt am Limit.
 
 ## Stil
 Knapp, Tabellen statt Fließtext, Empfehlung zuerst. Widersprechen, wenn etwas nicht schlüssig ist.

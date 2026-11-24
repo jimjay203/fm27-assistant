@@ -408,7 +408,7 @@ def main(argv=None) -> None:
             else f"Stufe Zielverein '{ziel}'"
         )
         print(
-            f"  Attribut-Filter: Schwelle {schwelle} ({quelle}; Zuordnung Stufe->Schwelle = Annahme)"
+            f"  Attribut-Filter: Schwelle {schwelle} ({quelle}; Zuordnung Stufe->Schwelle bestätigt: Jimmy, 07.07.2027)"
         )
         for ph, d in (("mit", d_mit), ("ohne", d_ohne)):
             if d is None:

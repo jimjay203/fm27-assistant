@@ -24,7 +24,7 @@ Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 
 | DM l | Lynen (Keidel, Stark; Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
 | OM r | Arthur (Erevbenagie, Mbangula solange im Kader) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; Backups Teamwork 8; Mbangula Verkaufskandidat; kein Transfer OM r nötig) |
-| OM z | Chuki (Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner |
+| OM z | Chuki (Medina, Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner (Medina seit 17.07.2027 Rotation/Backup hinter Chuki, Entscheidung Jimmy; nicht als Option auf der Sechs) |
 | OM l | Grüll (Manneh) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
 | ST | Kaars (Manneh, Itten) | Halbraumstürmer | Mittelstürmer (Standard) |
 
@@ -132,7 +132,7 @@ Anlass: Gegner nimmt Chuki aus dem Spiel (gegnerische Sechser stören gut). Evid
 
 | Plan | Änderung | Idee | Key-Attribute / Daten | Risiko / Preis |
 |---|---|---|---|---|
-| B – Zehner weicht aus | Chuki mit Ball Halbraumspieler statt Vorgeschobener Spielmacher (ohne Ball weiter Mitarbeitender Zehner) | Chuki zieht in Halbraum/Flügel; folgt der gegnerische Sechser, wird die Zehnerzone frei für späte Läufe von Stage (Box-to-Box) und Kaars (lässt sich fallen); sonst ist Chuki frei | Halbraumspieler mit Ball: Chuki Key Ø 13,9, alle ≥ 12 | Überschneidung mit Grüll (Inverser Außenstürmer) im linken Halbraum |
+| B – Zehner weicht aus | Chuki mit Ball Halbraumspieler statt Vorgeschobener Spielmacher (ohne Ball weiter Mitarbeitender Zehner) | Chuki zieht in Halbraum/Flügel; folgt der gegnerische Sechser, wird die Zehnerzone frei für späte Läufe von Stage (Box-to-Box) und Kaars (lässt sich fallen); sonst ist Chuki frei | Halbraumspieler mit Ball: Chuki Key Ø 13,9, alle ≥ 12. Fällt Chuki aus: Medina als Alternative (Key-Werte für Halbraumspieler nicht geprüft) | Überschneidung mit Grüll (Inverser Außenstürmer) im linken Halbraum |
 | C – Zweiter Mann vorne | Chuki mit Ball Zweiter Stürmer (läuft hinter den Sechser zwischen die IV); Alternative: Manneh als Zweiter Stürmer für Chuki | Zweiter Angreifer bindet die IV, der Sechser verliert seinen Bezugspunkt | Zweiter Stürmer mit Ball: Manneh Key Ø 13,5, keins < 12; Chuki Key Ø 13,2 (Abschluss 11). Rollen-Score Vorsaison Chuki als Zweiter Stürmer 89 (bester Wert), 8 Tore 2026/27 | Aufbau hängt an der Doppelsechs (Stage Box-to-Box Key Ø 15,5) |
 | D – Direkt über außen (letzte 20–30 Min. / tiefer Block) | ST Itten als Zielspieler für Kaars; Flankenstil Hohe Flanken statt Flache Flanken; optional Pass-Aufnahme Pass in die Tiefe | Flanken von außen auf einen Kopfballspieler statt Spiel durch die zugestellte Mitte | Zielspieler mit Ball: Itten Key Ø 15,0 (Kopfball 16, Sprunghöhe 16; Ausdauer 10 → nur Joker ~30 Min.). Flanken: Arthur 13, Ndiaye 12 | Itten nicht für 90 Min.; weg vom Kurzpass-Standard |
 
@@ -422,7 +422,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Fit Chuki | Laut Analyse 01.-03.07. (vs. BL-OM zentral): Schlüsselpässe 82., xA 87., Großchancen 97. Perzentil; Kreativität 14, Übersicht 15, Passen 14, Ohne Ball 14, Antritt 14; Linksfuß. Profil Vorlagengeber, nicht Abschluss |
 | Verworfen | Halbraumspieler (kollidiert mit Grüll im linken Halbraum; KPI-Zuverlässigkeit gering). Freigeist (KPI-Zuverlässigkeit gering, Risiko am Ball). Zentraler/Ausweichender Umschaltzehner ohne Ball (keine Defensivarbeit) |
 | Risiko | Mitarbeitender Zehner verlangt Rückarbeit; Chuki Einsatzfreude 12, Aggressivität 8. Fallback ohne Ball: Offensiver Mittelfeldspieler (Standardrolle) |
-| Rotation | Svanberg laut Rollentabelle (kein kreativer Zehner: Schlüsselpässe 14., xA 19. Perzentil); extern Skyttä (log.md 2027-07-03, Transfer) |
+| Rotation | Medina (25, M (RZ)/OM (Z), Neuzugang, Kader-Snapshot 249; Entscheidung Jimmy 17.07.2027): erste Rotation/Backup hinter Chuki, nicht als Option auf der Sechs. Evidenz: Key-Attribute Vorgeschobener Spielmacher Ø 13,9, Mitarbeitender Zehner Ø 13,0, keins < 12 (config/rollen_attribute.yaml, FM26-Quelle, laut Jimmy 1:1 FM27); keine Leistungsdaten in der DB (Brasileirão 2027: 231 Min.), Fit im Spiel offen. Danach Svanberg (kein kreativer Zehner: Schlüsselpässe 14., xA 19. Perzentil). Externes Ziel Skyttä (log.md 2027-07-03): erledigt durch Medina |
 
 ### Besetzung RV/OM r (Entscheidung Jimmy, 06.07.2027)
 | Punkt | Inhalt |

@@ -53,8 +53,8 @@ slots:
   "OM z":
     mit: "Vorgeschobener Spielmacher"
     ohne: "Mitarbeitender Zehner"
-    stamm: [Chuki, Svanberg]
-    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer."
+    stamm: [Chuki, Medina, Svanberg]
+    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer. Seit 17.07.2027 Medina Rotation hinter Chuki (nicht DM)."
   "OM l":
     mit: "Inverser Außenstürmer"
     ohne: "Mitarbeitender Flügelspieler"

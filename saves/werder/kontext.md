@@ -2,16 +2,16 @@
 
 | Feld | Wert |
 |---|---|
-| Verein | TODO |
-| Liga | TODO |
-| Saison / In-Game-Datum | TODO |
+| Verein | Werder Bremen |
+| Liga | Bundesliga |
+| Saison / In-Game-Datum | 2027/28, Stand 17.07.2027 (Vorbereitung) |
 | Board-Erwartungen | TODO |
-| Transferbudget | 24 Mio. € für die Winterpause (Vorstand, Angabe Jimmy, 2026-11-21) |
-| Gehaltsbudget | TODO |
+| Transferbudget | 20,5 Mio. € übrig (Angabe Jimmy, 17.07.2027; nach Verkäufen Malatini, Soylu, Mbangula und Kauf Medina). Vorher: 24 Mio. € Winter 2026/27 |
+| Gehaltsbudget | 7,6 Mio. € übrig (Angabe Jimmy, 17.07.2027; Einheit vermutlich pro Jahr, im Spiel prüfen) |
 | Vereinsphilosophie | TODO |
 | Geladene Ligen + Detailgrad | TODO |
 
-## Kaufoptionen (Angabe Jimmy, Kader-Export 2026-12-04)
+## Kaufoptionen (Angabe Jimmy, Kader-Export 2026-12-04) – historisch, Leihen endeten 30.06.2027
 | Spieler | Option | Transferwert laut Export |
 |---|---|---|
 | Regeer (Ajax) | 5,0 Mio. € | 5,1 Mio. € |

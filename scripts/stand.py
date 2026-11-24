@@ -2,7 +2,7 @@
 
 Schreibt nichts. Zeigt je Quelle das letzte In-Game-Datum und den Abstand zum neuesten Stand im Save, ob der
 FMMT-27-Reader (live) erreichbar ist, nicht importierte Rohdateien, ob config/taktik_slots.yaml älter als
-taktik.md ist, offene TODO-Felder in kontext.md, Einträge in log.md ohne Ergebnis und die Saisonbasis der
+taktik.md ist, Teil-Dateien des letzten Such-Snapshots (Zeilen je Teil, Warnung am Exporter-Limit 10.000), offene TODO-Felder in kontext.md, Einträge in log.md ohne Ergebnis und die Saisonbasis der
 Per-90-Werte (Snapshots der laufenden Saison und der Vorsaison, Gewicht w; config/saison.yaml).
 
 Aufruf:  uv run python scripts/stand.py --save werder [--ohne-live]
@@ -25,6 +25,7 @@ import spiele  # noqa: E402
 
 IMPORT_EXT = {".csv", ".html", ".htm"}
 VERALTET_TAGE = 30  # Quelle liegt so weit hinter dem neuesten Stand -> Hinweis
+LIMIT_WARN = 9_999  # FM27-Exporter liefert max. 10.000 Zeilen je Datei (wie import.py)
 
 
 def _datum(s: str | None) -> dt.date | None:
@@ -66,8 +67,31 @@ def einsaetze(conn, save: str) -> dict:
 def nicht_importiert(conn, save: str, raw_dir: Path) -> list[str]:
     if not raw_dir.is_dir():
         return []
-    bekannt = {Path(r[0]).name for r in conn.execute("select source_file from snapshots where save=?", (save,))}
+    bekannt = {Path(r[0]).name for r in conn.execute(
+        "select source_file from snapshots where save=? union select f.source_file from snapshot_files f "
+        "join snapshots s on s.id = f.snapshot_id where s.save=?", (save, save))}  # fmt: skip
     return sorted(p.name for p in raw_dir.iterdir() if p.suffix.lower() in IMPORT_EXT and p.name not in bekannt)
+
+
+def such_teile(conn, save: str) -> dict | None:
+    """Teil-Dateien des letzten Such-Snapshots mit Zeilen je Teil und Limit-Flag (FM27-Exporter max. 10.000).
+    Altimporte ohne snapshot_files: eine Datei, Zeilen = Spieler im Snapshot."""
+    r = conn.execute(
+        "select id, ingame_date, source_file from snapshots where save=? and view_type='suche' "
+        "order by ingame_date desc, id desc limit 1", (save,)
+    ).fetchone()  # fmt: skip
+    if not r:
+        return None
+    sid, datum, src = r
+    teile = [{"datei": f, "zeilen": n} for f, n in conn.execute(
+        "select source_file, rows from snapshot_files where snapshot_id=? order by rowid", (sid,))]  # fmt: skip
+    alt = not teile or all(t["zeilen"] is None for t in teile)
+    if alt:
+        n = conn.execute("select count(*) from players where snapshot_id=?", (sid,)).fetchone()[0]
+        teile = [{"datei": src, "zeilen": n}]
+    for t in teile:
+        t["limit"] = (t["zeilen"] or 0) >= LIMIT_WARN
+    return {"datum": datum, "snapshot": sid, "teile": teile, "altimport": alt}
 
 
 def taktik_drift(taktik_md: Path, slots_yaml: Path) -> str | None:
@@ -143,7 +167,7 @@ def _kurz(s: str, n: int = 70) -> str:
 
 def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft: bool, raw: list[str],
              drift: str | None, todos: list[str], offen: list[dict],
-             saison: dict | None = None) -> None:  # fmt: skip
+             saison: dict | None = None, teile: dict | None = None) -> None:  # fmt: skip
     neuestes = max((d for q in quellen if (d := _datum(q["letztes"]))), default=None)
     print(f"Datenstand Save '{save}' (neuestes In-Game-Datum in der DB: {neuestes or '-'})\n")
     print(f"{'Quelle':<16}{'Anzahl':>8}{'letztes':>12}{'Tage zurück':>13}{'Zeilen':>9}")
@@ -153,6 +177,14 @@ def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft:
         print(f"{q['quelle']:<16}{q['snapshots']:>8}{q['letztes'] or '-':>12}"
               f"{'' if rueck is None else rueck:>13}{'-' if q['zeilen'] is None else q['zeilen']:>9}")  # fmt: skip
     print("  Zeilen = Spieler im letzten Snapshot; team_matches = Spiele; spieleinsaetze = Spieler mit Spielliste")
+
+    if teile:
+        n = len(teile["teile"])
+        print(f"\nSuche {teile['datum']} (Snapshot {teile['snapshot']}): {n} Teil-Datei{'en' if n != 1 else ''}"
+              + (" (Altimport: Zeilen = Spieler)" if teile["altimport"] else ""))  # fmt: skip
+        for t in teile["teile"]:
+            flag = "  <- Exporter-Limit erreicht, vermutlich abgeschnitten" if t["limit"] else ""
+            print(f"  {t['datei']:<40}{'-' if t['zeilen'] is None else t['zeilen']:>8}{flag}")
 
     saison_ausgeben(saison)
 
@@ -171,6 +203,11 @@ def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft:
         for q in quellen
         if (d := _datum(q["letztes"])) and neuestes and (neuestes - d).days > VERALTET_TAGE
     ]
+    if teile and (voll := [t["datei"] for t in teile["teile"] if t["limit"]]):
+        hinweise.append(
+            f"Suche {teile['datum']}: {', '.join(voll)} am Exporter-Limit (10.000) - Liste vermutlich "
+            f"abgeschnitten, Export aufteilen ({teile['datum']}_suche_2.csv …) und scripts/import.py"
+        )
     if raw:
         hinweise.append(f"nicht importiert ({len(raw)}): {', '.join(raw)} -> scripts/import.py")
     if drift:
@@ -203,6 +240,7 @@ def main(argv=None) -> None:
         save, quellen, reader, not a.ohne_live, nicht_importiert(conn, save, sdir / "data" / "raw"),
         taktik_drift(sdir / "taktik.md", cfg_dir / "taktik_slots.yaml"),
         kontext_todos(sdir / "kontext.md"), log_offen(sdir / "log.md"), saisonbasis(conn, save, a.config_dir),
+        such_teile(conn, save),
     )  # fmt: skip
 
 

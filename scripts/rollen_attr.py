@@ -10,7 +10,7 @@ Je Spieler und Rollenpaar (mit/ohne Ball):
 Ohne Eintrag in der Quelle (z. B. "Mittelstürmer|ohne") gibt es für diese Phase keinen Filter; das wird
 ausgewiesen, nicht ersetzt. Der Filter verwirft nichts, er weist aus.
 
-Schwelle: Liga-Stufe des Zielvereins (wir) -> liga_schwelle in rollen_attribute.yaml (Zuordnung = Annahme).
+Schwelle: Liga-Stufe des Zielvereins (wir) -> liga_schwelle in rollen_attribute.yaml (Zuordnung bestätigt: Jimmy, 07.07.2027).
 Attribute kommen aus der DB (player_attributes): bevorzugt der Snapshot der Spielerzeile, sonst der neueste
 mit Attributen. Live liefert Attribute nur für eigene Spieler (siehe live.py).
 """
