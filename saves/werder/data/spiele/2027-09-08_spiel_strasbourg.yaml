@@ -1,0 +1,38 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# Erstes Spiel mit Tempo Geringer (seit 04.09.2027). Tore: Panichelli 8' (Reyna), Reyna 20' (Høgsberg);
+# Guliashvili 43' (Chuki), Stage 52' (Keidel).
+datum: 2027-09-08
+gegner: Strasbourg
+ort: A
+wettbewerb: UEFA Europa League
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [2, 2]
+  ballbesitz: [47, 53]
+  schuesse: [15, 8]
+  schuesse_aufs_tor: [8, 6]
+  xg: [2.08, 1.21]
+  ppda: [17.52, 18.00]
+  grosschancen: [1, 2]
+  ecken: [5, 4]
+  prog_paesse: [29, 49]
+  passquote: [89, 89]
+  flankenquote: [17, 11]
+  fouls: [8, 9]
+  gelb: [3, 3]
+  rot: [0, 0]
+  laufleistung: [126, 127]
+  notenschnitt: [6.9, 7.0]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 6.4}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 7.2, vorlagen: 1}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 6.7}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 6.6}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.3}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 7.0}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 7.4, tore: 1}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 6.3}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 8.1, vorlagen: 1}
+  - {slot: OM l, rolle: IAS, spieler: Manneh, note: 6.7}
+  - {slot: ST, rolle: HRS, spieler: Guliashvili, note: 7.1, tore: 1}
