@@ -47,7 +47,9 @@ TEAM_CORE = (
     "possession",
     "shots_for",
     "shots_against",  # TODO(export)
+    "competition",  # Text, z. B. "Bundesliga", "DFB-Pokal" (Spielbericht-Erfassung, Export-Spalte "Wettbewerb")
 )
+TEAM_TEXT = ("datum", "opponent", "home_away", "tactic_slot", "competition")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS snapshots(
@@ -87,6 +89,7 @@ CREATE TABLE IF NOT EXISTS team_matches(
   id INTEGER PRIMARY KEY, snapshot_id INTEGER, save TEXT NOT NULL, ingame_date TEXT NOT NULL,
   opponent TEXT NOT NULL, home_away TEXT, tactic_slot TEXT, xg_for REAL, xg_against REAL,
   goals_for REAL, goals_against REAL, possession REAL, shots_for REAL, shots_against REAL,
+  competition TEXT,
   UNIQUE(save, ingame_date, opponent));
 CREATE TABLE IF NOT EXISTS team_match_stats(
   match_id INTEGER NOT NULL REFERENCES team_matches(id), stat TEXT NOT NULL, value REAL,
@@ -104,6 +107,34 @@ CREATE TABLE IF NOT EXISTS spieleinsaetze(  -- scripts/spiele.py: Spiellisten au
   erfasst_am TEXT NOT NULL,
   PRIMARY KEY(save, player_uid, datum));
 """
+
+
+def write_team_match(
+    conn, sid: int | None, save: str, date: str, opponent: str, werte: dict, extra: dict
+) -> int:
+    """Ein Spiel in team_matches + team_match_stats schreiben; ein Spiel gleichen Datums und Gegners wird ersetzt.
+
+    `werte`: Kernfelder aus TEAM_CORE (ohne datum/opponent; home_away, tactic_slot, competition als Text),
+    `extra`: weitere Stats (Name wie in spalten.yaml, z. B. ppda_for) -> team_match_stats. None wird nicht
+    geschrieben. -> id des Spiels."""
+    conn.execute(
+        "DELETE FROM team_match_stats WHERE match_id IN "
+        "(SELECT id FROM team_matches WHERE save=? AND ingame_date=? AND opponent=?)",
+        (save, date, opponent),
+    )
+    conn.execute(
+        "DELETE FROM team_matches WHERE save=? AND ingame_date=? AND opponent=?", (save, date, opponent)
+    )
+    cols = [c for c in TEAM_CORE if c not in ("datum", "opponent")]
+    cur = conn.execute(
+        f"INSERT INTO team_matches(snapshot_id, save, ingame_date, opponent, {', '.join(cols)}) "
+        f"VALUES(?,?,?,?,{','.join('?' * len(cols))})",
+        (sid, save, date, opponent, *(werte.get(c) for c in cols)),
+    )
+    for stat, v in extra.items():
+        if v is not None:
+            conn.execute("INSERT INTO team_match_stats VALUES(?,?,?)", (cur.lastrowid, stat, v))
+    return cur.lastrowid
 
 
 def setup_stdout() -> None:
@@ -147,6 +178,7 @@ _ADDED_COLUMNS = {
     "players": {"wage_min": "REAL", "wage_max": "REAL", "club_country": "TEXT",
                 "loan_start": "TEXT"},
     "player_attributes": {"lo": "REAL", "hi": "REAL"},
+    "team_matches": {"competition": "TEXT"},
 }
 
 

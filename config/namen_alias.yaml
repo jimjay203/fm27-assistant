@@ -1,0 +1,15 @@
+# Namen-Abgleich Live (FMMT-27, Speicher) -> Anzeigename wie im Spiel / in den Exporten / in taktik.md.
+#
+# Der Speicher liefert für manche Spieler einen Ersatznamen (Lizenz), z. B. "Marco Benke" für Marco Grüll.
+# Abgleich in scripts/namen.py, Reihenfolge:
+#   1. uid  (dieser Datei)  -> Name
+#   2. Name im neuesten Export (Kader vor Suche) mit derselben uid  <- deckt den Normalfall automatisch ab
+#   3. name (dieser Datei)  -> Name, nur wenn weder 1. noch 2. greift (Spieler ohne Export und ohne bekannte uid)
+# Einträge nur für Spieler, die in keinem Export stehen (neu verpflichtet, nie exportiert) – oder zur Absicherung.
+# Liste aktueller Abweichungen: `uv run python scripts/live.py --save werder --namen` (Reader + Spiel offen).
+
+uid:
+  16195163: "Marco Grüll"     # live "Marco Benke" (Angabe Jimmy, 2027-09); uid aus Kader-Export 2027-09-04
+
+name:
+  "Marco Benke": "Marco Grüll"

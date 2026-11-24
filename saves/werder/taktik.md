@@ -12,23 +12,38 @@ Form (bis 2026/27; für die Rollen ab 2027/28 im UI neu ablesen): Mit Ball 4-2-3
 ## Rollen (In / Out of Possession)
 FM27: keine Aufgaben mehr, jeder Spieler hat eine Rolle mit Ball und eine ohne Ball. Rollennamen laut Zweierkette-Rollenliste (Stand 17.11.2026; dort FM26-System, FM27 nicht ausdrücklich genannt) -> im Spiel gegenprüfen.
 
-Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 03.07.2027; alle Änderungen gleichzeitig, volle Vorbereitung mit Testspielen, kein Phasenplan). Evidenz: Rollenlogik + UI-Texte, nicht getestet. Rollennamen ausgeschrieben, wie Jimmy sie gesetzt hat. Kaderstand 01.07.2027 (Kader-Export 2027-07-01_kader.csv, DB Snapshot 246).
+Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 03.07.2027; alle Änderungen gleichzeitig, volle Vorbereitung mit Testspielen, kein Phasenplan). Evidenz: Rollenlogik + UI-Texte, nicht getestet. Rollennamen ausgeschrieben, wie Jimmy sie gesetzt hat. Kaderstand 01.07.2027 (Kader-Export 2027-07-01_kader.csv, DB Snapshot 246). Besetzung aktualisiert 04.09.2027 nach 3 BL-Spielen (Entscheidungen Jimmy, Kader-Snapshot 250; Rollen unverändert, siehe "Besetzung 04.09.2027").
 
 | Position | Spieler (Alternativen) | Mit Ball | Ohne Ball |
 |---|---|---|---|
 | TW | Hein (Schlager) | Torwart (Standard) | Linientorhüter |
 | RV | Keidel (Gechter; mit Abstrichen Agu, Pieper verletzt, Schmetgens, Reis) | Inverser Flügelverteidiger (rückt neben den DM Lynen; Inverser Außenverteidiger, der neben den IV schiebt, nicht gewählt) | Pressender Außenverteidiger (Entscheidung Jimmy 06.07.2027: Keidel vor Gechter entgegen Rollen-Score, siehe "Besetzung RV/OM r") |
 | IV r | Pfeiffer (Gechter, Stark; Pieper verletzt) | Innenverteidiger | Absichernder Innenverteidiger |
-| IV l | Córdoba (Linksfuß; Ndiaye) | Innenverteidiger | Absichernder Innenverteidiger (statt Stoppender: laut Jimmy riss der Stoppende IV ständig Lücken; subjektive Beobachtung, nicht gemessen) |
-| LV | Ndiaye (Deman) | Flügelverteidiger | Pressender Außenverteidiger |
-| DM l | Lynen (Keidel, Stark; Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
+| IV l | Córdoba (Linksfuß; Andrade 1. Backup seit 04.09.2027, dann Ndiaye) | Innenverteidiger | Absichernder Innenverteidiger (statt Stoppender: laut Jimmy riss der Stoppende IV ständig Lücken; subjektive Beobachtung, nicht gemessen) |
+| LV | Ndiaye (Oppie 1. Backup seit 04.09.2027, dann Agu; Deman nicht mehr im Kader) | Flügelverteidiger | Pressender Außenverteidiger |
+| DM l | Lynen (Keidel, Stark; Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark. Einwechsel-/Spielkontroll-Option seit 04.09.2027: Amatucci für Lynen, mit Ball Tiefer Spielmacher, siehe "Besetzung 04.09.2027") | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
-| OM r | Arthur (Chuki nur als Plan E, Grüll) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; kein Transfer OM r nötig. Stand 17.07.2027: Erevbenagie verliehen bis 29.06.2028, Mbangula nicht mehr im Kader-Export 17.07.2027; Backup OM r damit Chuki (Plan E, Medina auf die Zehn) oder Grüll) |
-| OM z | Chuki (Medina, Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner (Medina seit 17.07.2027 Rotation/Backup hinter Chuki, Entscheidung Jimmy; nicht als Option auf der Sechs) |
-| OM l | Grüll (Manneh) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
-| ST | Kaars (Manneh, Itten) | Halbraumstürmer | Mittelstürmer (Standard) |
+| OM r | Arthur (Chuki nur als Plan E, Grüll) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; kein Transfer OM r nötig. Stand 17.07.2027: Erevbenagie verliehen bis 29.06.2028, Mbangula nicht mehr im Kader-Export 17.07.2027; Backup OM r damit Chuki (Plan E, Medina auf die Zehn) oder Grüll. Stand 04.09.2027 (Entscheidung Jimmy): Backups Guliashvili (neu, OM (RL)/ST), dann Chuki (Plan E)) |
+| OM z | Chuki (Medina, Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner (Medina seit 17.07.2027 Rotation/Backup hinter Chuki, Entscheidung Jimmy; nicht als Option auf der Sechs. Medina verletzt seit 23.08.2027, Knöchel) |
+| OM l | Grüll (verletzt seit 14.08.2027, Muskelanriss Oberschenkelrückseite; Backups Guliashvili, Erevbenagie) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
+| ST | Manneh (Kaars Backup/Joker; seit 04.09.2027, Entscheidung Jimmy) | Halbraumstürmer | Mittelstürmer (Standard) |
 
-Idee mit Ball: links Überladung (Grüll innen, Ndiaye außen), rechts Breite über den Flügelspieler (Arthur), Keidel rückt innen neben Lynen; Seitenwechsel auf den freien rechten Flügel. Chuki kommt kurz, Kaars läuft in die Schnittstelle, Stage spät in den Strafraum.
+Idee mit Ball: links Überladung (Grüll innen, Ndiaye außen), rechts Breite über den Flügelspieler (Arthur), Keidel rückt innen neben Lynen; Seitenwechsel auf den freien rechten Flügel. Chuki kommt kurz, der Stürmer (seit 04.09.2027 Manneh, vorher Kaars) läuft in die Schnittstelle, Stage spät in den Strafraum.
+
+### Besetzung 04.09.2027 (Entscheidungen Jimmy, nach 3 BL-Spielen; Kader-Snapshot 250)
+Rollen unverändert. Quelle Kader: DB Snapshot 250 (04.09.2027).
+
+| Slot | Stamm | Backups | Hinweis |
+|---|---|---|---|
+| ST | Manneh (im Spiel als Stammspieler geführt) | Kaars (Joker) | Kaars-Begründung vom 03.07.2027 (Stamm-ST) überholt |
+| OM l | Grüll (verletzt seit 14.08.2027, Muskelanriss Oberschenkelrückseite) | Guliashvili (neu, OM (RL)/ST; erster Backup, Entscheidung Jimmy), Erevbenagie (Leihe beendet, wieder im Kader) | Guliashvili trotz Rollen-Score Vorsaison OM l 28 (Daten vermutlich aus anderer Position); Neubewertung nach 5 BL-Spielen mit echten Einsätzen (log.md 2027-09-04 Kader/Taktik) |
+| OM r | Arthur | Guliashvili (erster Backup, Entscheidung Jimmy), Chuki (Plan E) | Guliashvili trotz Rollen-Score Vorsaison OM r 32 (Daten vermutlich aus anderer Position); Neubewertung wie OM l |
+| OM z | Chuki | Medina (verletzt seit 23.08.2027, Knöchel), Svanberg | |
+| LV | Ndiaye | Oppie (neu, 1. Backup), Agu | Deman nicht mehr im Kader |
+| IV l | Córdoba | Andrade (neu, 1. Backup), Ndiaye | |
+| DM | Lynen / Stage | wie Rollentabelle; DM l zusätzlich Amatucci als Einwechsel-/Spielkontroll-Option (nicht Stamm) | Amatucci (neu, bisher 49 Min.) bisher nur Einwechselspieler für Lynen, dann mit Ball Tiefer Spielmacher statt Defensiver Mittelfeldspieler; ohne Ball Rolle von Jimmy nicht genannt (im Spiel ablesen). Eingesetzt in Phasen mit viel eigenem Ballbesitz: Leipzig nach deren Roter Karte (73'), Köln ab 60'. Einsatz: Amatucci für Lynen, wenn wir den Ball haben / Gegner in Unterzahl / tiefer Block (Entscheidung Jimmy 04.09.2027). Nicht mehr auf DM r (Stage-Slot) gelistet |
+
+Abgänge: Itten, Musah, Deman, Adeh, Quetant. Zurück (keine Leihe mehr): Topp, Erevbenagie.
 
 Bis 2026/27 (Paket B, 05.12.2026, Kurzfassung; Details in den Test-Abschnitten unten): TW TW/Linientorhüter; RV und LV Außenverteidiger/Pressender AV; IV r IV/Absichernder IV; IV l Spielaufbauender IV (SpIV)/Stoppender IV; DM Lynen DM/Abschirmender Sechser; DM Svanberg (Reis) B2B/Flügelsichernder Sechser; OM r Außenstürmer/Umschaltflügelspieler (Weiser, Dinkçi); OM z Zweiter Stürmer/Mitarbeitender Zehner (Hack, Chuki); OM l Inverser Außenstürmer/Mitarbeitender Flügelspieler; ST Zielspieler/Zentraler Umschaltstürmer (Füllkrug, Itten). Vor 05.12.2026 mit Ball KTW/KIV/KIV. Nicht mehr im Kader (01.07.2027): Friedl, Füllkrug, Hack, Dinkçi, Weiser, Wójcik, Bartesaghi, Regeer, Mayke.
 
@@ -55,7 +70,7 @@ Stand: Entscheidung Jimmy 03.07.2027, neuer Standard ab Saisonvorbereitung 2027/
 | Einstellung | Wert ab 2027/28 | Bis 2026/27 (UI 03.07.2027) |
 |---|---|---|
 | Passspiel | Kürzer | Standard (vor Gladbach 28.11.2026: Vertikaler) |
-| Tempo | Standard | Standard (vor Gladbach: Höher) |
+| Tempo | Geringer (seit 04.09.2027, vorher Standard; Entscheidung Jimmy nach 3 BL-Spielen, Spickzettel-Trigger Ballbesitz Ø 41,0 % < 47 %; log.md 2027-09-04 Taktik) | Standard (vor Gladbach: Höher) |
 | Angriffsbreite | Breiter | Standard (vor Gladbach: Enger) |
 | Offensives Umschalten | Standard | Standard |
 | Kreative Freiheit | Ausgewogen | Ausgewogen |
@@ -93,7 +108,7 @@ Begründung Defensivlinie Höher (01.07.2027): IV Córdoba 15/15 und Pfeiffer 16
 |---|---|
 | Ballverluste in der eigenen Hälfte | Passspiel zurück auf Standard |
 | Konter über links (Raum hinter Ndiaye) | Ndiaye ohne Ball Abwartender Außenverteidiger |
-| Fehlende Rückarbeit rechts (OM r) | Seit 06.07.2027 Arthur auf OM r. Kein OM-r-Transfer geplant. Ersatz seit 17.07.2027 (Erevbenagie verliehen): Chuki (Plan E) oder Grüll; bei Plan E ohne Ball Mitarbeitender Flügelspieler statt Inverser Umschaltflügelspieler |
+| Fehlende Rückarbeit rechts (OM r) | Seit 06.07.2027 Arthur auf OM r. Kein OM-r-Transfer geplant. Ersatz seit 04.09.2027: Guliashvili, dann Chuki (Plan E); bei Plan E ohne Ball Mitarbeitender Flügelspieler statt Inverser Umschaltflügelspieler |
 | Aufbau über rechts stockt (Ballverluste Keidel, wenig progressive Pässe vom RV); Schwelle: Ø über 3 Spiele Passquote (Team) < 83,5 % und progressive Pässe (Team) < 33,5 (je P25 der 13 Pflichtspiele 2026/27, team_match_stats 17.10.2026-09.01.2027) | Gechter auf RV (Rollen-Score Passsicherheit 89 gegen Keidel 1, siehe "Besetzung RV/OM r"); gegen Tempo-Flügel Keidel behalten |
 | Gegner mit Tempo-Flügel auf unserer rechten Seite | Keidel behalten (Antritt 13, Aggressivität 15, Pressing-Score 73), nicht auf Gechter wechseln |
 | Bälle hinter die Kette | Defensivlinie Standard |
@@ -134,8 +149,10 @@ Anlass: Gegner nimmt Chuki aus dem Spiel (gegnerische Sechser stören gut). Evid
 |---|---|---|---|---|
 | B – Zehner weicht aus | Chuki mit Ball Halbraumspieler statt Vorgeschobener Spielmacher (ohne Ball weiter Mitarbeitender Zehner) | Chuki zieht in Halbraum/Flügel; folgt der gegnerische Sechser, wird die Zehnerzone frei für späte Läufe von Stage (Box-to-Box) und Kaars (lässt sich fallen); sonst ist Chuki frei | Halbraumspieler mit Ball: Chuki Key Ø 13,9, alle ≥ 12. Fällt Chuki aus: Medina als Alternative (Key-Werte für Halbraumspieler nicht geprüft) | Überschneidung mit Grüll (Inverser Außenstürmer) im linken Halbraum |
 | C – Zweiter Mann vorne | Chuki mit Ball Zweiter Stürmer (läuft hinter den Sechser zwischen die IV); Alternative: Manneh als Zweiter Stürmer für Chuki | Zweiter Angreifer bindet die IV, der Sechser verliert seinen Bezugspunkt | Zweiter Stürmer mit Ball: Manneh Key Ø 13,5, keins < 12; Chuki Key Ø 13,2 (Abschluss 11). Rollen-Score Vorsaison Chuki als Zweiter Stürmer 89 (bester Wert), 8 Tore 2026/27 | Aufbau hängt an der Doppelsechs (Stage Box-to-Box Key Ø 15,5) |
-| D – Direkt über außen (letzte 20–30 Min. / tiefer Block) | ST Itten als Zielspieler für Kaars; Flankenstil Hohe Flanken statt Flache Flanken; optional Pass-Aufnahme Pass in die Tiefe | Flanken von außen auf einen Kopfballspieler statt Spiel durch die zugestellte Mitte | Zielspieler mit Ball: Itten Key Ø 15,0 (Kopfball 16, Sprunghöhe 16; Ausdauer 10 → nur Joker ~30 Min.). Flanken: Arthur 13, Ndiaye 12 | Itten nicht für 90 Min.; weg vom Kurzpass-Standard |
+| D – Direkt über außen (letzte 20–30 Min. / tiefer Block). Seit 04.09.2027 mit Topp (Entscheidung Jimmy, siehe Vermerk unter der Tabelle) | ST Topp als Zielspieler für Manneh/Kaars; Flankenstil Hohe Flanken statt Flache Flanken; optional Pass-Aufnahme Pass in die Tiefe | Flanken von außen auf einen Kopfballspieler statt Spiel durch die zugestellte Mitte | Zielspieler mit Ball: Topp Key Ø 13,4 (Kopfball 13, Sprunghöhe 15, Kraft 15; Ausdauer 12 → Joker ~30 Min.). Flanken: Arthur 13, Ndiaye 12 | Topp nicht für 90 Min.; in der Luft schwächer als Itten (Key Ø 15,0, Kopfball 16); keine Leistungsdaten 2027/28 (15 Min.); weg vom Kurzpass-Standard |
 | E – Chuki nach rechts, Medina auf die Zehn (Ergänzung 17.07.2027) | OM r: Chuki mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler. OM z: Medina Vorgeschobener Spielmacher / Mitarbeitender Zehner. Keidel bleibt RV, Arthur auf die Bank (Entscheidung Jimmy 18.07.2027: Chuki arbeitet ohne Ball als Inverser Umschaltflügelspieler nicht zurück, Keidel gegen den Ball stärker: Key ohne Ball 14,3 vs. Arthur 13,0, Rollen-Score ohne Ball 60 vs. 49, Vorsaison) | Chuki (Linksfuß) zieht von rechts nach innen auf den starken Fuß; Diagonal-/Seitenwechselpässe statt Spiel durch die vom Sechser zugestellte Mitte. Gegenüber B: B ist die kleinere, dynamische Umstellung; E ist fest und braucht Medina | Chuki Äußerer Spielmacher Key Ø 14,0, Inverser Umschaltflügelspieler Key Ø 13,0, keins < 12 (Mitarbeitender Flügelspieler ohne Ball nur Ø 11,7, Deckung 7). Medina Vorgeschobener Spielmacher / Mitarbeitender Zehner Key Ø 13,9 / 13,0 | Inverser Umschaltflügelspieler bleibt ohne Ball hoch (Outlet) → Rückarbeit rechts fehlt, Keidel (Pressender AV) und Stage müssen absichern; gegen starke linke Gegnerflügel ohne Ball Mitarbeitender Flügelspieler trotz schwächerer Werte. Zwei Spielmacher gleichzeitig konkurrierten in älteren Versionen um den Ball (aus FM24, für FM27 ungeprüft); Medina "spielt lieber ab" |
+
+Beschluss Plan D (Entscheidung Jimmy, 04.09.2027): Itten ist weg (nicht mehr im Kader); Zielspieler in Plan D ist Topp (zurück von Leihe), eingewechselt für Manneh bzw. Kaars. Flankenstil Hohe Flanken, optional Pass-Aufnahme Pass in die Tiefe. Auslöser unverändert (ab 70. Min. Rückstand oder tiefer Block). Key-Attribute Zielspieler mit Ball aus config/rollen_attribute.yaml (FM26-Quelle, laut Jimmy 1:1 FM27), Werte Kader-Snapshot 250: Topp Key Ø 13,4 (Kopfball 13, Sprunghöhe 15, Kraft 15; Ausdauer 12 → Joker ~30 Min.), höchster Key-Ø im Kader. Verworfen: Kaars als Zielspieler (Key Ø 12,4, Kopfball/Sprunghöhe/Kraft 11/11/11, schwach in der Luft) und Plan D streichen (nur Plan C). Zum Vergleich: Manneh 12,3 (Kopfball 10), Guliashvili 11,3 (Kopfball 8), Itten hatte 15,0 (Kopfball 16).
 
 Auslöser (eigene Setzungen, nicht aus Daten – die DB hat keine Ballkontakte/Pässe je Spieler und Spiel):
 
@@ -147,7 +164,13 @@ Auslöser (eigene Setzungen, nicht aus Daten – die DB hat keine Ballkontakte/P
 | Gegnerischer Sechser nimmt Chuki zentral auf (wie B, aber feste Umstellung; nur mit Medina im Kader/auf der Bank) | E (Alternative zu B) |
 | Arthur fällt auf OM r aus (Verletzung, Sperre) | E |
 
-Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik); Plan E: Eintrag 2027-07-17 (Taktik).
+Spielkontroll-Option (kein Ausweichplan der Offensive, Entscheidung Jimmy 04.09.2027; Spickzettel "Im Spiel"):
+
+| Im Spiel | Wechsel |
+|---|---|
+| Gegner tief/in Unterzahl, wir dominieren | Amatucci für Lynen (Tiefer Spielmacher) |
+
+Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik); Plan E: Eintrag 2027-07-17 (Taktik); Plan D mit Topp und Amatucci-Option: Eintrag 2027-09-04 (Kader/Taktik). Hinweis: taktik-spickzettel-2027-28.pdf ist noch nicht nachgezogen (Plan D nennt dort noch Itten; Amatucci-Zeile und Tempo Geringer fehlen).
 
 ### Abgeschlossener Test: Arthur Pressender Außenverteidiger (Beschluss Jimmy, 21.11.2026)
 - Änderung: Arthur ohne Ball: Pressender Außenverteidiger statt Abwartender Außenverteidiger (Rolle mit Ball bleibt Außenverteidiger). Von Jimmy bestätigt; Umgesetzt und seit dem 21.11.2026 fest im Standard.
@@ -174,7 +197,7 @@ Quelle: Kader-Export 2027-07-01_kader.csv, DB Snapshot 246 (Schnelligkeit/Antrit
 | IV l | Córdoba (Linksfuß) | 15/15 | Ndiaye |
 | IV z | Gechter (Stellungsspiel 14) | 14/12 | Pieper (wenn fit), Stark |
 | IV r | Pfeiffer | 16/12 | Malatini, Schmetgens |
-| FV l | Ndiaye | 15/13 | Deman |
+| FV l | Ndiaye | 15/13 | Oppie (Deman seit 04.09.2027 nicht mehr im Kader) |
 | FV r | Arthur | 15/15 | Agu |
 
 | Punkt | Inhalt |
@@ -414,7 +437,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Formation | 4-2-3-1 mit Doppelsechs | |
 | Doppelsechs | Lynen: Defensiver Mittelfeldspieler / Abschirmender Sechser (hält). Stage: Box-to-Box-Spieler / Pressender Sechser (presst, spät in den Strafraum) | Laut wissen/rollen.md: ein Sechser presst, einer hält (Paarungshinweis der Quelle, aus FM26, für FM27 ungeprüft). Vorher Option "Testpaket 2", jetzt beschlossen |
 | Zehn (OM z) | Chuki: Vorgeschobener Spielmacher / Mitarbeitender Zehner | Entscheidung Jimmy 03.07.2027, Begründung unten |
-| ST | Kaars: Halbraumstürmer / Mittelstürmer (Standard). Zielspieler (Füllkrug-Idee) entfällt | Entscheidung Jimmy 03.07.2027; Rollenlogik: Lauf in die Schnittstelle statt Ankerpunkt für lange Bälle |
+| ST | Halbraumstürmer / Mittelstürmer (Standard). Zielspieler (Füllkrug-Idee) entfällt. Besetzung seit 04.09.2027: Manneh Stamm, Kaars Backup/Joker (Entscheidung Jimmy) | Entscheidung Jimmy 03.07.2027; Rollenlogik: Lauf in die Schnittstelle statt Ankerpunkt für lange Bälle. ÜBERHOLT (04.09.2027): Begründung für Kaars als Stamm-ST vom 03.07.2027 |
 | Teamanweisungen | Komplett neu gesetzt (Tabellen oben) | Entscheidung Jimmy 03.07.2027 |
 
 ### Rolle OM z: Vorgeschobener Spielmacher / Mitarbeitender Zehner
@@ -431,7 +454,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Punkt | Inhalt |
 |---|---|
 | Entscheidung | OM r: Arthur (vorher RV). RV: Keidel. Rollen unverändert (RV Inverser Flügelverteidiger / Pressender AV; OM r Flügelspieler / Mitarbeitender Flügelspieler) |
-| Backups | RV: Gechter, dann mit Abstrichen Agu, Pieper (verletzt), Schmetgens, Reis. OM r (Stand 17.07.2027): Chuki (Plan E, Medina auf die Zehn), Grüll. Gestrichen: Erevbenagie (verliehen bis 29.06.2028, Kader-Export 17.07.2027), Mbangula (nicht mehr im Kader-Export 17.07.2027). Ebenfalls verliehen und keine Option: Topp, Stalmach, Čović, Quetant |
+| Backups | RV: Gechter, dann mit Abstrichen Agu, Pieper (verletzt), Schmetgens, Reis. OM r (Stand 04.09.2027, Entscheidung Jimmy): Guliashvili, Chuki (Plan E). Stand 17.07.2027 (überholt): Chuki (Plan E, Medina auf die Zehn), Grüll. Gestrichen: Erevbenagie (verliehen bis 29.06.2028, Kader-Export 17.07.2027), Mbangula (nicht mehr im Kader-Export 17.07.2027). Ebenfalls verliehen und keine Option: Topp, Stalmach, Čović, Quetant |
 | Evidenz gegen die Wahl | Keidel vor Gechter entgegen Rollen-Score (Jimmy). Rollen-Score Vorsaison RV Inverser FV / Pressender AV (nur lesender Wrapper, Snapshots 244/245): Keidel mit 5 (Aufbau 9, Passsicherheit 1) / ohne 60 (Pressing 73), Daten Elversberg BL 2862 Min., Rolle dort unbekannt; Gechter mit 66 (Aufbau 50, Passsicherheit 89) / ohne 50, Daten Hertha 2. BL 3150 Min.; Arthur 41/49 |
 | Begründung Jimmy | Keidel erfüllt den Kernfilter klar (Antritt 13, Aggressivität 15, Ausdauer 15, Einsatz 15, Teamwork 16); Passen/Technik 12. Arthur auf OM R im Spiel "passabel", laut Jimmy bald "gut" |
 | Risiko | Der Inverse FV rückt mit Ball neben Lynen in den Aufbau, genau dort hat Keidel den schwächsten Score (Passsicherheit 1). Vergleichsdaten aus verschiedenen Ligen (Keidel BL, Gechter 2. BL) und unbekannten Rollen |
@@ -444,7 +467,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Punkt | Stand / Option |
 |---|---|
 | OM r | Erledigt 06.07.2027: Arthur auf OM r (Entscheidung Jimmy), kein Transfer nötig. Siehe "Besetzung RV/OM r" |
-| Doppelsechs mit Neuzugang | Amatucci (Wunschziel) als Tiefer Spielmacher neben Lynen; abhängig vom Transfer |
+| Doppelsechs mit Neuzugang | Amatucci (Wunschziel) als Tiefer Spielmacher neben Lynen; abhängig vom Transfer. Stand 04.09.2027: Amatucci im Kader (Snapshot 250, 49 Min.). Beschlossen 04.09.2027 (Jimmy): Einwechsel-/Spielkontroll-Option auf DM l für Lynen (mit Ball Tiefer Spielmacher; ohne Ball nicht genannt), nicht Stamm. Startplatz weiter offen |
 | Mentalität Heim | Kontrolliert-offensiv gegen Schwächere (Option) |
 | Rollen-Score | rollen.py hat für 2027/28 noch keine Minuten eigener Spieler (n=0 in allen Slots, Stand 03.07.2027); Fit der neuen Rollenpaare für Kaars, Ndiaye (Flügelverteidiger) nicht mit eigenen Minuten berechnet; RV/OM r siehe "Besetzung RV/OM r" (Vorsaison, Snapshots 244/245). KPI-Zuverlässigkeit gering für Inverser Flügelverteidiger und Halbraumstürmer |
 | Form ohne Ball | Im UI neu ablesen (alte Angabe 4-3-2-1 galt für Flügelsichernden Sechser und Hack) |
@@ -466,6 +489,27 @@ Basis: Ø 10 BL-Spiele 2026/27 bis 09.01.2027 (DB team_matches/team_match_stats;
 
 Nur als Gesamtpaket auswertbar (alle Rollen und Teamanweisungen gleichzeitig neu, Kader stark verändert: Füllkrug, Weiser, Dinkçi, Hack weg). Nicht messbar: Seitenwechsel, gegenläufige Läufe.
 
+#### Zwischenstand nach 3 BL-Spielen (04.09.2027; Quelle: Spielberichts-Screenshots, nicht in der DB, team_matches endet 09.01.2027)
+| Spiel | Ergebnis | Besitz % | xG für/gegen | Großchancen für/gegen | Passquote % | Prog. Pässe | PPDA |
+|---|---|---|---|---|---|---|---|
+| Leipzig (A) | 2:1 | 47 | 2,29 / 1,75 | 2 / 2 | 88 | 46 | 16,23 |
+| Hoffenheim (A) | 1:1 | 32 | 1,19 / 0,64 | 2 / 0 | 78 | 36 | 18,09 |
+| Köln (H) | 0:0 | 44 | 0,95 / 0,49 | 0 / 0 | 88 | 48 | 21,73 |
+
+| Kennzahl | Basis | Ziel / Leitplanke | Ø 3 Spiele | Bewertung |
+|---|---|---|---|---|
+| Großchancen für | 0,7 | darüber | 1,33 | erfüllt |
+| xG für | 1,20 | - | 1,48 | über Basis |
+| Ballbesitz % | 45,0 | Richtung 50 | 41,0 | verfehlt (unter Basis) |
+| Passquote % | 84,9 | mindestens 84,9 | 84,7 | knapp verfehlt |
+| Progressive Pässe | 39,4 | darüber | 43,3 | erfüllt |
+| PPDA | 17,27 | darunter | 18,68 (16,23 → 18,09 → 21,73) | verfehlt, steigend |
+| xG gegen | 1,26 | nicht über 1,49 | 0,96 | erfüllt |
+| Großchancen gegen | - | - | 0,67 | - |
+| Gegentore hinter die Kette | - | zählen | unbekannt | Art der Gegentore nicht erfasst |
+
+5 Punkte. Einordnung: Defensive und Linie halten, Chancen entstehen; Ballbesitz und Pressing setzen die Idee noch nicht um. 2 von 3 Spielen auswärts gegen starke Gegner, n=3, kein Beleg. Spickzettel-Trigger "Ballbesitz < 47 % → Tempo Geringer" ist ausgelöst: beschlossen (Entscheidung Jimmy 04.09.2027), Tempo seit 04.09.2027 Geringer (vorher Standard); einzige Änderung am Standard, damit auswertbar (Messkriterium log.md 2027-09-04 Taktik). Keidel-Schwelle (Passquote < 83,5 % und prog. Pässe < 33,5) nicht ausgelöst. Siehe log.md 2027-07-03 (NEUER STANDARD), Spalte Ergebnis.
+
 ### Bis Saison 2026/27 (überholt): Idee in 3 Sätzen
 Hinweis 05.12.2026: Der Text unten passt wieder zum Ist-Stand (Mittlerer Block, kein Hochpressing, seit Paket B ab Frankfurt). Gilt nicht für Gladbach und Pokal Hoffenheim (Hohes Pressing, Paket A). Die Passage "direktes Umschalten / lange Bälle" ist mit den Rollen TW/IV/SpIV mit Ball weniger direkt; bei Bedarf werden die Rollen wieder angepasst (Entscheidung Jimmy).
 
@@ -477,6 +521,7 @@ Kompakter Mittelblock, schnelles direktes Umschalten über die schnellen Flügel
 - IV-Antritt 11-12 (alle IV ähnlich, Δ 1,5-2,1)
 - Rollen-/Instruktionsnamen und Formen müssen im FM27-UI gegengeprüft werden
 - Evidenz dünn (ein Test, KI-erstellte Zusammenfassung)
+- Verletzungen (Stand 04.09.2027): Grüll (seit 14.08.2027, Muskelanriss Oberschenkelrückseite), Medina (seit 23.08.2027, Knöchel); Pieper nicht geprüft (0 Min. 2027/28).
 - Verletzungen (Stand 01.07.2027): nur Pieper (Armfraktur seit 14.05.2027); Stage, Stark, Agu fit. Bis Saison 2026/27: Stage, Stark, Agu.
 - Keine Spieldaten (team_matches leer)
 - Beobachtung Spiel 1 (4:1 gegen Paderborn, 17.10.2026, Gegentor Vidović in der 17. Minute): Die Rollen ohne Ball waren wie in der Tabelle eingestellt (Jimmy bestätigt: Pieper Absichernder IV, Svanberg Flügelsichernder Sechser, Arthur Abwartender AV, Dinkçi Umschaltflügelspieler). Trotzdem rückte Pieper auf, Arthur und Svanberg wurden nach innen gezogen, und der Flügel (Obermair) war offen. Der Spieltext zu "Verhalten Defensivlinie: Ausgewogen" sagt, die Abwehr entscheide situationsabhängig, ob sie herausrückt; das passt zu dem Verhalten. Die Rolle ohne Ball hielt Pieper nicht in der Kette. Einzelbeobachtung (n=1), Deutung nicht getestet.

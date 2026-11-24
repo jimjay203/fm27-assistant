@@ -1,0 +1,36 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+datum: 2027-09-04
+gegner: FC Köln
+ort: H
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [0, 0]
+  ballbesitz: [44, 56]
+  schuesse: [8, 6]
+  schuesse_aufs_tor: [6, 3]
+  xg: [0.95, 0.49]
+  ppda: [21.73, 17.60]
+  grosschancen: [0, 0]
+  ecken: [7, 6]
+  prog_paesse: [48, 38]
+  passquote: [88, 91]
+  flankenquote: [8, 19]
+  fouls: [8, 4]
+  gelb: [3, 1]
+  rot: [0, 0]
+  laufleistung: [123, 121]
+  notenschnitt: [6.8, 6.9]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 7.5}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.8}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 6.9}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 6.9}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.4}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.7}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.9}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 6.6}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 6.7}
+  - {slot: OM l, rolle: IAS, spieler: Guliashvili, note: 6.4}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 6.2}

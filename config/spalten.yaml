@@ -192,6 +192,7 @@ spalten:
   "Gegner": opponent
   "Heim/Auswärts": home_away
   "Taktik-Slot": tactic_slot
+  "Wettbewerb": competition          # Text (Bundesliga, DFB-Pokal …); auch scripts/spiel_erfassen.py
   "xG für": xg_for
   "xG gegen": xg_against
   "Tore für": goals_for

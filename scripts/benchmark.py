@@ -30,6 +30,7 @@ import common
 import fmparse
 import ligen
 import live
+import namen
 import per90
 
 SIDE_ALIAS = {"Z": "C"}  # deutsche Exporte: Z = zentral
@@ -196,6 +197,19 @@ def load_live_saison(
     datum = fmparse.parse_date(df.attrs.get("date"))
     df = per90.mit_vorsaison(conn, save, df, datum, config_dir=config_dir)
     df["datenbasis"] = datenbasis_spalte(df)
+    return live_angleichen(df, conn, save, config_dir)
+
+
+def live_angleichen(df: pd.DataFrame, conn, save: str, config_dir=None) -> pd.DataFrame:
+    """Live-Tabelle an die Exporte angleichen: Namen über die uid (namen.angleichen, Live-Name in name_live) und
+    Liga mit Land des Vereins ('Bundesliga (Deutschland)', Land aus früheren Exporten), wie load_db."""
+    attrs = dict(df.attrs)
+    df = namen.angleichen(df, namen.export_namen(conn, save), namen.alias_laden(config_dir))
+    if "club" in df:
+        land = live.club_countries(conn, save)
+        df["club_country"] = df["club"].map(land)
+        df["league"] = ligen.mit_land(df)
+    df.attrs = {**attrs, **df.attrs}
     return df
 
 

@@ -40,7 +40,7 @@ seiten:
 
 # Rolle mit Ball (Spieldatensatz +23). name wie in config/rollen_kpis.yaml (oder dessen alias_rollen).
 rollen:
-  0: {enum: Goalkeeper, name: "Torwart", status: enum}
+  0: {enum: Goalkeeper, name: "Torwart", kuerzel: "TW", status: enum}
   1: {enum: CentreBack, name: "Innenverteidiger", kuerzel: "IV", status: bestaetigt}
   2: {enum: FullBack, name: "Außenverteidiger", kuerzel: "AV", status: bestaetigt}
   3: {enum: WingBack, name: "Flügelverteidiger", kuerzel: "FV", status: bestaetigt}
@@ -76,7 +76,7 @@ rollen:
   41: {enum: SecondStriker, name: "Zweiter Stürmer", kuerzel: "ZwS", status: bestaetigt}
   42: {enum: WideTargetForward, name: null, status: enum}
   43: {enum: PlaymakingWinger, name: "Äußerer Spielmacher", status: enum}
-  44: {enum: InsideWingBack, name: "Inverser Flügelverteidiger", status: enum}
+  44: {enum: InsideWingBack, name: "Inverser Flügelverteidiger", kuerzel: "IFV", status: enum}   # Kürzel: Spielbericht-Screenshot (Jimmy, 2027-08)
   45: {enum: WideForward, name: "Außenstürmer", kuerzel: "AS", status: bestaetigt}
   46: {enum: BoxToBoxPlaymaker, name: "Box-to-Box-Spielmacher", status: enum}
   47: {enum: Mezzala, name: null, status: enum}

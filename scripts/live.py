@@ -25,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
 import fmparse
+import namen
 
 _spec = importlib.util.spec_from_file_location(
     "fm_import", Path(__file__).resolve().parent / "import.py"
@@ -162,7 +163,9 @@ def club_countries(conn, save: str) -> dict[str, str]:
     return dict(rows)  # späterer Snapshot überschreibt früheren
 
 
-def import_live(conn, save: str, resp: dict, cfg: dict, warn, derived: dict | None = None) -> dict:
+def import_live(
+    conn, save: str, resp: dict, cfg: dict, warn, derived: dict | None = None, config_dir=None
+) -> dict:
     if not (cfg.get("gehalt") or {}).get("periode"):
         common.die(
             "config/live_spalten.yaml: gehalt.periode fehlt. Erst kalibrieren: "
@@ -177,7 +180,9 @@ def import_live(conn, save: str, resp: dict, cfg: dict, warn, derived: dict | No
             "my_clubs leer – keine eigenen Spieler erkannt, es werden keine Attribute gespeichert."
         )
     countries = club_countries(conn, save)
+    export, alias = namen.export_namen(conn, save), namen.alias_laden(config_dir)
     n_own = n_attr = 0
+    abweichend: list[str] = []
     with conn:
         sid = fm_import._replace_snapshot(conn, save, f"live_{date}", date, "live")
         seen: set[str] = set()
@@ -188,6 +193,12 @@ def import_live(conn, save: str, resp: dict, cfg: dict, warn, derived: dict | No
                 continue
             seen.add(uid)
             p = c["core"]
+            anzeige = namen.anzeige_name(uid, p["name"], export, alias)
+            if anzeige != p["name"]:
+                c["info"]["name_live"] = p["name"]  # Live-Name (Speicher) weicht vom Exportnamen ab
+                if c["own"]:
+                    abweichend.append(f"{p['name']} -> {anzeige}")
+                p["name"] = anzeige
             conn.execute(
                 "INSERT OR REPLACE INTO players(snapshot_id, player_uid, name, club, league, "
                 "position, age, wage, value, contract_end, minutes, value_min, value_max, "
@@ -223,6 +234,8 @@ def import_live(conn, save: str, resp: dict, cfg: dict, warn, derived: dict | No
             f"{n_no_country} Spieler ohne Land des Vereins (kein früherer Export für den Verein) "
             "-> kein Liga-Ranking, Perzentil-Gruppen nur nach Liga-Name."
         )
+    if abweichend:
+        warn("Live-Namen eigener Spieler durch Exportnamen ersetzt (gleiche uid): " + ", ".join(abweichend))
     return {
         "snapshot": sid,
         "date": date,
@@ -230,6 +243,23 @@ def import_live(conn, save: str, resp: dict, cfg: dict, warn, derived: dict | No
         "eigene": n_own,
         "mit_attr": n_attr,
     }
+
+
+def namen_pruefen(conn, save: str, resp: dict, config_dir=None) -> list[dict]:
+    """Eigene Spieler (live), deren Name vom Export abweicht oder die in keinem Export stehen."""
+    own = own_club_uids(resp)
+    export, alias = namen.export_namen(conn, save), namen.alias_laden(config_dir)
+    out = []
+    for r in resp.get("rows") or []:
+        if not is_own(r, own):
+            continue
+        uid, live_name = str(r.get("UID")), r.get("Name")
+        anzeige, _ = namen.anzeige_quelle(uid, live_name, export, alias)
+        if uid not in export:
+            out.append({"uid": uid, "live": live_name, "anzeige": anzeige, "befund": "kein Export mit dieser uid"})
+        elif namen.name_norm(export[uid]) != namen.name_norm(live_name):
+            out.append({"uid": uid, "live": live_name, "anzeige": anzeige, "befund": f"Export: {export[uid]}"})
+    return sorted(out, key=lambda z: z["live"] or "")
 
 
 def main(argv=None) -> None:
@@ -251,6 +281,11 @@ def main(argv=None) -> None:
     )
     ap.add_argument(
         "--zeige", metavar="NAME", help="Rohzeilen + Umrechnung zeigen, nichts speichern"
+    )
+    ap.add_argument(
+        "--namen",
+        action="store_true",
+        help="eigene Spieler, deren Live-Name vom Exportnamen abweicht (oder ohne Export), auflisten; nichts speichern",
     )
     a = ap.parse_args(argv)
 
@@ -298,8 +333,12 @@ def main(argv=None) -> None:
 
     save = common.resolve_save(a.save)
     conn = common.connect(a.db)
+    if a.namen:
+        for z in namen_pruefen(conn, save, resp, a.config_dir):
+            print("  ".join(f"{k}={v}" for k, v in z.items()))
+        return
     derived = common.load_yaml("spalten.yaml", a.config_dir).get("abgeleitet") or {}
-    res = import_live(conn, save, resp, cfg, warn, derived)
+    res = import_live(conn, save, resp, cfg, warn, derived, a.config_dir)
     print(f"Save={save}  " + "  ".join(f"{k}={v}" for k, v in res.items()))
 
 

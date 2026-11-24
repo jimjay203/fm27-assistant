@@ -28,39 +28,40 @@ slots:
   "IV l":
     mit: "Innenverteidiger"
     ohne: "Absichernder Innenverteidiger"
-    stamm: [Córdoba, Ndiaye]
+    stamm: [Córdoba, Andrade, Ndiaye]
     hinweis: "Seit 03.07.2027 IV/Absichernder IV. Bis 2026/27: Spielaufbauender IV (SpIV) / Stoppender IV. Córdoba ist Linksfuß."
   LV:
     mit: "Flügelverteidiger"
     ohne: "Pressender Außenverteidiger"
-    stamm: [Ndiaye, Deman]
-    hinweis: "Seit 03.07.2027 mit Ball Flügelverteidiger (Breite links). Bis 2026/27 Außenverteidiger."
+    stamm: [Ndiaye, Oppie, Agu]
+    hinweis: "Seit 03.07.2027 mit Ball Flügelverteidiger (Breite links). Bis 2026/27 Außenverteidiger. Seit 04.09.2027 Oppie 1. Backup, Deman nicht mehr im Kader."
   "DM Lynen":
     mit: "Defensiver Mittelfeldspieler"
     ohne: "Abschirmender Sechser"
-    stamm: [Lynen, Keidel, Stark]
-    hinweis: "Keidel seit 06.07.2027 Stamm-RV (Doppelrolle); im Normalfall Stark erster Ersatz."
+    stamm: [Lynen, Keidel, Stark, Amatucci]
+    hinweis: "Keidel seit 06.07.2027 Stamm-RV (Doppelrolle); im Normalfall Stark erster Ersatz. Amatucci seit 04.09.2027 Einwechsel-/Spielkontroll-Option für Lynen (Gegner tief/in Unterzahl, wir dominieren), nicht Stamm: mit Ball Tiefer Spielmacher statt Defensiver Mittelfeldspieler, ohne Ball nicht genannt; Rollen-Score hier mit Standardrollen gerechnet."
   "DM Svanberg":
     mit: "Box-to-Box-Spieler"
     ohne: "Pressender Sechser"
     stamm: [Stage, Svanberg, Reis]
-    hinweis: "Rechter Sechser. Seit 03.07.2027 ohne Ball Pressender Sechser (bis 2026/27 Flügelsichernder Sechser)."
+    hinweis: "Rechter Sechser. Seit 03.07.2027 ohne Ball Pressender Sechser (bis 2026/27 Flügelsichernder Sechser). Amatucci seit 04.09.2027 unter DM Lynen (Option für Lynen), nicht mehr hier."
   "OM r":
     mit: "Flügelspieler"
     ohne: "Mitarbeitender Flügelspieler"
-    stamm: [Arthur, Chuki]
-    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); kein Transfer OM r nötig. Seit 17.07.2027: Erevbenagie verliehen (bis 29.06.2028), Mbangula nicht mehr im Kader; Chuki nur als Plan E (mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler), Rollen-Score hier mit Standardrollen gerechnet."
+    stamm: [Arthur, Guliashvili, Chuki]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); kein Transfer OM r nötig. Seit 17.07.2027: Erevbenagie verliehen (bis 29.06.2028), Mbangula nicht mehr im Kader; Chuki nur als Plan E (mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler), Rollen-Score hier mit Standardrollen gerechnet. Seit 04.09.2027 Backups Guliashvili, dann Chuki (Plan E). Guliashvili erster Backup trotz Rollen-Score Vorsaison 32 (Daten vermutlich aus anderer Position), Neubewertung nach 5 BL-Spielen mit echten Einsätzen."
   "OM z":
     mit: "Vorgeschobener Spielmacher"
     ohne: "Mitarbeitender Zehner"
     stamm: [Chuki, Medina, Svanberg]
-    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer. Seit 17.07.2027 Medina Rotation hinter Chuki (nicht DM)."
+    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer. Seit 17.07.2027 Medina Rotation hinter Chuki (nicht DM); Medina verletzt seit 23.08.2027."
   "OM l":
     mit: "Inverser Außenstürmer"
     ohne: "Mitarbeitender Flügelspieler"
-    stamm: [Grüll, Manneh]
+    stamm: [Grüll, Guliashvili, Erevbenagie]
+    hinweis: "Grüll verletzt seit 14.08.2027. Seit 04.09.2027 Backups Guliashvili, Erevbenagie (Manneh jetzt Stamm-ST). Guliashvili erster Backup trotz Rollen-Score Vorsaison 28 (Daten vermutlich aus anderer Position), Neubewertung nach 5 BL-Spielen mit echten Einsätzen."
   ST:
     mit: "Halbraumstürmer"
     ohne: "Mittelstürmer"
-    stamm: [Kaars, Manneh, Itten]
-    hinweis: "Seit 03.07.2027 (bis 2026/27 Zielspieler / Zentraler Umschaltstürmer)."
+    stamm: [Manneh, Kaars, Topp]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Zielspieler / Zentraler Umschaltstürmer). Seit 04.09.2027 Manneh Stamm, Kaars Backup/Joker; Itten nicht mehr im Kader. Topp nur Plan D (mit Ball Zielspieler, Joker ~30 Min.); Rollen-Score hier mit Standardrollen gerechnet."

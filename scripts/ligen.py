@@ -74,12 +74,22 @@ class Ligen:
         m = MIT_LAND.match(division)
         key = (m[1], m[2]) if m and (m[1], m[2]) in self.ranking else None
         if key is None:
-            key = self.alias.get(division.casefold())
-        if key is None:
-            key = next((k for rx, k in self.regeln if rx.search(division)), None)
+            key = self._alias(division)
+        if key is None and m:
+            # Live-Name mit Land des Vereins, z. B. 'ADMIRAL Bundesliga (Österreich)': Alias des Namens ohne Land;
+            # widerspricht das Land dem Alias, gilt dieselbe Liga im genannten Land (falls im Ranking), sonst keine.
+            key = self._alias(m[1])
+            if key and key[1] != m[2]:
+                key = (key[0], m[2]) if (key[0], m[2]) in self.ranking else None
         entry = self.ranking.get(key) if key else None
         self._cache[division] = entry
         return entry
+
+    def _alias(self, name: str) -> tuple[str, str] | None:
+        key = self.alias.get(name.casefold())
+        if key is None:
+            key = next((k for rx, k in self.regeln if rx.search(name)), None)
+        return key
 
     def stufe(self, division) -> str | None:
         e = self.aufloesen(division)

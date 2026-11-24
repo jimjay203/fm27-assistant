@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +38,7 @@ import common
 import fmmt
 import ligen
 import live
+import namen
 import per90
 import rollen_attr
 
@@ -193,33 +193,38 @@ def verliehene_eigene(df, rk, mit) -> list[str]:
 POS_NICHT_GELISTET = "Position nicht gelistet"
 
 
-def name_norm(s) -> str:
-    """Name ohne Akzente und Groß-/Kleinschreibung ('Dinkçi' -> 'dinkci')."""
-    s = unicodedata.normalize("NFKD", s if isinstance(s, str) else "")
-    return "".join(c for c in s if not unicodedata.combining(c)).casefold().strip()
+name_norm = namen.name_norm  # Kompatibilität (Aufrufer/Tests)
 
 
-def stamm_maske(namen: pd.Series, stamm) -> pd.Series:
+def stamm_maske(namen_spalte: pd.Series, stamm, alt: pd.Series | None = None) -> pd.Series:
     """True, wenn der Name zu einem Eintrag aus `stamm` (taktik_slots.yaml) passt: ganzer Name oder Nachname
-    ('Arthur' = 'Arthur', 'Grüll' = 'Marco Grüll'). Nur für eigene Spieler gedacht."""
-    ziel = {name_norm(s) for s in (stamm or []) if s}
+    ('Arthur' = 'Arthur', 'Grüll' = 'Marco Grüll'). `alt`: zweiter Name je Zeile (z. B. name_live), zählt auch.
+    Live-Namen sind über die uid schon auf die Exportnamen gesetzt (namen.angleichen). Nur für eigene Spieler."""
+    ziel = [s for s in (stamm or []) if s]
     if not ziel:
-        return pd.Series(False, index=namen.index)
+        return pd.Series(False, index=namen_spalte.index)
 
     def ok(n) -> bool:
-        n = name_norm(n)
-        return bool(n) and (n in ziel or n.split()[-1] in ziel)
+        return any(namen.passt(n, z) for z in ziel)
 
-    return namen.map(ok).astype(bool)
+    m = namen_spalte.map(ok).astype(bool)
+    if alt is not None:
+        m |= alt.map(ok).astype(bool)
+    return m
 
 
 def detail_treffer(df: pd.DataFrame, name: str) -> tuple[set[str], str]:
     """uids für --detail NAME: exakter Name vor Teiltreffer, eigene Spieler vor fremden; nur die beste Stufe.
     -> (uids, Beschreibung der Stufe). Eigene Spieler werden so immer gefunden (auch ohne passende Position)."""
     n = name_norm(name)
-    namen = df["name"].map(name_norm)
-    exakt = namen == n
-    teil = namen.str.contains(n, regex=False) | namen.str.split().str[-1].eq(n)
+    exakt = pd.Series(False, index=df.index)
+    teil = pd.Series(False, index=df.index)
+    for spalte in ("name", "name_live"):  # Anzeige-/Exportname und Live-Name (namen.angleichen)
+        if spalte not in df:
+            continue
+        nn = df[spalte].map(name_norm)
+        exakt |= nn == n
+        teil |= nn.str.contains(n, regex=False) | nn.str.split().str[-1].eq(n)
     own = df["own"].fillna(False).astype(bool) if "own" in df else pd.Series(False, index=df.index)
     for maske, txt in ((own & exakt, "eigener Spieler, exakter Name"), (own & teil, "eigener Spieler"),
                        (~own & exakt, "fremder Spieler, exakter Name"), (~own & teil, "fremder Spieler")):  # fmt: skip
@@ -260,7 +265,7 @@ def kandidaten_slot(df, mit, ohne, rk, anker, ref, defaults, lg, a, eigene_min, 
     if "own" in alle and (stamm or zusatz_uids):
         eigen_alle = alle["own"].fillna(False).astype(bool) & ~pos_ok
         zusatz = alle["uid"].astype(str).isin({str(u) for u in (zusatz_uids or [])})
-        st = stamm_maske(alle["name"], stamm) & (alle["minutes"].fillna(0) >= eigene_min)
+        st = stamm_maske(alle["name"], stamm, alle.get("name_live")) & (alle["minutes"].fillna(0) >= eigene_min)
         extra = alle[eigen_alle & (zusatz | st)]
         if len(extra):
             own = pd.concat([own.assign(pos_hinweis=None), extra.assign(pos_hinweis=POS_NICHT_GELISTET)])
@@ -458,7 +463,7 @@ def main(argv=None) -> None:
     clubs = b.topclub_liste(df, a.topclubs)
     ref = topclub_referenz_je_gruppe(df, rk, specs, clubs, defaults)
     ra = rollen_attr.laden(a.config_dir)
-    ziel = rollen_attr.ziel_stufe(df, lg)
+    ziel_lg, ziel, ziel_n = rollen_attr.ziel_liga(df, lg)
     schwelle = (
         a.attr_schwelle
         if a.attr_schwelle is not None
@@ -469,6 +474,10 @@ def main(argv=None) -> None:
         f"# Rollen-Score (Quelle {quelle}, Daten vom {df.attrs.get('date')}; {per90.saison_text(df.attrs.get('saison'))}; Anker: Perzentile {list(PERZENTILE.values())} der Spieler "
         f"gleicher Positionsgruppe in Ligen ab '{a.pool_min_stufe}'; Rollen-Zuordnung ungeprüft, siehe wissen/rollen-kpis.md)"
     )
+    abw = [x for x in df.attrs.get("namen_abweichend") or [] if x["own"]]
+    if abw:
+        print("  Live-Namen eigener Spieler angeglichen (uid): "
+              + ", ".join(f"{x['live']} -> {x['name']}" for x in abw))  # fmt: skip
     detail_uids, detail_stufe = detail_treffer(df, a.detail) if a.detail else (set(), "")
     for name, s in todo.items():
         own, cand = kandidaten_slot(  # --detail: auch verliehene eigene Spieler (Entwicklung)
@@ -496,7 +505,7 @@ def main(argv=None) -> None:
         quelle = (
             "Argument --attr-schwelle"
             if a.attr_schwelle is not None
-            else f"Stufe Zielverein '{ziel}'"
+            else f"Stufe Zielverein '{ziel}' aus Liga '{ziel_lg}', {ziel_n} eigene Profis"
         )
         print(
             f"  Attribut-Filter: Schwelle {schwelle} ({quelle}; Zuordnung Stufe->Schwelle bestätigt: Jimmy, 07.07.2027)"

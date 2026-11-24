@@ -16,6 +16,7 @@ Mehrteil-Suche (FM27-Exporter liefert max. 10.000 Spieler -> Export aufteilen, z
   Teil-Dateien und Zeilen je Teil: Tabelle snapshot_files. Datei mit >= 9.999 Zeilen -> Limit-Warnung.
 Spalten-Mapping: config/spalten.yaml. Unbekannte Spalten werden geloggt und in player_raw gespeichert.
 Screenshots (png/jpg): kein OCR -> Claude überführt die Tabelle vorher in CSV.
+Spielberichte als Screenshot: Werte in saves/<save>/data/spiele/*.yaml, dann scripts/spiel_erfassen.py.
 
 Aufruf:  uv run python scripts/import.py --save werder
 """
@@ -465,9 +466,7 @@ def import_team(
     if "opponent" not in mapped:
         common.die("spalten.yaml liefert kein 'opponent' für diese Teamdatei (TODO(export)).")
     dec = mp.decimal
-    nums = [
-        c for c in common.TEAM_CORE if c not in ("datum", "opponent", "home_away", "tactic_slot")
-    ]
+    nums = [c for c in common.TEAM_CORE if c not in common.TEAM_TEXT]
     extra = {i: c for i, c in mapped.items() if i not in common.TEAM_CORE}
     n = 0
     for rec in df.to_dict("records"):
@@ -477,30 +476,11 @@ def import_team(
         date = fmparse.parse_date(rec[mapped["datum"]]) if "datum" in mapped else None
         date = date or file_date
         ha = _text(rec[mapped["home_away"]]) if "home_away" in mapped else None
-        ha = HOME_AWAY.get(ha.casefold(), ha) if ha else None
-        slot = _text(rec[mapped["tactic_slot"]]) if "tactic_slot" in mapped else None
-        vals = [fmparse.parse_number(rec[mapped[c]], dec) if c in mapped else None for c in nums]
-        conn.execute(
-            "DELETE FROM team_match_stats WHERE match_id IN "
-            "(SELECT id FROM team_matches WHERE save=? AND ingame_date=? AND opponent=?)",
-            (save, date, opp),
-        )
-        conn.execute(
-            "DELETE FROM team_matches WHERE save=? AND ingame_date=? AND opponent=?",
-            (save, date, opp),
-        )
-        cur = conn.execute(
-            "INSERT INTO team_matches(snapshot_id, save, ingame_date, opponent, home_away, tactic_slot, "
-            + ", ".join(nums)
-            + ") VALUES(?,?,?,?,?,?,"
-            + ",".join("?" * len(nums))
-            + ")",
-            (sid, save, date, opp, ha, slot, *vals),
-        )
-        for stat, col in extra.items():
-            v = fmparse.parse_number(rec[col], dec)
-            if v is not None:
-                conn.execute("INSERT INTO team_match_stats VALUES(?,?,?)", (cur.lastrowid, stat, v))
+        werte = {c: _text(rec[mapped[c]]) for c in ("tactic_slot", "competition") if c in mapped}
+        werte["home_away"] = HOME_AWAY.get(ha.casefold(), ha) if ha else None
+        werte |= {c: fmparse.parse_number(rec[mapped[c]], dec) for c in nums if c in mapped}
+        stats = {stat: fmparse.parse_number(rec[col], dec) for stat, col in extra.items()}
+        common.write_team_match(conn, sid, save, date, opp, werte, stats)
         n += 1
     for col in unknown:
         conn.execute("INSERT OR REPLACE INTO unmapped_columns VALUES(?,?)", (sid, col))

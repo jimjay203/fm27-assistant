@@ -38,14 +38,30 @@ def schwelle_fuer_stufe(stufe: str | None, ra: dict) -> int:
     return int(ra.get("liga_schwelle_default", 8))
 
 
-def ziel_stufe(df: pd.DataFrame, lg) -> str | None:
-    """Liga-Stufe des Zielvereins = häufigste Liga der eigenen Spieler."""
+def ziel_liga(df: pd.DataFrame, lg) -> tuple[str | None, str | None, int]:
+    """(Liga, Stufe, Anzahl Spieler) des Zielvereins = häufigste Liga mit bekannter Stufe unter den eigenen
+    Spielern im Profikader (Team "Senior Team", nicht verliehen).
+
+    Live zählen sonst auch verliehene Spieler (Liga des Leihvereins) und Jugend-/Reserveteams mit (eigene Liga
+    je Team); die Exporte enthalten nur den Profikader. Ohne Team-/Statusspalte: alle eigenen Spieler."""
     if "own" not in df or "league" not in df:
-        return None
-    ligen = df.loc[df["own"].fillna(False).astype(bool), "league"].dropna()
+        return None, None, 0
+    m = df["own"].fillna(False).astype(bool)
+    if "eigen" in df:
+        m &= df["eigen"].isin(["kader", "leihe_ein"]) | df["eigen"].isna()
+    if "team" in df and (m & (df["team"] == "Senior Team")).any():
+        m &= df["team"] == "Senior Team"
+    ligen = df.loc[m, "league"].dropna()
+    ligen = ligen[ligen.map(lg.stufe).notna()]
     if ligen.empty:
-        return None
-    return lg.stufe(ligen.mode().iloc[0])
+        return None, None, 0
+    liga = ligen.mode().iloc[0]
+    return liga, lg.stufe(liga), int((ligen == liga).sum())
+
+
+def ziel_stufe(df: pd.DataFrame, lg) -> str | None:
+    """Liga-Stufe des Zielvereins (siehe ziel_liga)."""
+    return ziel_liga(df, lg)[1]
 
 
 def rolle_def(name: str, phase: str, ra: dict, rk: dict | None = None) -> tuple[str, dict] | None:
