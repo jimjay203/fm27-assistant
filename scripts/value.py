@@ -84,6 +84,27 @@ def xg_deltas(df: pd.DataFrame, flag_p90: float) -> pd.DataFrame:
     return out
 
 
+def verfuegbare_kpis(df: pd.DataFrame, rolle: str, kpis: dict[str, float]) -> dict[str, float]:
+    """KPIs der Rolle, die als Spalte in den Daten stehen. Fehlende (kein Stat im Export/Live, Tippfehler in
+    rollen.yaml) -> Warnung auf stderr mit Gewichtsanteil; der Score läuft über den Rest. Keiner da -> Abbruch."""
+    missing = [k for k in kpis if f"{k}_pctl" not in df]
+    if not missing:
+        return dict(kpis)
+    rest = {k: w for k, w in kpis.items() if k not in missing}
+    anteil = sum(kpis[k] for k in missing) / sum(kpis.values())
+    if not rest:
+        common.die(
+            f"Rolle '{rolle}': keine KPI in den Daten (Export/spalten.yaml bzw. rollen.yaml prüfen): "
+            + ", ".join(missing)
+        )
+    print(
+        f"WARNUNG: Rolle '{rolle}': KPI fehlt in den Daten und wird ausgelassen ({anteil:.0%} des Gewichts, "
+        f"Score über die übrigen KPIs): {', '.join(missing)} – Export/spalten.yaml bzw. KPI-Name in rollen.yaml prüfen.",
+        file=sys.stderr,
+    )
+    return rest
+
+
 def candidates(
     players,
     attrs,
@@ -103,12 +124,7 @@ def candidates(
     if role is None:
         common.die(f"Rolle '{rolle}' nicht in config/rollen.yaml")
     df = per90.compute_per90(players, cfg, rolle, min_minuten)
-    missing = [k for k in role["kpis"] if f"{k}_pctl" not in df]
-    if missing:
-        common.die(
-            "Für die Rolle fehlen KPIs in den Daten (Export/spalten.yaml ergänzen): "
-            + ", ".join(missing)
-        )
+    kpis = verfuegbare_kpis(df, rolle, role["kpis"])
     threshold = df.attrs["min_minuten"]
     n_total = len(df)
     df = df[~df["n_klein"]].copy()
@@ -118,7 +134,7 @@ def candidates(
     )
 
     min_cover = role.get("min_abdeckung", defaults.get("min_abdeckung", 1.0))
-    df["kpi_score"] = role_score(df, role["kpis"], min_cover)
+    df["kpi_score"] = role_score(df, kpis, min_cover)
     g = defaults.get("attribut_gewicht", 0.0) if attr_gewicht is None else attr_gewicht
     df["attr_score"] = np.nan
     df["rollen_score"] = df["kpi_score"]

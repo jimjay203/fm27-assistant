@@ -82,9 +82,7 @@ def test_productive_rollen_yaml_kpis_map_to_known_stats():
     } | set(spalten["abgeleitet"]) | {s["name"] for s in live["stats"].values()}  # fmt: skip
     known |= {q["name"] for q in live["quoten"]}
     for name, role in rollen["rollen"].items():
-        if not name.startswith("gruppe_"):
-            continue  # stuermer_abschluss ist Platzhalter (TODO(export)) und wird separat gepflegt
-        for kpi in role["kpis"]:
+        for kpi in role["kpis"]:  # alle Rollen, auch stuermer_abschluss (pressing_p90 war kein Stat)
             base = kpi.removesuffix("_p90")
             assert kpi in known or base in known, f"{name}: KPI {kpi} ist kein gemappter Stat"
         attrs = {
@@ -92,7 +90,8 @@ def test_productive_rollen_yaml_kpis_map_to_known_stats():
             for v in spalten["spalten"].values()
             if str(v if isinstance(v, str) else v["name"]).startswith("attr_")
         }
-        assert set(role["attribute_prior"]) <= attrs, f"{name}: unbekanntes Attribut"
+        if name.startswith("gruppe_"):  # stuermer_abschluss: Prior-Platzhalter (attribut_gewicht 0)
+            assert set(role["attribute_prior"]) <= attrs, f"{name}: unbekanntes Attribut"
     assert pytest.approx(0.6) == rollen["rollen"]["gruppe_st"]["min_abdeckung"]
 
 

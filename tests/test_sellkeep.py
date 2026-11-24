@@ -99,6 +99,47 @@ def test_squad_status_from_live_flag_and_from_club_name():
     assert pd.isna(status["4"])
 
 
+def test_own_club_from_kader_snapshot():
+    players = pd.DataFrame({
+        "snapshot_id": [5, 5, 5, 5, 6],
+        "club": ["Werder Bremen", "Werder Bremen", "Ajax", None, "Ajax"],  # 6 = Suche
+    })  # fmt: skip
+    assert sellkeep.verein_aus_kader(players, 5) == "Werder Bremen"
+    assert sellkeep.verein_aus_kader(players, None) is None
+    assert sellkeep.verein_aus_kader(players, 99) is None
+
+
+def test_main_without_live_detects_own_club(monkeypatch, capsys):
+    """Ohne Live-Flag und ohne --verein: Verein aus dem Kader-Snapshot statt Abbruch."""
+    players = pd.DataFrame({
+        "snapshot_id": [1, 1, 2], "player_uid": ["a", "b", "c"],
+        "club": ["Werder Bremen", "Werder Bremen", "Ajax"], "view_type": ["kader", "kader", "suche"],
+    })  # fmt: skip
+    seen = {}
+
+    def fake_status(p, conn, verein):
+        seen.setdefault("calls", []).append(verein)
+        own = ["kader" if verein and c == verein else np.nan for c in p["club"]]
+        return pd.Series(own, index=p.index)
+
+    monkeypatch.setattr(sellkeep.common, "connect", lambda db: None)
+    monkeypatch.setattr(sellkeep.per90, "load_saison", lambda *a, **k: (players, pd.DataFrame()))
+    monkeypatch.setattr(sellkeep.per90, "letzter_snapshot", lambda conn, save, v: (1, "2027-07-01"))
+    monkeypatch.setattr(sellkeep, "squad_status", fake_status)
+
+    class Stop(Exception):
+        pass
+
+    def stop(*a):
+        raise Stop  # Status steht fest; Tabelle selbst wird hier nicht geprüft
+
+    monkeypatch.setattr(sellkeep, "build", stop)
+    with pytest.raises(Stop):
+        sellkeep.main(["--save", "werder"])
+    assert seen["calls"] == [None, "Werder Bremen"]
+    assert "Eigener Verein: Werder Bremen" in capsys.readouterr().err
+
+
 def test_german_export_positions_are_normalized():
     import per90
 

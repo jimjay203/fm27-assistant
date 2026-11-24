@@ -431,9 +431,20 @@ def test_value_candidates(conn):
     assert set(df["xg_flag"]) <= {"", "über xG", "unter xG"}
 
 
-def test_value_missing_kpi_aborts(conn):
+def test_value_missing_kpi_warns_and_scores_rest(conn, capsys):
     cfg = common.load_yaml("rollen.yaml", CFG)
+    players, attrs = per90.load_wide(conn, "test")
+    ref = value.candidates(players, attrs, cfg, "test_stuermer")
     cfg["rollen"]["test_stuermer"]["kpis"]["gibt_es_nicht_p90"] = 0.1
+    df = value.candidates(players, attrs, cfg, "test_stuermer")
+    err = capsys.readouterr().err
+    assert "WARNUNG" in err and "gibt_es_nicht_p90" in err
+    assert df["rollen_score"].tolist() == pytest.approx(ref["rollen_score"].tolist(), nan_ok=True)
+
+
+def test_value_all_kpis_missing_aborts(conn):
+    cfg = common.load_yaml("rollen.yaml", CFG)
+    cfg["rollen"]["test_stuermer"]["kpis"] = {"gibt_es_nicht_p90": 1.0}
     players, attrs = per90.load_wide(conn, "test")
     with pytest.raises(SystemExit):
         value.candidates(players, attrs, cfg, "test_stuermer")

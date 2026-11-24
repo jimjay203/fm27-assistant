@@ -25,12 +25,12 @@ rollen:
       schuesse_p90: 0.15
       xa_p90: 0.15
       kopfballduelle_gewonnen_pct: 0.10
-      pressing_p90: 0.10
+      pressing_erfolgreich_p90: 0.10   # Stat heißt pressing_erfolgreich (spalten.yaml PrsErf, live Pres C/90)
       dribblings_p90: 0.15
     attribute_prior:
       Abschluss: 0.3
       Ohne Ball: 0.3
-      Ruhe am Ball: 0.2
+      Nervenstärke: 0.2   # vorher "Ruhe am Ball" (kein DB-Attribut; Composure = Nervenstärke)
       Antritt: 0.2
 
   # --- Positionsgruppen nach FMMT-27 (PKEYS, gleichgewichtet; Setzung des Autors, ungeprüft) ---

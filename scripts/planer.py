@@ -62,7 +62,7 @@ def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
     players = players[ist_kader | (players["view_type"] == "suche")].reset_index(drop=True)
     ist_kader = players["snapshot_id"] == kader[0]
     if verein is None:
-        verein = players.loc[ist_kader, "club"].mode().iat[0]
+        verein = sellkeep.verein_aus_kader(players, kader[0])
     status = sellkeep.squad_status(players, conn, verein)
     # Eigene Spieler nur aus dem Kader-Snapshot; dort stehen auch Verliehene (Status leihe_aus).
     players["eigen"] = status.where(ist_kader)

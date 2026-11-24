@@ -11,7 +11,8 @@ Reihenfolge der Regeln (die erste, die greift, entscheidet):
 Stammspieler = Minuten / Minuten des meistgenutzten Kaderspielers >= `stamm_anteil`.
 
 Das ist ein Vorschlag, keine Entscheidung. Entscheidungen mit Messkriterium + Prüftermin in log.md.
-Eigene Spieler: Snapshot-Typ `live` (player_info.eigen) oder --verein "<Name>" bei Exporten.
+Eigene Spieler: Snapshot-Typ `live` (player_info.eigen); sonst Verein = häufigster Verein im letzten
+Kader-Snapshot (wie planer.py), Override mit --verein "<Name>".
 
 Aufruf:  uv run python scripts/sellkeep.py --save werder [--verein "Werder Bremen"]
 """
@@ -113,6 +114,14 @@ def classify(p: dict, sk: dict) -> tuple[str, str]:
     return "Behalten", f"{share:.0%} der Top-Minuten"
 
 
+def verein_aus_kader(players: pd.DataFrame, kader_id: int | None) -> str | None:
+    """Eigener Verein = häufigster Verein im Kader-Snapshot (Verliehene stehen dort beim Leihverein)."""
+    if kader_id is None:
+        return None
+    clubs = players.loc[players["snapshot_id"] == kader_id, "club"].dropna()
+    return None if clubs.empty else str(clubs.mode().iat[0])
+
+
 def squad_status(players: pd.DataFrame, conn, verein: str | None) -> pd.Series:
     """kader | leihe_ein | leihe_aus je Spieler (sonst NaN): live-Flag, sonst über --verein."""
     info = pd.read_sql_query(
@@ -190,7 +199,8 @@ def main(argv=None) -> None:
     )
     common.add_common_args(ap)
     ap.add_argument(
-        "--verein", help="Eigener Verein (nur für Exporte nötig; live setzt das selbst)"
+        "--verein",
+        help="Eigener Verein (Default: live-Flag, sonst häufigster Verein im Kader-Snapshot)",
     )
     ap.add_argument("--csv", type=Path)
     a = ap.parse_args(argv)
@@ -202,9 +212,17 @@ def main(argv=None) -> None:
         common.die(f"Keine Spielerdaten für Save '{save}' – erst live.py/import.py ausführen.")
     cfg = common.load_yaml("rollen.yaml", a.config_dir)
     status = squad_status(players, conn, a.verein)
+    if status.notna().sum() == 0 and not a.verein:  # kein Live-Flag: Verein aus dem Kader-Snapshot
+        kader = per90.letzter_snapshot(conn, save, "kader")
+        verein = verein_aus_kader(players, kader[0] if kader else None)
+        if verein:
+            print(f"Eigener Verein: {verein} (häufigster Verein im Kader-Snapshot vom {kader[1]}; "
+                  'Override: --verein "<Name>")', file=sys.stderr)  # fmt: skip
+            status = squad_status(players, conn, verein)
     if status.notna().sum() == 0:
         common.die(
-            'Keine eigenen Spieler erkannt: live-Snapshot fehlt oder --verein "<Name>" setzen.'
+            "Keine eigenen Spieler erkannt: weder Live-Snapshot noch Kader-Export "
+            '(scripts/live.py bzw. import.py) – oder --verein "<Name>" setzen.'
         )
     own = build(players, attrs, cfg, status)
     own["wert_mio"] = own["value"] / 1e6
