@@ -3,77 +3,98 @@
 ## Formation je Slot
 | Slot | Formation |
 |---|---|
-| Standard | 4-2-3-1 |
-| Heim | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter. Neuer Standard ab Frankfurt (A, 05.12.2026): siehe Rollentabelle und "Test: Torgefahr Phase 1" (Paket B) |
+| Standard | 4-2-3-1 (neuer Standard ab Vorbereitung 2027/28, Entscheidung Jimmy 03.07.2027; siehe Rollentabelle und Team-Instruktionen) |
+| Heim | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter. Option (nicht beschlossen): Mentalität Kontrolliert-offensiv gegen Schwächere |
 | Auswärts | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter |
 
-Form: Mit Ball 4-2-3-1. Ohne Ball zeigt das UI 4-3-2-1 (Lynen, Hack, Svanberg/Reis in einer Reihe; davor Grüll und Dinkçi; vorne Füllkrug). Korrigiert nach UI-Screenshot, Slot 3 "4-2-3-1 Standard", 24.10.2026.
+Form (bis 2026/27; für die Rollen ab 2027/28 im UI neu ablesen): Mit Ball 4-2-3-1. Ohne Ball zeigt das UI 4-3-2-1 (Lynen, Hack, Svanberg/Reis in einer Reihe; davor Grüll und Dinkçi; vorne Füllkrug). Korrigiert nach UI-Screenshot, Slot 3 "4-2-3-1 Standard", 24.10.2026.
 
 ## Rollen (In / Out of Possession)
 FM27: keine Aufgaben mehr, jeder Spieler hat eine Rolle mit Ball und eine ohne Ball. Rollennamen laut Zweierkette-Rollenliste (Stand 17.11.2026; dort FM26-System, FM27 nicht ausdrücklich genannt) -> im Spiel gegenprüfen.
 
-Slot Standard, NEUER STANDARD seit Entscheidung Jimmy 05.12.2026 (vor Frankfurt A; Paket B). Änderung ggü. Gladbach (Paket A): Rollen mit Ball von Jimmy auf TW / IV / SpIV gesetzt (vorher KTW / KIV / KIV), Rollen ohne Ball unverändert. Bei Bedarf (direkteres Spiel) werden die Rollen mit Ball wieder angepasst (z. B. kompromisslose Rollen). Stand Gladbach (H, 28.11.2026, UI-Screenshots, von Jimmy bestätigt) gegenüber 21.11.: LV Ndiaye ohne Ball, OM r Weiser statt Dinkçi, DM Svanberg statt Reis. Rollen mit Ball nur als UI-Abkürzung eingetragen (Langnamen nicht gesehen).
+Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 03.07.2027; alle Änderungen gleichzeitig, volle Vorbereitung mit Testspielen, kein Phasenplan). Evidenz: Rollenlogik + UI-Texte, nicht getestet. Rollennamen ausgeschrieben, wie Jimmy sie gesetzt hat. Kaderstand 01.07.2027 (Kader-Export 2027-07-01_kader.csv, DB Snapshot 246).
 
-| Position | Spieler (Alternativen) | In Possession | Out of Possession |
+| Position | Spieler (Alternativen) | Mit Ball | Ohne Ball |
 |---|---|---|---|
-| TW | Hein (Schlager) | TW (UI-Abkürzung; bis 05.12.: Kompromissloser Torhüter, KTW) | Linientorhüter |
-| RV | Arthur (Deman, Weiser) | Außenverteidiger | Pressender Außenverteidiger |
-| IV r | Pieper (Wójcik) | IV (UI-Abkürzung; bis 05.12.: Kompromissloser Innenverteidiger, KIV) | Absichernder Innenverteidiger |
-| IV l | Friedl (Bartesaghi) | SpIV (UI-Abkürzung; bis 05.12.: Kompromissloser Innenverteidiger, KIV) | Stoppender Innenverteidiger |
-| LV | Ndiaye (Deman, Bartesaghi) | Außenverteidiger | Pressender Außenverteidiger (bisher Abwartend; Test, nicht isolierbar, siehe unten) |
-| DM | Lynen | Defensiver Mittelfeldspieler | Abschirmender Sechser |
-| DM | Svanberg (Reis) | Box-to-Box-Spieler | Flügelsichernder Sechser (rechts, hinter Weiser) |
-| OM r | Weiser (Dinkçi, Hack) | Außenstürmer | Umschaltflügelspieler |
-| OM z | Hack (Chuki) | Zweiter Stürmer | Mitarbeitender Zehner |
-| OM l | Grüll | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
-| ST | Füllkrug (Itten) | Zielspieler | Zentraler Umschaltstürmer |
+| TW | Hein (Schlager) | Torwart (Standard) | Linientorhüter |
+| RV | Arthur (Agu) | Inverser Flügelverteidiger (rückt neben den DM Lynen; Inverser Außenverteidiger, der neben den IV schiebt, nicht gewählt) | Pressender Außenverteidiger |
+| IV r | Pfeiffer (Gechter, Stark; Pieper verletzt) | Innenverteidiger | Absichernder Innenverteidiger |
+| IV l | Córdoba (Linksfuß; Ndiaye) | Innenverteidiger | Absichernder Innenverteidiger (statt Stoppender: laut Jimmy riss der Stoppende IV ständig Lücken; subjektive Beobachtung, nicht gemessen) |
+| LV | Ndiaye (Deman) | Flügelverteidiger | Pressender Außenverteidiger |
+| DM l | Lynen (Keidel) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
+| DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
+| OM r | Mbangula (Erevbenagie) | Flügelspieler | Mitarbeitender Flügelspieler (Schwachstelle: beide Teamwork 8; Mbangula Verkaufskandidat, Transferbedarf OM r) |
+| OM z | Chuki (Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner |
+| OM l | Grüll (Manneh) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
+| ST | Kaars (Manneh, Itten) | Halbraumstürmer | Mittelstürmer (Standard) |
+
+Idee mit Ball: links Überladung (Grüll innen, Ndiaye außen), rechts Breite über den Flügelspieler, Arthur rückt innen neben Lynen; Seitenwechsel auf den freien rechten Flügel. Chuki kommt kurz, Kaars läuft in die Schnittstelle, Stage spät in den Strafraum.
+
+Bis 2026/27 (Paket B, 05.12.2026, Kurzfassung; Details in den Test-Abschnitten unten): TW TW/Linientorhüter; RV und LV Außenverteidiger/Pressender AV; IV r IV/Absichernder IV; IV l Spielaufbauender IV (SpIV)/Stoppender IV; DM Lynen DM/Abschirmender Sechser; DM Svanberg (Reis) B2B/Flügelsichernder Sechser; OM r Außenstürmer/Umschaltflügelspieler (Weiser, Dinkçi); OM z Zweiter Stürmer/Mitarbeitender Zehner (Hack, Chuki); OM l Inverser Außenstürmer/Mitarbeitender Flügelspieler; ST Zielspieler/Zentraler Umschaltstürmer (Füllkrug, Itten). Vor 05.12.2026 mit Ball KTW/KIV/KIV. Nicht mehr im Kader (01.07.2027): Friedl, Füllkrug, Hack, Dinkçi, Weiser, Wójcik, Bartesaghi, Regeer, Mayke.
 
 UI-Abkürzungen der Rollen (nur zur Info): KTW, LnTW, AV, AbAV, KIV, StIV, AbIV, DM, As6, B2B, Fl6, ZwS, Ma10, IAS, MaF, AS, UF, ZS, ZUS. Zusätzlich gesehen im Screenshot 05.12.2026: TW, IV, SpIV (Langnamen nicht gesehen, nicht ergänzt).
 
-Nicht verfügbar (verletzt, Angabe Jimmy, Stand Nov 2026): Stage, Stark, Agu.
+Nicht verfügbar (verletzt, Angabe Jimmy, Stand Nov 2026): Stage, Stark, Agu. Stand 01.07.2027: nur Pieper (Armfraktur seit 14.05.2027); Stage, Stark, Agu fit.
 
 Vermerk 09.01.2027 (Union H): Córdoba (IV) und Pfeiffer (KIV) sind neue Spieler (Winter, nach dem 31.12.2026; der Kader-Export vom 31.12. liegt davor). Pfeiffer spielte gegen Union als KIV (Rolle mit Ball, UI-Abkürzung), von Jimmy bewusst gesetzt; Rollen-Fit nicht bewertet, die Rollentabelle ist nicht geändert. Startelf Union: Hein; Arthur, Pfeiffer, Córdoba, Ndiaye; Lynen, Stage (B2B); Grüll IAS, Chuki ZwS, Dinkçi AS; Füllkrug ZS. Stage stand in der Startelf, die Angabe "Nicht verfügbar" oben (Stand Nov 2026) ist damit für Stage überholt (Status von Stark und Agu nicht geprüft).
 
-Begründung (Stand vor 21.11., Dinkçi rechts): Dinkçi bleibt als Umschaltspieler vorne, deshalb Abwartender AV + flügelsichernder Sechser (Empfehlung Zweierkette "So funktionieren Spielerrollen"); Partner des Sechsers hält Position (Lynen). Seit 21.11. Arthur Pressend, seit Gladbach Weiser rechts (Rolle ohne Ball Umschaltflügelspieler, wie zuvor Dinkçi; die in der Option "Weiser rechts" skizzierte Mitarbeitender Flügelspieler wurde nicht gewählt). Direkter Aufbau (Kompromisslose Rollen) passt zu Füllkrug als Zielspieler; bis Pokal Hoffenheim (02.12.) und Gladbach (KTW/KIV/KIV bzw. TW/IV/IV) so gespielt, seit 05.12.2026 bewusst weniger direkt (TW/IV/SpIV, Entscheidung Jimmy, nicht aus Daten abgeleitet).
+Begründung bis 2026/27 (Stand vor 21.11., Dinkçi rechts): Dinkçi bleibt als Umschaltspieler vorne, deshalb Abwartender AV + flügelsichernder Sechser (Empfehlung Zweierkette "So funktionieren Spielerrollen"); Partner des Sechsers hält Position (Lynen). Seit 21.11. Arthur Pressend, seit Gladbach Weiser rechts (Rolle ohne Ball Umschaltflügelspieler, wie zuvor Dinkçi; die in der Option "Weiser rechts" skizzierte Mitarbeitender Flügelspieler wurde nicht gewählt). Direkter Aufbau (Kompromisslose Rollen) passt zu Füllkrug als Zielspieler; bis Pokal Hoffenheim (02.12.) und Gladbach (KTW/KIV/KIV bzw. TW/IV/IV) so gespielt, seit 05.12.2026 bewusst weniger direkt (TW/IV/SpIV, Entscheidung Jimmy, nicht aus Daten abgeleitet).
 
 Attribut-Δ (Tore/Saison ggü. 12er-Referenz; Purity-Test FM-Arena, FM27-Build 12.11., ein Verein/eine Taktik/Selbstangaben, linear gerechnet): Hein +4,4; Arthur +2,2; Pieper +2,0; Friedl +2,1; Ndiaye +2,1; Dinkçi +2,4; Hack +1,9; Grüll +2,5; Füllkrug +5,1; Chuki +0,5 (daher nur für Heim-Slot). Für DM bestätigt der Test nur Antritt, kein Δ. Sechser-/IV-Rollenwahl = Rollenlogik, kein Test-Beleg.
 
 ## Team-Instruktionen
-Namen wie im FM27-UI (Stand Screenshots, Slot 3 "4-2-3-1 Standard", 24.10.2026 vor Mainz).
+Stand: Entscheidung Jimmy 03.07.2027, neuer Standard ab Saisonvorbereitung 2027/28 (alle Werte gleichzeitig gesetzt). Evidenz: Rollenlogik + UI-Texte, nicht getestet. Katalog aller Stufen und UI-Texte: wissen/teamanweisungen.md. Die zwei am 03.07.2027 dokumentierten Abweichungen zwischen taktik.md und UI (Fernschüsse, Defensives Umschalten) sind mit dieser Vorgabe aufgelöst.
 
-Mentalität/Grundausrichtung: im Spiel steht "Kontrolliert" (Stil: Individuell). Entwurf: Positiv, Gleichsetzung ungeprüft. Ob beides dieselbe Stufe ist, ist nicht belegt; Zweierkette nennt Kontrolliert und Offensiv als offensive Grundausrichtungen.
-
-Mit Ball:
-
-| Einstellung | Wert | Evidenzstufe / Bemerkung |
+### Mentalität (immer zuerst festlegen, Regel Jimmy 03.07.2027)
+| Einstellung | Wert | Bemerkung |
 |---|---|---|
-| Mentalität/Grundausrichtung | Kontrolliert (Stil: Individuell) | Ist-Wert im UI; Entwurf: Positiv, Gleichsetzung ungeprüft |
-| Passspiel | Standard (UI-Name der mittleren Stufe; vorher Vertikaler) | Test Torgefahr Phase 1, Gladbach n=1. Vorher: Feldmuster, Kader; im Entwurf "direkter". Zur Halbzeit gegen Hamburg (21.11.) schon einmal von Vertikaler auf Ausgewogen gestellt |
-| Tempo | Standard (vorher Höher) | Test Torgefahr Phase 1, Gladbach n=1. Vorher: Feldmuster |
-| Angriffsbreite | Standard (vorher Enger) | Test Torgefahr Phase 1, seit Gladbach (28.11.2026), von Jimmy bewusst gesetzt. Frühere Begründung für Enger: Feldmuster 15 von 16 Spitzen-Taktiken; Flankenqualität bei uns <=14 |
-| Fernschüsse | Vermeiden | Feldmuster; im Entwurf "Schüsse seltener" |
-| Flankenstil | Ausgewogen | Abweichung vom Entwurf "Flanken seltener": diese Einstellung gibt es nicht, Flankenstil ist keine Häufigkeit |
-| Zeitspiel | Seltener | |
-| Standards rausholen | an | |
-| Spielaufbau TW | Ausgewogen (vorher Außenverteidiger) | Test Torgefahr Phase 1, seit Gladbach (28.11.2026), von Jimmy bewusst gesetzt. Absicht: weniger direktes Spiel |
-| Abstöße | Gemischt | |
-| Offensives Umschalten, Kreative Freiheit, Geduld, Dribbling, Unterstützende Läufe, Aufbauspiel, Pass-Aufnahme, Spielaufbau-Strategie, Spielaufbau TW Geschwindigkeit | Standard/Ausgewogen | Nicht im Entwurf, Standardwerte |
+| Mentalität | Ausgewogen | UI-Stufen (Screenshot 03.07.2027): Sehr defensiv, Defensiv, Vorsichtig, Ausgewogen, Kontrolliert-offensiv, Offensiv, Sehr offensiv. Korrektur: Der bisher hier geführte Wert "Kontrolliert" (Stand 24.10.2026) war falsch bzw. überholt; eine Stufe "Kontrolliert" gibt es im FM27-UI nicht |
+| Option (nicht beschlossen) | Kontrolliert-offensiv | Heimspiele gegen Schwächere |
 
-Ohne Ball:
-
-| Einstellung | Wert | Evidenzstufe / Bemerkung |
+### Mit Ball
+| Einstellung | Wert ab 2027/28 | Bis 2026/27 (UI 03.07.2027) |
 |---|---|---|
-| Pressinglinie | Mittlerer Block (Entscheidung Jimmy 05.12.2026, neuer Standard, Paket B; Gladbach und Pokal Hoffenheim liefen mit Hohem Pressing, Paket A) | Mittlerer Block gewollt; gegen Frankfurt zusätzlich wegen Tempo vorn (siehe Gegner-Schalter). Zu Paket A (Hohes Pressing): Gladbach n=1, von Jimmy als bewusst bestätigt. Der frühere Pokal-Test (LSK Hansa, 28.10.) zeigte PPDA 18,19 ohne erkennbare Wirkung. Hebel nicht isolierbar: gleichzeitig Spielaufbau geändert. Alte Hypothese für Mittelblock: Stürmer ohne Tempo, schwache Tackler auf den Flügeln |
-| Defensivlinie | Standard | Kein Test isoliert die Linienhöhe; laut Match-Engine-Thread verschiebt "much deeper" nur ca. 1,5 m |
-| Verhalten Defensivlinie | Ausgewogen | |
-| Pressingauslösung | Standard | |
-| Defensives Umschalten | Neu formieren | Im Entwurf "nach Ballverlust zurückfallen"; Spieltext: schützt gegen Konter, geringere Chance auf schnellen Ballgewinn; Gegenpress-Presets im Schnitt schwächer, nicht kausal |
-| Tackling | Standard | |
-| Pressingfalle | Ausgewogen | Gilt im Mittelblock und im Hohen Pressing |
-| Torwart-Spielaufbau kurz | Nein | Nur im Hohen Pressing relevant |
-| Gegnerische Flanken | Ausgewogen | Nur im Tiefen Block relevant |
+| Passspiel | Kürzer | Standard (vor Gladbach 28.11.2026: Vertikaler) |
+| Tempo | Standard | Standard (vor Gladbach: Höher) |
+| Angriffsbreite | Breiter | Standard (vor Gladbach: Enger) |
+| Offensives Umschalten | Standard | Standard |
+| Kreative Freiheit | Ausgewogen | Ausgewogen |
+| Zeitspiel | Seltener | Seltener |
+| Standards rausholen / Ball im Spiel halten | Ball im Spiel halten | Standards rausholen |
+| Dribbling | Ausgewogen | Ausgewogen |
+| Geduld | Standard | Standard |
+| Fernschüsse | Vermeiden | Ausgewogen (UI) bzw. Vermeiden (taktik.md), Abweichung damit aufgelöst |
+| Flankenstil | Flache Flanken | Ausgewogen |
+| Unterstützende Läufe | Hinterlaufen Ausgewogen / Vorderlaufen Ausgewogen (Jimmy: Bewegungen ergeben sich aus den Rollen; nur bei Bedarf einschalten) | gleich |
+| Aufbauspiel | Ausgewogen | Ausgewogen |
+| Pass-Aufnahme | Ausgewogen | Ausgewogen |
+| Spielaufbau-Strategie | Pressing umgehen | Ausgewogen |
+| Abstöße | Gemischt | Gemischt |
+| Spielaufbau TW (Geschwindigkeit) | Ausgewogen | Ausgewogen |
+| Spielaufbau TW (Ziel) | Ausgewogen | Ausgewogen (vor Gladbach: Außenverteidiger) |
 
-Hinweis zur Tabelle Ohne Ball: Alle übrigen Werte (Defensivlinie Standard, Verhalten Ausgewogen, Pressingauslösung Standard, Defensives Umschalten Neu formieren, Tackling Standard, Pressingfalle Ausgewogen, TW-Spielaufbau kurz Nein) laut Screenshot Gladbach unverändert (und von Jimmy am 05.12.2026 als unverändert bestätigt). Mit Mittlerem Block ist "Torwart-Spielaufbau kurz: Nein" wieder nur im Hohen Pressing relevant.
+### Ohne Ball
+| Einstellung | Wert ab 2027/28 | Bis 2026/27 (UI 03.07.2027) |
+|---|---|---|
+| Pressinglinie | Mittlerer Block | Mittlerer Block (Paket B seit 05.12.2026; Gladbach/Pokal Hoffenheim Hohes Pressing) |
+| Defensivlinie | Höher; gegen Angreifer mit Tempo >= 17 Standard (Beschluss 01.07.2027, log.md) | Standard bis 30.06.2027 |
+| Verhalten Defensivlinie | Ausgewogen | Ausgewogen |
+| Pressingauslösung | Häufiger | Standard |
+| Defensives Umschalten | Standard | Standard (UI) bzw. Neu formieren (taktik.md), Abweichung damit aufgelöst |
+| Tackling | Standard | Standard |
+| Pressingfalle | Ausgewogen | Ausgewogen |
+| Gegnerischen TW anlaufen | Nein | Nein (nur im Hohen Pressing relevant) |
+| Gegnerische Flanken | Ausgewogen | Ausgewogen (nur im Tiefen Block relevant) |
+
+Begründung Defensivlinie Höher (01.07.2027): IV Córdoba 15/15 und Pfeiffer 16/12 (Schnelligkeit/Antritt) auf bzw. über BL-Angreifer-Median 14/14; nicht höher, weil Hein 10/9, Herauslaufen 12 den Raum hinter der Kette begrenzt. Laut UI-Text anfälliger für direkte Steilpässe. Laut Match-Engine-Thread verschiebt "much deeper" nur ca. 1,5 m (aus FM-Community, für FM27 ungeprüft).
+
+### Beobachtungs-Schalter (Gegenmittel, wenn das Muster in Testspielen/BL-Spielen auftritt; je Anlass nur einen ziehen)
+| Beobachtung | Gegenmittel |
+|---|---|
+| Ballverluste in der eigenen Hälfte | Passspiel zurück auf Standard |
+| Konter über links (Raum hinter Ndiaye) | Ndiaye ohne Ball Abwartender Außenverteidiger |
+| Fehlende Rückarbeit rechts (OM r) | Transfer OM r (Mbangula/Erevbenagie Teamwork 8) |
+| Bälle hinter die Kette | Defensivlinie Standard |
 
 Hinweis: Das Feld (Spitzen-Taktiken im FM-Arena-Aggregator) pressen hoch und spielen Attacking; die Top 23 liegen statistisch gleichauf (66-71 Punkte), der mittlere Block ist weder widerlegt noch belegt.
 
@@ -84,20 +105,25 @@ Hinweis: Das Feld (Spitzen-Taktiken im FM-Arena-Aggregator) pressen hoch und spi
 | Pressingfalle | Pressingfallen im Zentrum (Außen dichtmachen, Ball im Zentrum erobern) / Ausgewogen / Pressingfallen auf Außen (Zentrum dichtmachen, Ball auf Außen erobern) |
 | Defensives Umschalten | Neu formieren / Standard / Gegenpressing |
 | Gegnerische Flanken (nur Tiefer Block) | Flanken verhindern (Außenspieler attackieren) / Ausgewogen / Flanken zulassen (Zentrum absichern) |
-| Defensivlinie | Abstufungen inkl. Tiefer sind vorhanden (Namen der übrigen Stufen nicht gesehen) |
-| Offensives Umschalten, Pressingauslösung u.a. | Optionen nicht gesehen |
+| Defensivlinie | Viel tiefer / Tiefer / Standard / Höher / Viel höher (UI 03.07.2027) |
+| Offensives Umschalten | Formation halten / Standard / Konter (UI 03.07.2027) |
+| Pressingauslösung | Viel seltener / Seltener / Standard / Häufiger / Viel häufiger (UI 03.07.2027) |
+| Alle übrigen | Stufen und UI-Texte in wissen/teamanweisungen.md |
 
 ### Gegner-Schalter (pro Gegner max. 1-2 Hebel ändern)
+Einträge mit "Bis 2026/27" beziehen sich auf alte Rollen/Spieler (Dinkçi, Weiser, Hack, Füllkrug als Zielspieler; Mentalität Ausgewogen ist seit 03.07.2027 Standard) und gelten nicht automatisch für den Standard ab 2027/28.
+
 | Gegnertyp | Änderung |
 |---|---|
-| Tempo-Flügel (Mainz/Becker, Paderborn/Philippe, Elversberg/Petkov, Hoffenheim/Lemperle, Köln/Thielmann) | Verhalten Defensivlinie = Weiter zurückziehen bzw. Defensivlinie tiefer + AV der bedrohten Seite Pressend (seit 21.11.2026 Standard für Arthur; für Ndiaye links seit Gladbach 28.11.2026 mitlaufend, nicht isolierbar); rechts evtl. Grüll statt Dinkçi als Mitarbeitender Flügelspieler |
+| Bis 2026/27: Tempo-Flügel (Mainz/Becker, Paderborn/Philippe, Elversberg/Petkov, Hoffenheim/Lemperle, Köln/Thielmann) | Verhalten Defensivlinie = Weiter zurückziehen bzw. Defensivlinie tiefer + AV der bedrohten Seite Pressend (seit 21.11.2026 Standard für Arthur; für Ndiaye links seit Gladbach 28.11.2026 mitlaufend, nicht isolierbar); rechts evtl. Grüll statt Dinkçi als Mitarbeitender Flügelspieler |
 | Mainz (A), 24.10.2026 (3-5-2 DM FV; Hollerbach Schnelligkeit/Antritt 15/15 exakt, Becker verletzt) | Empfehlung: Verhalten Defensivlinie = Weiter zurückziehen, Defensivlinie = Standard, Ndiaye links als Abwartender Außenverteidiger. Umgesetzt (Jimmy bestätigt): wird für "Nächstes Spiel" gesetzt, nicht für den Standard-Slot. Keine Manndeckung auf Amiri (Co-Trainer-Rat nicht angewendet; Manndeckung zieht Spieler aus der Formation). Ergebnis Spiel 2: 2:3, xG für/gegen 0,58/2,04. Wirkung der Hebel nicht isolierbar (anderer Gegner, Auswärtsspiel, zwei von drei Gegentoren aus Freistößen). Beschluss Jimmy, 27.10.2026: Hebel zurück auf Standard (Defensivlinie Standard, Verhalten Defensivlinie Ausgewogen). |
 | LSK Hansa (A), DFB-Pokal 28.10.2026 (Oberliga Niedersachsen, häufigste Formation 5-2-3 DM Breit) | Beschlossen von Jimmy (27.10.2026), gesetzt für 'Nächstes Spiel': Test der proaktiven Variante mit zwei Hebeln: Pressinglinie = Hohes Pressing (statt Mittlerer Block) und Weiser statt Chuki auf der Zehn (Weiser ist Starspieler und soll häufiger spielen). Rotation: Itten, Wójcik, Svanberg. Der Arthur-Test (Pressender Außenverteidiger) ist auf das nächste Bundesliga-Spiel verschoben. Spiel getrennt auswerten: unterklassiger Gegner (Oberliga), Werte nicht mit Bundesliga-Spielen vergleichbar. Messkriterium qualitativ: Position von Itten relativ zur Kette, Wirkung des Pressings (PPDA, Referenz 15,70 und 12,00). Siehe log.md, Eintrag 2026-10-27. |
 | Frankfurt (A), 05.12.2026 | Kein weiterer Hebel. Setup: Mittlerer Block (Standard, Paket B) gewollt wegen Tempo vorn. Profil und Begründung siehe Abschnitt "Gegner Frankfurt (A), 05.12.2026" unten |
 | Schalke (A), 13.01.2027 | Profil: 14. Platz, Trainer Muslic, 3-4-2-1 (Bericht 5-2-2-1), Gosens links Wingback greift unsere rechte Seite an, Dina Ebimbe (Antritt 13-17) greift Ndiaye an; Džeko (40) Kopfball 16-20; Dreierkette langsam; Ecken 15 von 15 auf den kurzen Pfosten (0 Tore). Entscheidung Jimmy (12.01.): Weiser rechts statt Dinkçi, ohne Ball mit Rückarbeit (laut Option Mitarbeitender Flügelspieler, im Spiel zu bestätigen); Stage statt Svanberg rechter Sechser, mit Ball B2B, ohne Ball "DM" (UI-Abkürzung) statt Fl6 (im Spiel zu bestätigen). Rest Paket B unverändert. Option A (Dinkçi Mitarbeitender Flügelspieler) nicht gewählt, Rat "Gosens pressen" nicht übernommen. Zwei Änderungen rechts, nur als Paket auswertbar; Messkriterium Gegentore über rechts pro BL-Spiel, nach 3 BL-Spielen (siehe log.md, Eintrag 2027-01-12). Rollentabelle bewusst nicht geändert |
-| Tiefer Block, Heim | Pressinglinie höher; Chuki für Hack als Vorgeschobener Spielmacher, Svanberg für Reis |
-| Favorit, Auswärts | Mentalität Ausgewogen, Tempo nur beim Umschalten; Lynen + Reis |
-| Hohes Pressing gegen uns | Keine Änderung nötig (Torhüter, IV, Zielspieler spielen schon direkt) |
+| Angreifer mit Tempo >= 17 (z. B. Bayern/Davies 19/19, Leverkusen/Moreira 17/16, Frankfurt/Knauff 17/16, Mainz/Becker 18/13, Paderborn/Philippe 18/14; Scouting-Spannen) | Defensivlinie zurück auf Standard (Entscheidung Jimmy 01.07.2027) |
+| Bis 2026/27: Tiefer Block, Heim | Pressinglinie höher; Chuki für Hack als Vorgeschobener Spielmacher, Svanberg für Reis |
+| Bis 2026/27: Favorit, Auswärts | Mentalität Ausgewogen, Tempo nur beim Umschalten; Lynen + Reis |
+| Bis 2026/27: Hohes Pressing gegen uns | Keine Änderung nötig (Torhüter, IV, Zielspieler spielen schon direkt) |
 
 ### Abgeschlossener Test: Arthur Pressender Außenverteidiger (Beschluss Jimmy, 21.11.2026)
 - Änderung: Arthur ohne Ball: Pressender Außenverteidiger statt Abwartender Außenverteidiger (Rolle mit Ball bleibt Außenverteidiger). Von Jimmy bestätigt; Umgesetzt und seit dem 21.11.2026 fest im Standard.
@@ -115,6 +141,24 @@ Hinweis: Das Feld (Spitzen-Taktiken im FM-Arena-Aggregator) pressen hoch und spi
 - Weitere Positionen: DM nicht empfohlen (Deckung 9, Konzentration 10); LV und ST passen nicht.
 - Status (aktualisiert 28.11.2026): Weiser spielte rechts schon gegen Hamburg (21.11.) und spielt rechts gegen Gladbach (28.11.), dort mit Rolle mit Ball Außenstürmer und ohne Ball Umschaltflügelspieler (nicht wie oben skizziert). Damit faktisch umgesetzt, aber nicht als eigener Test mit Messkriterium geführt; Wirkung geht in Phase 1 auf (siehe "Test: Torgefahr Phase 1"). Im Pokal bei LSK Hansa (28.10.) spielte Weiser auf der Zehn (Ma10).
 - Einschränkung: Attribut-Test mit einem Verein und einer Taktik; die Rollenwahl ist Rollenlogik, kein Test-Beleg.
+
+### Option (nicht beschlossen): Dreierkette (01.07.2027)
+Quelle: Kader-Export 2027-07-01_kader.csv, DB Snapshot 246 (Schnelligkeit/Antritt).
+
+| Slot | Erste Wahl | Schnelligkeit/Antritt | Alternativen |
+|---|---|---|---|
+| IV l | Córdoba (Linksfuß) | 15/15 | Ndiaye |
+| IV z | Gechter (Stellungsspiel 14) | 14/12 | Pieper (wenn fit), Stark |
+| IV r | Pfeiffer | 16/12 | Malatini, Schmetgens |
+| FV l | Ndiaye | 15/13 | Deman |
+| FV r | Arthur | 15/15 | Agu |
+
+| Punkt | Inhalt |
+|---|---|
+| Prinzip | Schnellste auf die Halbpositionen (verteidigen den Raum hinter den Flügelverteidigern), bester Leser zentral (aus FM-Vorversionen, für FM27 ungeprüft) |
+| Linie | Wie Standard: eine Stufe über Standard (Begrenzung Hein) |
+| Offen | Formation vorn (3-4-3 oder 3-5-2, beide in config/formationen.yaml); Rollenpaare mit/ohne Ball; Rollen-Fit (rollen.py hat noch keine Minuten der neuen Saison) |
+| Status | Nicht beschlossen, Viererkette bleibt Standard |
 
 ## Test: Torgefahr Phase 1 (Paket A Gladbach, Paket B ab Frankfurt)
 Aufteilung (Entscheidung Jimmy, 05.12.2026):
@@ -332,7 +376,60 @@ Bewusst nicht gewählt:
 | Chuki fest | Test-Δ nur +0,5 (Purity-Test); Wirkung im Pokal und Hamburg nicht von Spielstand trennbar |
 | Füllkrug-Rolle ändern | Füllkrug hat das höchste Test-Δ (+5,1) und traf in Gladbach; Rolle passt zum direkten Spiel, keine Evidenz gegen sie |
 
-## Idee in 3 Sätzen
+## Spielidee ab Saison 2027/28 (Entscheidung Jimmy, Gespräch 01.-03.07.2027; festgehalten 03.07.2027)
+
+Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer Standard beschlossen (Rollentabelle und Team-Instruktionen oben), alle Änderungen gleichzeitig ab Saisonvorbereitung mit Testspielen. Der frühere Phasen-/Testpaket-Plan (Doppelsechs als "Testpaket 2", nicht zeitgleich starten) ist verworfen. Evidenz: Rollenlogik + UI-Texte, nicht getestet; nur als Gesamtpaket auswertbar (log.md 2027-07-03).
+
+### Beschlossen
+| Punkt | Inhalt | Begründung / Beleg |
+|---|---|---|
+| Ballbesitz | Ballbesitz mit etwas Pressing, realistisch moderat (Richtwert ca. 50 %) | Basis 2026/27: Ø 45,0 % Ballbesitz in 10 BL-Spielen (17.10.2026-09.01.2027, DB team_matches; spätere Spiele fehlen in der DB). Analyse 01.-03.07.: Ballsicherheit des Kaders unter BL-Median, Engpass ist der Aufbau aus der Tiefe; Pressing im Mittelfeld stark (Stage, Reis, Svanberg 88.-97. Perzentil). Deshalb moderat, nicht Dominanz |
+| Mentalität | Ausgewogen (Kontrolliert-offensiv nur Option, Heim gegen Schwächere) | Entscheidung Jimmy 03.07.2027 |
+| Bewegung | Gegenläufige Bewegungen und schnelle Flankenwechsel: links Überladung (Grüll innen, Ndiaye außen), rechts Breite (Flügelspieler) + Arthur innen neben Lynen; Seitenwechsel auf den freien rechten Flügel; Chuki kommt kurz, Kaars in die Schnittstelle, Stage spät in den Strafraum | Absicht Jimmy; keine eigene UI-Anweisung für Seitenwechsel, umgesetzt über Rollen + Angriffsbreite Breiter, Passspiel Kürzer, Flache Flanken. Seitenwechsel nicht messbar (kein Feld in DB) |
+| Defensivlinie | Höher, gegen Angreifer mit Tempo >= 17 Standard | log.md 2027-07-01 |
+| Formation | 4-2-3-1 mit Doppelsechs | |
+| Doppelsechs | Lynen: Defensiver Mittelfeldspieler / Abschirmender Sechser (hält). Stage: Box-to-Box-Spieler / Pressender Sechser (presst, spät in den Strafraum) | Laut wissen/rollen.md: ein Sechser presst, einer hält (Paarungshinweis der Quelle, aus FM26, für FM27 ungeprüft). Vorher Option "Testpaket 2", jetzt beschlossen |
+| Zehn (OM z) | Chuki: Vorgeschobener Spielmacher / Mitarbeitender Zehner | Entscheidung Jimmy 03.07.2027, Begründung unten |
+| ST | Kaars: Halbraumstürmer / Mittelstürmer (Standard). Zielspieler (Füllkrug-Idee) entfällt | Entscheidung Jimmy 03.07.2027; Rollenlogik: Lauf in die Schnittstelle statt Ankerpunkt für lange Bälle |
+| Teamanweisungen | Komplett neu gesetzt (Tabellen oben) | Entscheidung Jimmy 03.07.2027 |
+
+### Rolle OM z: Vorgeschobener Spielmacher / Mitarbeitender Zehner
+| Punkt | Inhalt |
+|---|---|
+| Mit Ball | Vorgeschobener Spielmacher (UI-Abkürzung VSm laut config/spiel_codes.yaml, am Spielbildschirm gesehen; Rollenbeschreibung aus FM26, für FM27 ungeprüft): zwischen den Linien, Pässe ins letzte Drittel. Statt Zweiter Stürmer, der laut Beschreibung vor allem Torgefahr bringt und in die vorderste Reihe rückt |
+| Ohne Ball | Mitarbeitender Zehner (unverändert): lässt sich fallen, hilft, das Zentrum zu sichern. Passt zum Pressenden Sechser: rückt Stage heraus, füllt der Zehner die Mitte (Rollenlogik, nicht getestet) |
+| Fit Chuki | Laut Analyse 01.-03.07. (vs. BL-OM zentral): Schlüsselpässe 82., xA 87., Großchancen 97. Perzentil; Kreativität 14, Übersicht 15, Passen 14, Ohne Ball 14, Antritt 14; Linksfuß. Profil Vorlagengeber, nicht Abschluss |
+| Verworfen | Halbraumspieler (kollidiert mit Grüll im linken Halbraum; KPI-Zuverlässigkeit gering). Freigeist (KPI-Zuverlässigkeit gering, Risiko am Ball). Zentraler/Ausweichender Umschaltzehner ohne Ball (keine Defensivarbeit) |
+| Risiko | Mitarbeitender Zehner verlangt Rückarbeit; Chuki Einsatzfreude 12, Aggressivität 8. Fallback ohne Ball: Offensiver Mittelfeldspieler (Standardrolle) |
+| Rotation | Svanberg laut Rollentabelle (kein kreativer Zehner: Schlüsselpässe 14., xA 19. Perzentil); extern Skyttä (log.md 2027-07-03, Transfer) |
+
+### Offen (nicht beschlossen)
+| Punkt | Stand / Option |
+|---|---|
+| OM r | Schwachstelle der Rolle Mitarbeitender Flügelspieler: Mbangula und Erevbenagie je Teamwork 8; Mbangula Verkaufskandidat. Transferbedarf OM r (Thema scouting) |
+| Doppelsechs mit Neuzugang | Amatucci (Wunschziel) als Tiefer Spielmacher neben Lynen; abhängig vom Transfer |
+| Mentalität Heim | Kontrolliert-offensiv gegen Schwächere (Option) |
+| Rollen-Score | rollen.py hat für 2027/28 noch keine Minuten eigener Spieler (n=0 in allen Slots, Stand 03.07.2027); Fit der neuen Rollenpaare für Kaars, Arthur (Inverser Flügelverteidiger), Ndiaye (Flügelverteidiger), Mbangula (Flügelspieler) nicht berechnet. KPI-Zuverlässigkeit gering für Inverser Flügelverteidiger und Halbraumstürmer |
+| Form ohne Ball | Im UI neu ablesen (alte Angabe 4-3-2-1 galt für Flügelsichernden Sechser und Hack) |
+
+### Messkriterien Paket "Standard 2027/28" (Prüfung nach Vorbereitung und nach 3 BL-Spielen 2027/28, Datum offen)
+Basis: Ø 10 BL-Spiele 2026/27 bis 09.01.2027 (DB team_matches/team_match_stats; Rückrunde fehlt in der DB).
+
+| Kennzahl | Basis | Ziel / Leitplanke | Quelle |
+|---|---|---|---|
+| Großchancen für | 0,7 | darüber (Hauptkriterium) | team_match_stats big_chances_for |
+| Ballbesitz % | 45,0 | Richtung 50 | team.py |
+| Passquote % | 84,9 | mindestens 84,9 | team_match_stats pass_pct_for |
+| Progressive Pässe | 39,4 | darüber | team_match_stats prog_passes_for |
+| PPDA (wir) | 17,27 | darunter (mehr Zugriff) | team_match_stats ppda_for |
+| xG gegen | 1,26 | nicht über 1,49 (Leitplanke) | team.py |
+| Gegentore hinter die Kette | - | zählen je BL-Spiel (Linienhöhe, log.md 2027-07-01) | Spielszenen |
+| Chuki: xA, Schlüsselpässe | Perzentile siehe oben | auf Niveau | spiele.py --zeige Chuki |
+| Testspiele | - | qualitativ: Beobachtungs-Schalter (Ballverluste eigene Hälfte, Konter links, Rückarbeit rechts, Bälle hinter die Kette) | Spielszenen |
+
+Nur als Gesamtpaket auswertbar (alle Rollen und Teamanweisungen gleichzeitig neu, Kader stark verändert: Füllkrug, Weiser, Dinkçi, Hack weg). Nicht messbar: Seitenwechsel, gegenläufige Läufe.
+
+### Bis Saison 2026/27 (überholt): Idee in 3 Sätzen
 Hinweis 05.12.2026: Der Text unten passt wieder zum Ist-Stand (Mittlerer Block, kein Hochpressing, seit Paket B ab Frankfurt). Gilt nicht für Gladbach und Pokal Hoffenheim (Hohes Pressing, Paket A). Die Passage "direktes Umschalten / lange Bälle" ist mit den Rollen TW/IV/SpIV mit Ball weniger direkt; bei Bedarf werden die Rollen wieder angepasst (Entscheidung Jimmy).
 
 Kompakter Mittelblock, schnelles direktes Umschalten über die schnellen Flügel/AV (Dinkçi, Arthur, Ndiaye), Füllkrug als Ankerpunkt für lange Bälle und zweite Bälle. Kein Hochpressing mit den Stürmern (Schnelligkeit/Antritt 12/10 bzw. 12/11). Gegner mit Tempo auf dem Flügel werden über Linie und AV-Rolle angepasst, nicht über neue Grundordnung.
@@ -343,7 +440,7 @@ Kompakter Mittelblock, schnelles direktes Umschalten über die schnellen Flügel
 - IV-Antritt 11-12 (alle IV ähnlich, Δ 1,5-2,1)
 - Rollen-/Instruktionsnamen und Formen müssen im FM27-UI gegengeprüft werden
 - Evidenz dünn (ein Test, KI-erstellte Zusammenfassung)
-- Verletzungen: Stage, Stark, Agu
+- Verletzungen (Stand 01.07.2027): nur Pieper (Armfraktur seit 14.05.2027); Stage, Stark, Agu fit. Bis Saison 2026/27: Stage, Stark, Agu.
 - Keine Spieldaten (team_matches leer)
 - Beobachtung Spiel 1 (4:1 gegen Paderborn, 17.10.2026, Gegentor Vidović in der 17. Minute): Die Rollen ohne Ball waren wie in der Tabelle eingestellt (Jimmy bestätigt: Pieper Absichernder IV, Svanberg Flügelsichernder Sechser, Arthur Abwartender AV, Dinkçi Umschaltflügelspieler). Trotzdem rückte Pieper auf, Arthur und Svanberg wurden nach innen gezogen, und der Flügel (Obermair) war offen. Der Spieltext zu "Verhalten Defensivlinie: Ausgewogen" sagt, die Abwehr entscheide situationsabhängig, ob sie herausrückt; das passt zu dem Verhalten. Die Rolle ohne Ball hielt Pieper nicht in der Kette. Einzelbeobachtung (n=1), Deutung nicht getestet.
 - Geprüft (Jimmy bestätigt): Reis hat ohne Ball dieselbe Rolle wie zuvor Svanberg, Flügelsichernder Sechser.

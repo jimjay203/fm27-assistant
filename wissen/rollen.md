@@ -35,7 +35,7 @@ beiden Phasen vorhanden.
 | Mit Ball | Ohne Ball |
 |---|---|
 | Außenverteidiger (Std): in erster Linie Defensivspieler | Außenverteidiger (Std) |
-| Inverser Außenverteidiger: rückt mit Ball ins Zentrum, Konterabsicherung | Abwartender Außenverteidiger: bleibt tief, sichert gegen Konter ab |
+| Inverser Außenverteidiger: rückt mit Ball ins Zentrum, Konterabsicherung (laut Jimmy, 03.07.2027: schiebt neben den IV, also in eine Dreierkette, nicht neben den DM; neben den DM rückt der Inverse Flügelverteidiger) | Abwartender Außenverteidiger: bleibt tief, sichert gegen Konter ab |
 | | Pressender Außenverteidiger: hohe Startposition, presst Außen früh, braucht Absicherung |
 | Flügelverteidiger (Std, AV/FV): Mix aus Außenverteidiger und Flügelspieler | Flügelverteidiger (Std) |
 | Inverser Flügelverteidiger: rückt ins Zentrum, wie ein Sechser | Abwartender Flügelverteidiger (FV) |

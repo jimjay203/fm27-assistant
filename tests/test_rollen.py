@@ -121,7 +121,9 @@ def test_taktik_slots_reference_existing_roles_with_matching_phases():
         assert RK["rollen"][ohne]["phase"] in ("ohne", "std"), (
             f"{name}: {ohne} ist keine Rolle ohne Ball"
         )
-        assert RK["rollen"][mit]["gruppe"] == RK["rollen"][ohne]["gruppe"], name
+        gm, go = RK["rollen"][mit]["gruppe"], RK["rollen"][ohne]["gruppe"]
+        # AV-Slot: FM27 erlaubt Flügelverteidiger-Rolle mit Ball und Außenverteidiger-Rolle ohne Ball
+        assert gm == go or {gm, go} == {"av", "fv"}, name
 
 
 def test_fm27_role_alias_points_to_an_existing_source_role():
@@ -132,7 +134,6 @@ def test_fm27_role_alias_points_to_an_existing_source_role():
     assert rollen.aufloesen("Zielspieler", RK) == "Zielspieler"  # ohne Alias unverändert
     for alias, ziel in RK["alias_rollen"].items():
         assert alias not in RK["rollen"] and ziel in RK["rollen"], alias
-    assert SLOTS["IV l"]["mit"] == "Spielaufbauender Innenverteidiger"
 
 
 def test_group_weighting_schemes_exist_in_ligen_yaml_and_split_attack_defence():

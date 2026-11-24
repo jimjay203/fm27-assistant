@@ -1,11 +1,15 @@
 # Rollen der aktuellen Werder-Taktik je Slot (mit Ball / ohne Ball), für scripts/rollen.py --slot / --alle.
 #
-# Quelle: saves/werder/taktik.md, Rollentabelle "Standard" (Paket B, Entscheidung Jimmy 05.12.2026) und Aufstellung
-# gegen Union (09.01.2027). Diese Datei ist eine KOPIE für die Auswertung; maßgeblich bleibt taktik.md (nur der Agent
+# Quelle: saves/werder/taktik.md, Rollentabelle "Standard" ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy
+# 03.07.2027). Diese Datei ist eine KOPIE für die Auswertung; maßgeblich bleibt taktik.md (nur der Agent
 # `taktik` ändert sie). Bei Änderungen der Taktik hier nachziehen.
 # stamm: Spieler laut taktik.md (Stand dort), nur zur Orientierung in der Ausgabe - nicht aktuell geprüft.
+# Slot-Schlüssel "DM Lynen"/"DM Svanberg" bleiben aus Kompatibilität (config/formationen.yaml, Anzeige "DM l"/"DM r");
+# "DM Svanberg" = rechter Sechser, Stamm jetzt Stage.
+# RV/LV: Rolle mit Ball aus der Gruppe fv (Flügelverteidiger-Rollen), ohne Ball aus av (Pressender AV); rollen.py
+# bewertet jede Rolle in ihrer eigenen Gruppe.
 
-quelle: "taktik.md, Rollentabelle Standard (Paket B, 05.12.2026) + Aufstellung Union (09.01.2027)"
+quelle: "taktik.md, Rollentabelle Standard ab Vorbereitung 2027/28 (Entscheidung Jimmy 03.07.2027)"
 
 slots:
   TW:
@@ -13,44 +17,49 @@ slots:
     ohne: "Linientorhüter"
     stamm: [Hein, Schlager]
   RV:
-    mit: "Außenverteidiger"
+    mit: "Inverser Flügelverteidiger"
     ohne: "Pressender Außenverteidiger"
-    stamm: [Arthur, Deman]
+    stamm: [Arthur, Agu]
+    hinweis: "Seit 03.07.2027: rückt mit Ball neben den DM (Lynen). Bis 2026/27 mit Ball Außenverteidiger."
   "IV r":
     mit: "Innenverteidiger"
     ohne: "Absichernder Innenverteidiger"
-    stamm: [Pieper, Wójcik, Córdoba]
+    stamm: [Pfeiffer, Gechter, Stark, Pieper]
   "IV l":
-    mit: "Spielaufbauender Innenverteidiger"
-    ohne: "Stoppender Innenverteidiger"
-    stamm: [Pfeiffer, Córdoba]
-    hinweis: "SpIV = Spielaufbauender Innenverteidiger, in FM27 umbenannter Ballspielender Innenverteidiger, 1:1 (bestätigt von Jimmy, 2026-11-22; alias_rollen). Pfeiffer spielte gegen Union als KIV (Kompromissloser Innenverteidiger)."
+    mit: "Innenverteidiger"
+    ohne: "Absichernder Innenverteidiger"
+    stamm: [Córdoba, Ndiaye]
+    hinweis: "Seit 03.07.2027 IV/Absichernder IV. Bis 2026/27: Spielaufbauender IV (SpIV) / Stoppender IV. Córdoba ist Linksfuß."
   LV:
-    mit: "Außenverteidiger"
+    mit: "Flügelverteidiger"
     ohne: "Pressender Außenverteidiger"
     stamm: [Ndiaye, Deman]
+    hinweis: "Seit 03.07.2027 mit Ball Flügelverteidiger (Breite links). Bis 2026/27 Außenverteidiger."
   "DM Lynen":
     mit: "Defensiver Mittelfeldspieler"
     ohne: "Abschirmender Sechser"
-    stamm: [Lynen]
+    stamm: [Lynen, Keidel]
   "DM Svanberg":
     mit: "Box-to-Box-Spieler"
-    ohne: "Flügelsichernder Sechser"
-    stamm: [Svanberg, Stage, Reis]
+    ohne: "Pressender Sechser"
+    stamm: [Stage, Svanberg, Reis]
+    hinweis: "Rechter Sechser. Seit 03.07.2027 ohne Ball Pressender Sechser (bis 2026/27 Flügelsichernder Sechser)."
   "OM r":
-    mit: "Außenstürmer"
-    ohne: "Umschaltflügelspieler"
-    stamm: [Dinkçi, Weiser]
+    mit: "Flügelspieler"
+    ohne: "Mitarbeitender Flügelspieler"
+    stamm: [Mbangula, Erevbenagie]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Mbangula Verkaufskandidat, Transferbedarf OM r."
   "OM z":
-    mit: "Zweiter Stürmer"
+    mit: "Vorgeschobener Spielmacher"
     ohne: "Mitarbeitender Zehner"
-    stamm: [Hack, Chuki]
-    hinweis: "Chuki steht in der Union-Aufstellung auf ZwS, hier als Zweiter Stürmer gedeutet (Vermutung, siehe wissen/rollen.md)."
+    stamm: [Chuki, Svanberg]
+    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer."
   "OM l":
     mit: "Inverser Außenstürmer"
     ohne: "Mitarbeitender Flügelspieler"
-    stamm: [Grüll]
+    stamm: [Grüll, Manneh]
   ST:
-    mit: "Zielspieler"
-    ohne: "Zentraler Umschaltstürmer"
-    stamm: [Füllkrug, Itten]
+    mit: "Halbraumstürmer"
+    ohne: "Mittelstürmer"
+    stamm: [Kaars, Manneh, Itten]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Zielspieler / Zentraler Umschaltstürmer)."
