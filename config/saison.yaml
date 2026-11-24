@@ -1,0 +1,10 @@
+# Saisonbasis der Per-90-Werte (scripts/per90.py: load_saison / mit_vorsaison).
+# Entscheidung Jimmy, in-game 07.07.2027 (log.md): Vorsaison + laufende Saison je Spieler (player_uid, auch über
+# Vereinswechsel). Je Saison und Quelle (kader/suche/live) gilt der letzte Snapshot der Saison.
+# Gewicht der Vorsaison w = max(0, 1 - Minuten_neu / saison_uebergang_minuten): linear von 1 auf 0.
+# Zählstatistiken: Vorsaison x w + neu; Raten (_pct, _avg, _p90) minutengewichtet; Minuten = Vorsaison x w + neu
+# (darauf gelten die Mindestminuten). Liga-Gewicht je Saison (Liga des Spielers in der jeweiligen Saison).
+# Attribute, Marktwert, Gehalt, Vertrag, Verein: immer der neueste Stand.
+
+saison_grenze: "07-01"  # MM-TT: ab diesem Tag zählt ein Snapshot zur neuen Saison
+saison_uebergang_minuten: 1200

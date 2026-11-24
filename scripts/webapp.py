@@ -88,6 +88,7 @@ class SucheIn(BaseModel):
     nur_volle_daten: bool = False
     nur_suche: bool = False
     eigene: bool = True
+    key_max_fehlt: int | None = Field(None, ge=0)
     limit: int = Field(150, ge=1, le=1000)
 
 

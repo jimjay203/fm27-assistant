@@ -3,6 +3,8 @@
 Fachlogik ohne Web-Bezug (die Oberfläche ist scripts/webapp.py). Bewertet wird mit dem Rollen-Score aus
 scripts/rollen.py (Rollenpaar mit/ohne Ball, Anker = Perzentile 25/55/90 des Vergleichspools, Rollen-Zuordnung
 ungeprüft, siehe wissen/rollen-kpis.md). Formationen: config/formationen.yaml.
+Key-Attribute je Rollenpaar (scripts/rollen_attr.py, config/rollen_attribute.yaml) werden nur ausgewiesen
+(`key` je Zeile): sie ändern weder Score noch Rangfolge. Attribute aus der DB (eigene exakt, fremde als Spanne).
 
 Datenquellen:
 - db (Standard): letzter Kader-Snapshot = eigene Spieler, letzter Suche-Snapshot = Kandidaten. Der Vergleichspool
@@ -29,6 +31,7 @@ import ligen
 import live
 import per90
 import rollen
+import rollen_attr
 import sellkeep
 import spiele
 
@@ -36,6 +39,7 @@ SPIELER_FELDER = [
     "uid", "name", "club", "league", "liga_stufe", "position", "age", "minutes", "eigen", "datenbasis",
     "mit", "ohne", "paar", "liga_gewicht", "paar_gew", "vs_top",
     "value", "value_min", "value_max", "wage", "wage_min", "wage_max", "contract_end", "loan_end",
+    "minuten_text", "min_neu", "min_vs", "w_vs",  # Saisonbasis (per90.kombinieren)
 ]  # fmt: skip
 
 
@@ -43,16 +47,19 @@ SPIELER_FELDER = [
 
 
 def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
-    """Eigene Spieler (letzter Kader-Snapshot) + Kandidaten (letzte Spielersuche) als ein DataFrame."""
+    """Eigene Spieler (letzter Kader-Snapshot) + Kandidaten (Spielersuche) als ein DataFrame, mit Saisonbasis
+    (per90.load_saison): Statistiken aus Vorsaison + laufender Saison, Kernfelder vom neuesten Stand. Spieler nur im
+    Kader der Vorsaison (abgegeben) fallen heraus; Spieler nur in der Suche der Vorsaison bleiben Kandidaten."""
     kader = per90.letzter_snapshot(conn, save, "kader")
     suche = per90.letzter_snapshot(conn, save, "suche")
     if not kader:
         common.die(
             f"Kein Kader-Snapshot für Save '{save}'. Kader-Export importieren (scripts/import.py)."
         )
-    ids = [kader[0]] + ([suche[0]] if suche else [])
-    players, _ = per90.load_wide(conn, save, snapshot_ids=ids)
-    players = players.reset_index(drop=True)
+    players, _ = per90.load_saison(conn, save, views=("kader", "suche"))
+    saison = players.attrs.get("saison")
+    ist_kader = players["snapshot_id"] == kader[0]
+    players = players[ist_kader | (players["view_type"] == "suche")].reset_index(drop=True)
     ist_kader = players["snapshot_id"] == kader[0]
     if verein is None:
         verein = players.loc[ist_kader, "club"].mode().iat[0]
@@ -75,17 +82,20 @@ def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
         "datum": max(d for d in (kader[1], suche[1] if suche else None) if d),
         "kader_datum": kader[1],
         "suche_datum": suche[1] if suche else None,
+        "saison": saison,
+        "saisonbasis": per90.saison_text(saison),
     }
     return players
 
 
 def daten_live(url: str, conn, save: str, config_dir=None) -> pd.DataFrame:
     """Alle Spieler live vom FMMT-27-Server; `in_suche` = im letzten Suche-Snapshot der DB."""
-    df = b.load_live(
+    df = b.load_live_saison(
         url,
         common.load_yaml("live_spalten.yaml", config_dir),
         common.load_yaml("spalten.yaml", config_dir).get("abgeleitet") or {},
-    )
+        conn, save, config_dir,
+    )  # fmt: skip
     if df.empty:
         common.die("Keine Spielerdaten vom FMMT-27-Server (Save geladen? Reader läuft?).")
     suche = per90.letzter_snapshot(conn, save, "suche")
@@ -105,6 +115,8 @@ def daten_live(url: str, conn, save: str, config_dir=None) -> pd.DataFrame:
         "datum": df.attrs.get("date"),
         "suche_datum": suche[1] if suche else None,
         "suche_abgleich": int(df["in_suche"].sum()),
+        "saison": df.attrs.get("saison"),
+        "saisonbasis": per90.saison_text(df.attrs.get("saison")),
     }
     return df
 
@@ -133,6 +145,13 @@ class Kontext:
     pools: dict = field(default_factory=dict)  # Vergleichspool je Positionsgruppe (Cache)
     # rollen_positionen.yaml: wählbare Rollen je Position
     positionen: dict = field(default_factory=dict)
+    # Key-Attribute (scripts/rollen_attr.py): Quelle, Schwelle des Zielvereins, Attribute je uid (Cache aus der DB;
+    # None = keine Attribute in der DB) und In-Game-Datum ihres Snapshots
+    ra: dict = field(default_factory=dict)
+    attr_stufe: str | None = None
+    attr_schwelle: int = 8
+    attrs: dict = field(default_factory=dict)
+    attr_datum: dict = field(default_factory=dict)
 
 
 def kontext_bauen(
@@ -145,8 +164,11 @@ def kontext_bauen(
     pool_min_stufe: str = "Gut",
     anker_min_n: int = 100,
     topclubs: int = 20,
+    ra: dict | None = None,
 ) -> Kontext:
-    """Anker und Topclub-Referenz für alle Rollen einmal je Datenladung berechnen."""
+    """Anker und Topclub-Referenz für alle Rollen einmal je Datenladung berechnen.
+
+    `ra` = config/rollen_attribute.yaml (Key-Attribute je Rolle, Liga-Schwellen); None = keine Key-Attribute."""
     specs = rollen.statistik_specs(rk, list(rk["rollen"]))
     anker = rollen.anker_je_gruppe(df, rk, specs, lg, defaults, pool_min_stufe, min_n=anker_min_n)
     clubs = b.topclub_liste(df, topclubs)
@@ -171,10 +193,15 @@ def kontext_bauen(
         anker_min_n=anker_min_n,
         topclubs=clubs,
     )
+    ra = ra or {}
+    attr_stufe = rollen_attr.ziel_stufe(df, lg)
+    attr_schwelle = rollen_attr.schwelle_fuer_stufe(attr_stufe, ra)
+    stand.update(attr_stufe=attr_stufe, attr_schwelle=attr_schwelle)
     return Kontext(
         df=df, rk=rk, lg=lg, defaults=defaults, formationen=formationen,
         slots_taktik=slots_taktik or {}, specs=specs, anker=anker, ref=ref, clubs=clubs,
         stand=stand, luecken=luecken, pool_min_stufe=pool_min_stufe,
+        ra=ra, attr_stufe=attr_stufe, attr_schwelle=attr_schwelle,
     )  # fmt: skip
 
 
@@ -205,6 +232,7 @@ def kontext_laden(
         common.load_yaml("taktik_slots.yaml", config_dir).get("slots") or {},
         pool_min_stufe=pool_min_stufe,
         anker_min_n=anker_min_n,
+        ra=rollen_attr.laden(config_dir),
     )
     ctx.stand["save"] = save
     ctx.save, ctx.db_path, ctx.db = save, db_path, True
@@ -363,6 +391,81 @@ def _zeilen(ctx: Kontext, sub: pd.DataFrame, mit: str, ohne: str) -> list[dict]:
     return rows
 
 
+# --------------------------------------------------------------------------- Key-Attribute (nur ausweisen)
+
+
+def _key_rolle(ctx: Kontext, name: str, phase: str) -> dict | None:
+    d = rollen_attr.rolle_def(name, phase, ctx.ra, ctx.rk)
+    return d[1] if d else None
+
+
+def key_defs(ctx: Kontext, mit_n: str, ohne_n: str) -> dict:
+    """Key-Attribute des Rollenpaars (Anzeigenamen wie im Slot) und die Schwelle des Zielvereins."""
+    out = {"schwelle": ctx.attr_schwelle, "stufe": ctx.attr_stufe}
+    for phase, n in (("mit", mit_n), ("ohne", ohne_n)):
+        d = rollen_attr.rolle_def(n, phase, ctx.ra, ctx.rk)
+        out[phase] = (
+            {"rolle": n, "eintrag": d[0], "key": list(d[1].get("key") or []),
+             "preferred": list(d[1].get("preferred") or []), "hinweis": None}
+            if d else
+            {"rolle": n, "eintrag": None, "key": [], "preferred": [],
+             "hinweis": "keine Key-Attribute in der Quelle (config/rollen_attribute.yaml)"}
+        )  # fmt: skip
+    return out
+
+
+def attribute_fuer(ctx: Kontext, uids) -> dict[str, dict | None]:
+    """Attribute je uid aus der DB (rollen_attr.attribute_laden), gecacht im Kontext; None = keine in der DB.
+
+    Bevorzugt der Snapshot der Spielerzeile (DB-Quelle), sonst der neueste mit Attributen (live: eigene Spieler
+    aus dem Live-Snapshot, exakt)."""
+    uids = [str(u) for u in uids]
+    fehlen = [u for u in dict.fromkeys(uids) if u not in ctx.attrs]
+    if fehlen and ctx.db:
+        bev = None
+        if "snapshot_id" in ctx.df:
+            t = ctx.df[ctx.df["uid"].astype(str).isin(set(fehlen))]
+            bev = dict(zip(t["uid"].astype(str), t["snapshot_id"], strict=True))
+        conn = common.connect(ctx.db_path)
+        try:
+            attrs, datum = rollen_attr.attribute_laden(conn, ctx.save, fehlen, bev)
+        finally:
+            conn.close()
+        ctx.attrs.update(attrs)
+        ctx.attr_datum.update(datum)
+    for u in fehlen:
+        ctx.attrs.setdefault(u, None)
+    return {u: ctx.attrs.get(u) for u in uids}
+
+
+def key_kennzahlen(ctx: Kontext, mit_n: str, ohne_n: str, uids) -> dict[str, dict]:
+    """Je uid: key_mit/key_ohne/pref_mit, key_fehlt x/key_n, key_unsicher, Ausfallliste (rollen_attr.paar).
+
+    exakt = alle bekannten key-Attribute als exakter Wert (eigene Spieler); sonst Spannen (Mitte, "unsicher")."""
+    d_m, d_o = _key_rolle(ctx, mit_n, "mit"), _key_rolle(ctx, ohne_n, "ohne")
+    keys = list(dict.fromkeys((d_m or {}).get("key", []) + (d_o or {}).get("key", [])))
+    out = {}
+    for u, a in attribute_fuer(ctx, uids).items():
+        p = rollen_attr.paar(a, d_m, d_o, ctx.attr_schwelle)
+        z = {k: _wert(p[k]) for k in rollen_attr.SPALTEN if k != "ausfaelle"}
+        bekannt = [a[k] for k in keys if a and k in a and rollen_attr._mitte(a[k])[0] is not None]
+        z.update(
+            attribute=a is not None, text=p["ausfaelle"],
+            ausfaelle=rollen_attr.ausfall_liste(a, d_m, d_o, ctx.attr_schwelle) if a else [],
+            exakt=bool(bekannt) and all(rollen_attr._ok(v[0]) for v in bekannt),
+            datum=ctx.attr_datum.get(u),
+        )  # fmt: skip
+        out[u] = z
+    return out
+
+
+def key_ergaenzen(ctx: Kontext, zeilen: list[dict], mit_n: str, ohne_n: str) -> None:
+    """Ergänzt je Zeile `key` (key_kennzahlen); Rangfolge und Scores bleiben unverändert."""
+    kz = key_kennzahlen(ctx, mit_n, ohne_n, [z["uid"] for z in zeilen])
+    for z in zeilen:
+        z["key"] = kz[z["uid"]]
+
+
 def slot_bewerten(ctx: Kontext, mit_name: str, ohne_name: str, f: Filter):
     """-> (eigene, kandidaten) als DataFrames, absteigend nach paar_gew."""
     mit, ohne = _rolle(ctx, mit_name), _rolle(ctx, ohne_name)
@@ -415,6 +518,8 @@ class Suche:
     nur_volle_daten: bool = False
     nur_suche: bool = False  # nur Spieler aus der letzten Spielersuche (eigene immer)
     eigene: bool = True  # eigene Spieler mit anzeigen
+    # mehr fehlende Key-Attribute ausblenden (Spieler ohne Attribute bleiben drin)
+    key_max_fehlt: int | None = None
     limit: int = 150
 
 
@@ -453,13 +558,27 @@ def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
             own = own[own["age"] <= s.max_alter]
         teile.insert(0, own)
     alle = pd.concat(teile).sort_values(["paar_gew", "paar"], ascending=False, na_position="last")
+    key_info = {"max_fehlt": s.key_max_fehlt, "ausgeblendet": 0, "ohne_attribute": None}
+    if s.key_max_fehlt is not None:
+        kz = key_kennzahlen(ctx, mit_name, ohne_name, alle["uid"])
+        fehlt = [kz[str(u)]["key_fehlt"] for u in alle["uid"]]
+        ok = np.array([f is None or f <= s.key_max_fehlt for f in fehlt], dtype=bool)
+        key_info.update(ausgeblendet=int((~ok).sum()), ohne_attribute=sum(f is None for f in fehlt))
+        key_weg = set(alle.loc[~ok, "uid"].astype(str))
+        alle = alle[ok]
+    else:
+        key_weg = set()
     ohne_score = []
     if text:
         rules = ctx.rk["positionsgruppen"][ctx.rk["rollen"][mit]["gruppe"]]
         rest = df[~df["uid"].astype(str).isin(set(alle["uid"].astype(str)))]
         for _, r in rest.sort_values("minutes", ascending=False).head(30).iterrows():
             mins = r.get("minutes")
-            if r.get("team") != "Senior Team":
+            if str(r["uid"]) in key_weg:
+                grund = (
+                    f"mehr als {s.key_max_fehlt} Key-Attribute unter Schwelle {ctx.attr_schwelle}"
+                )
+            elif r.get("team") != "Senior Team":
                 grund = "nicht im Profikader"
             elif not b.position_ok(r.get("position"), rules):
                 grund = "Position passt nicht zur Rolle"
@@ -472,10 +591,12 @@ def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
                 "position": _wert(r.get("position")), "age": _wert(r.get("age")), "minutes": _wert(mins),
                 "eigen": _wert(r.get("eigen")), "grund": grund,
             })  # fmt: skip
+    treffer = _zeilen(ctx, alle.head(s.limit), mit, ohne)
+    key_ergaenzen(ctx, treffer, mit_name, ohne_name)
     return {
         "mit": mit_name, "ohne": ohne_name, "gewertet_als": {"mit": mit, "ohne": ohne},
-        "treffer": _zeilen(ctx, alle.head(s.limit), mit, ohne), "n_treffer": len(alle),
-        "ohne_score": ohne_score, "limit": s.limit,
+        "treffer": treffer, "n_treffer": len(alle), "ohne_score": ohne_score, "limit": s.limit,
+        "key": {**key_defs(ctx, mit_name, ohne_name), "filter": key_info},
     }  # fmt: skip
 
 
@@ -654,6 +775,8 @@ def plan(
         kand = _zeilen(ctx, besser.head(f.top_kandidaten), mit, ohne)
         for z in kand:
             z["delta"] = None if basis is None else _wert(z["paar_gew"] - basis)
+        eig = _zeilen(ctx, top_own, mit, ohne)
+        key_ergaenzen(ctx, eig + kand, mit_n, ohne_n)
         rm, ro = ctx.rk["rollen"][mit], ctx.rk["rollen"][ohne]
         slots[sn] = {
             "mit": mit_n, "ohne": ohne_n,
@@ -661,7 +784,7 @@ def plan(
             "verlaesslichkeit": {"mit": rm.get("verlaesslichkeit"), "ohne": ro.get("verlaesslichkeit")},
             "hinweise": [r["luecken"] for r in (rm, ro) if r.get("luecken")],
             "gesetzt": gesetzt, "gesetzt_grund": gruende.get(sn), "basis": _wert(basis),
-            "eigene": _zeilen(ctx, top_own, mit, ohne), "n_eigene": len(own),
+            "eigene": eig, "n_eigene": len(own), "key": key_defs(ctx, mit_n, ohne_n),
             "ohne_wertung": ohne_wertung(ctx, mit, own, f),
             "verbesserungen": kand, "n_verbesserungen": len(besser), "n_kandidaten": len(cand),
             "luecken": slot_luecken(ctx, mit, ohne),

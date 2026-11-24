@@ -275,3 +275,72 @@ def test_suche_limit_und_unbekannte_rolle(mini_ctx):
     assert len(r["treffer"]) == 5 and r["n_treffer"] > 5
     with pytest.raises(SystemExit):
         planer.suche(mini_ctx, "Gibt es nicht", "Ohne", planer.Suche())
+
+
+# ------------------------------------------------------------------ Key-Attribute (nur ausgewiesen)
+
+
+def test_key_kennzahlen_eigene_exakt_fremde_spanne_und_schwelle_des_zielvereins(key_ctx):
+    assert (key_ctx.attr_stufe, key_ctx.attr_schwelle) == ("Exzellent", 12)
+    assert key_ctx.stand["attr_schwelle"] == 12
+    kz = planer.key_kennzahlen(key_ctx, "Mit", "Ohne", ["A", "k399", "k398", "B"])
+    a = kz["A"]
+    assert (a["key_mit"], a["key_ohne"], a["key_fehlt"], a["key_n"]) == (11.5, None, 1, 2)
+    assert a["exakt"] and a["ausfaelle"] == [
+        {"attribut": "Technik", "art": "fehlt", "anzeige": "9", "mitte": 9.0, "exakt": True, "phasen": ["mit"]}
+    ]  # fmt: skip
+    k = kz["k399"]
+    assert (k["key_fehlt"], k["key_unsicher"], k["exakt"]) == (0, 1, False)
+    assert k["ausfaelle"][0]["art"] == "unsicher" and k["ausfaelle"][0]["anzeige"] == "10-16"
+    assert kz["k398"]["key_fehlt"] == 2
+    assert kz["B"]["attribute"] is False and kz["B"]["key_fehlt"] is None
+    d = planer.key_defs(key_ctx, "Mit", "Ohne")
+    assert d["mit"]["eintrag"] == "Neuer Name|mit" and d["mit"]["key"] == ["Passen", "Technik"]
+    assert d["ohne"]["key"] == [] and "keine Key-Attribute in der Quelle" in d["ohne"]["hinweis"]
+
+
+def test_plan_ergaenzt_key_ohne_rangfolge_oder_score_zu_aendern(key_ctx, mini_ctx):
+    mit = planer.plan(key_ctx, "2er", {}, planer.Filter())
+    ohne = planer.plan(mini_ctx, "2er", {}, planer.Filter())
+    assert mit["elf"] == ohne["elf"]
+    for sn, s in mit["slots"].items():
+        for liste in ("eigene", "verbesserungen"):
+            z_mit = [(z["uid"], z["paar_gew"]) for z in s[liste]]
+            assert z_mit == [(z["uid"], z["paar_gew"]) for z in ohne["slots"][sn][liste]]
+            assert all("key" in z for z in s[liste])
+        assert s["key"]["schwelle"] == 12 and s["key"]["ohne"]["hinweis"]
+    eig = {z["uid"]: z["key"] for z in mit["slots"]["ST r"]["eigene"]}
+    assert eig["A"]["key_fehlt"] == 1 and eig["B"]["attribute"] is False
+
+
+def test_suche_filter_max_fehlende_key_attribute(key_ctx):
+    alle = planer.suche(key_ctx, "Mit", "Ohne", planer.Suche(limit=1000))
+    assert alle["key"]["filter"] == {"max_fehlt": None, "ausgeblendet": 0, "ohne_attribute": None}
+    uids = {z["uid"] for z in alle["treffer"]}
+    assert {"A", "B", "k399", "k398"} <= uids
+    r = planer.suche(key_ctx, "Mit", "Ohne", planer.Suche(limit=1000, key_max_fehlt=0))
+    drin = {z["uid"] for z in r["treffer"]}
+    assert "k399" in drin and "B" in drin  # 0 fehlt bzw. ohne Attribute: bleiben
+    assert "A" not in drin and "k398" not in drin
+    assert r["key"]["filter"]["ausgeblendet"] == 2 and r["n_treffer"] == len(uids) - 2
+    scores = [z["paar_gew"] for z in r["treffer"]]
+    assert scores == sorted(scores, reverse=True)
+    # per Text gefunden, aber ausgeblendet: Grund nennt den Key-Filter
+    r = planer.suche(key_ctx, "Mit", "Ohne", planer.Suche(text="eigen", key_max_fehlt=0))
+    gruende = {o["uid"]: o["grund"] for o in r["ohne_score"]}
+    assert gruende["A"] == "mehr als 0 Key-Attribute unter Schwelle 12"
+
+
+def test_attribute_fuer_laedt_aus_der_db_und_merkt_sich_fehlende(key_ctx, tmp_path):
+    db = tmp_path / "t.sqlite"
+    conn = common.connect(db)
+    conn.execute("INSERT INTO snapshots VALUES(1, 'w', '2027-05-31', 'f', 'suche', 'x')")
+    conn.execute("INSERT INTO player_attributes VALUES(1, 'k5', 'Passen', NULL, 1, 11, 15)")
+    conn.commit()
+    conn.close()
+    key_ctx.attrs.clear()
+    key_ctx.db, key_ctx.db_path, key_ctx.save = True, str(db), "w"
+    a = planer.attribute_fuer(key_ctx, ["k5", "k6"])
+    assert a["k5"]["Passen"][1:] == (11, 15) and a["k6"] is None
+    assert key_ctx.attr_datum["k5"] == "2027-05-31"
+    assert "k6" in key_ctx.attrs  # Cache auch für Spieler ohne Attribute

@@ -106,10 +106,11 @@ INFO_LABELS = {
 
 KERN = ["uid", "name", "club", "league", "club_country", "position", "age", "birthdate", "minutes",
         "value", "value_min", "value_max", "wage", "wage_min", "wage_max", "contract_end", "loan_start",
-        "loan_end", "eigen", "datenbasis", "in_suche", "quelle"]  # fmt: skip
+        "loan_end", "eigen", "datenbasis", "in_suche", "quelle", "minuten_text"]  # fmt: skip
 NICHT_STATS = set(per90.CORE_COLS) | set(KERN) | {
     "snapshot_id", "view_type", "own", "team", "uid", "ausfallszeit_tage_n", "verpasste_spiele_n",
     "team_tore_n", "team_gegentore_n", "elfer", "elfer_gesamt",
+    *per90.SAISON_SPALTEN,
 }  # fmt: skip
 
 _w = planer._wert
@@ -382,7 +383,10 @@ def profil(
     spieler = []
     for i in range(len(sub)):
         r = sub.iloc[i]
-        lgw = ctx.lg.gewicht(r.get("league"), schema) if schema != "aus" else 1.0
+        lgw = (
+            ctx.lg.gewicht_saisons(r.get("league"), schema, r.get("league_vs"), r.get("min_neu"), r.get("min_vs_w"))
+            if schema != "aus" else 1.0
+        )  # fmt: skip
         p = paar["paar"].iat[i]
         spieler.append({
             **{k: _w(r.get(k)) for k in KERN}, "uid": str(r["uid"]),
@@ -392,6 +396,10 @@ def profil(
             "vs_top": _w(paar["vs_top"].iat[i]),
         })  # fmt: skip
     aufschl = score_aufschluesselung(ctx, sub, {"mit": mit, "ohne": ohne})
+    uids = [str(u) for u in sub["uid"]]
+    kz = planer.key_kennzahlen(ctx, mit, ohne, uids)
+    key = {**planer.key_defs(ctx, mit, ohne), "spieler": kz[uids[0]],
+           "vergleich": kz[uids[1]] if len(uids) > 1 else None}  # fmt: skip
     return {
         "spieler": spieler[0],
         "vergleich": spieler[1] if len(spieler) > 1 else None,
@@ -399,6 +407,7 @@ def profil(
         "chart": chart_daten(ctx, sub, aufschl),
         "statistiken": statistiken(ctx, row, gruppe),
         "attribute": attribute_und_info(ctx, row),
+        "key_attribute": key,
         "einsaetze": einsatz_profil(ctx, str(row.iloc[0]["uid"])),
         "pool": {"gruppe": gruppe, "n": len(_pool(ctx, gruppe)), "min_stufe": ctx.pool_min_stufe},
     }

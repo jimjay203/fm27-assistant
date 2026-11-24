@@ -14,6 +14,10 @@ Rollen, key_fehlt = x/n key-Attribute unter der Liga-Schwelle des Zielvereins (M
 nicht sicher darüber (lo < Schwelle). Ergänzt nur; Rangfolge bleibt paar_gew. --key-max-fehlt N blendet
 Kandidaten mit mehr als N Ausfällen aus (Spieler ohne Attribute bleiben, markiert).
 
+Datenquelle: --quelle auto (Default: live, wenn FM27 lesbar ist, sonst DB) | live | db. Beide mit Saisonbasis
+(per90.load_saison / mit_vorsaison, config/saison.yaml): Vorsaison + laufende Saison, Vorsaison mit
+w = max(0, 1 - Min. neu / 1200); Minuten-Spalte z. B. "2940 (VS, w=0,93) + 90".
+
 Aufruf:  uv run python scripts/rollen.py --slot "OM r" [--max-alter 28] [--top 8]
          uv run python scripts/rollen.py --alle --top 5
          uv run python scripts/rollen.py --rolle-mit "Zielspieler" --rolle-ohne "Zentraler Umschaltstürmer"
@@ -31,8 +35,10 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import benchmark as b
 import common
+import fmmt
 import ligen
 import live
+import per90
 import rollen_attr
 
 PERZENTILE = {"schlecht": 25, "ok": 55, "gut": 90}
@@ -95,7 +101,8 @@ def topclub_referenz_je_gruppe(
     ref = {}
     for g, stats in specs.items():
         pool = df[
-            df["club"].isin(clubs) & (df["minutes"].fillna(0) >= defaults.get("min_minuten", 900))
+            b.statistik_liga(df, "club").isin(clubs)
+            & (df["minutes"].fillna(0) >= defaults.get("min_minuten", 900))
         ]
         pool = pool[(pool["team"] == "Senior Team") & (pool["datenbasis"] == "voll")]
         pool = pool[
@@ -189,7 +196,7 @@ def kandidaten_slot(df, mit, ohne, rk, anker, ref, defaults, lg, a, eigene_min):
         sub["liga_stufe"] = sub["league"].map(lg.stufe)
         schema = a.gewichtung or rk["gewichtung_je_gruppe"][rk["rollen"][mit]["gruppe"]]
         if schema != "aus":
-            sub["liga_gewicht"] = sub["league"].map(lambda d, s=schema: lg.gewicht(d, s))
+            sub["liga_gewicht"] = lg.gewicht_spalte(sub, schema)  # je Saison (Saisonbasis)
             sub["paar_gew"] = sub["paar"] * sub["liga_gewicht"]
         else:
             sub["paar_gew"] = sub["paar"]
@@ -259,7 +266,7 @@ def _attr_detail(r, schwelle) -> str:
 def _tabelle(t: pd.DataFrame) -> str:
     from tabulate import tabulate
 
-    t = t.assign(wert_mio=t["value"] / 1e6)
+    t = t.assign(wert_mio=t["value"] / 1e6, minutes=per90.minuten_anzeige(t))
     if "key_fehlt" in t:
         t = t.assign(key_fehlt=_key_fehlt_text(t))
     else:
@@ -283,6 +290,10 @@ def main(argv=None) -> None:
     ap.add_argument("--rolle-mit", help="Rolle mit Ball (statt --slot)")
     ap.add_argument("--rolle-ohne", help="Rolle ohne Ball (statt --slot)")
     ap.add_argument("--url", default=live.DEFAULT_URL)
+    ap.add_argument(
+        "--quelle", choices=["auto", "live", "db"], default="auto",
+        help="auto (Default): live, wenn FM27 lesbar ist, sonst DB (beide mit Saisonbasis, config/saison.yaml)",
+    )  # fmt: skip
     ap.add_argument("--min-minuten", type=int, default=900, help="Kandidaten (Default 900)")
     ap.add_argument(
         "--min-minuten-eigene", type=int, default=400, help="eigene Spieler (Default 400)"
@@ -338,13 +349,20 @@ def main(argv=None) -> None:
     cfg = common.load_yaml("profile.yaml", a.config_dir)
     defaults = cfg.get("defaults", {})
     lg = ligen.Ligen.laden(a.config_dir)
-    df = b.load_live(
-        a.url,
-        common.load_yaml("live_spalten.yaml", a.config_dir),
-        common.load_yaml("spalten.yaml", a.config_dir).get("abgeleitet") or {},
-    )
+    conn = common.connect(a.db)
+    save = common.resolve_save(a.save)
+    quelle = a.quelle if a.quelle != "auto" else ("live" if fmmt.spiel_bereit(a.url) else "db")
+    if quelle == "live":
+        df = b.load_live_saison(
+            a.url,
+            common.load_yaml("live_spalten.yaml", a.config_dir),
+            common.load_yaml("spalten.yaml", a.config_dir).get("abgeleitet") or {},
+            conn, save, a.config_dir,
+        )  # fmt: skip
+    else:
+        df = b.load_db(conn, save, eigene=True, config_dir=a.config_dir)
     if df.empty:
-        common.die("Keine Spielerdaten (Save geladen? Reader läuft?).")
+        common.die("Keine Spielerdaten (Save geladen? Reader läuft? Exporte importiert?).")
     rollen = sorted({r for s in todo.values() for r in (s["mit"], s["ohne"])})
     specs = statistik_specs(rk, rollen)
     anker = anker_je_gruppe(df, rk, specs, lg, defaults, a.pool_min_stufe)
@@ -357,11 +375,9 @@ def main(argv=None) -> None:
         if a.attr_schwelle is not None
         else rollen_attr.schwelle_fuer_stufe(ziel, ra)
     )
-    conn = common.connect(a.db)
-    save = common.resolve_save(a.save)
 
     print(
-        f"# Rollen-Score (Daten vom {df.attrs.get('date')}; Anker: Perzentile {list(PERZENTILE.values())} der Spieler "
+        f"# Rollen-Score (Quelle {quelle}, Daten vom {df.attrs.get('date')}; {per90.saison_text(df.attrs.get('saison'))}; Anker: Perzentile {list(PERZENTILE.values())} der Spieler "
         f"gleicher Positionsgruppe in Ligen ab '{a.pool_min_stufe}'; Rollen-Zuordnung ungeprüft, siehe wissen/rollen-kpis.md)"
     )
     for name, s in todo.items():

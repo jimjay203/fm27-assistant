@@ -67,6 +67,7 @@
         <span><span class="farbe t-tief"></span>darunter</span><span>▲ bester Kandidat</span>
         <span class="info-i" tabindex="0" role="button" aria-label="Info zur Karte" data-info="Karte: gesetzter eigener Spieler mit Score (Paar-Score × Liga-Gewicht; 0 = Schlecht, 50 = OK, 100 = Gut). Randfarbe: grün ab 66, gelb ab 40, rot darunter.
 ▲ = bester Kandidat aus der Spielersuche mit Abstand zum Gesetzten. ! = eine Rolle nur teilweise bewertbar.
+K = gesetzter Spieler hat Key-Attribute der Rollen unter der Liga-Schwelle (nur Hinweis, Score unverändert).
 Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).">i</span>
       </p>
     </div>
@@ -89,6 +90,7 @@ Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).">i</span>
           <label>max. Marktwert (Mio.) <input data-s="max_wert_mio" type="number" min="0" step="0.5" placeholder="–"></label>
           <label>Liga ab <select data-s="min_stufe"></select></label>
           <label>Min. Minuten <input data-s="min_minuten" type="number" min="0" step="100"></label>
+          <label title="Spieler mit mehr fehlenden Key-Attributen (unter der Liga-Schwelle des eigenen Vereins) ausblenden; Spieler ohne Attribute bleiben drin">max. fehlende Key <input data-s="key_max_fehlt" type="number" min="0" max="20" placeholder="–"></label>
           <label class="check"><input data-s="eigene" type="checkbox"> eigene zeigen</label>
           <label class="check" id="s_nur_suche_box"><input data-s="nur_suche" type="checkbox"> nur Spielersuche</label>
           <label class="check"><input data-s="nur_volle_daten" type="checkbox"> nur volle Daten</label>

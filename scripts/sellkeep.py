@@ -197,7 +197,7 @@ def main(argv=None) -> None:
 
     save = common.resolve_save(a.save)
     conn = common.connect(a.db)
-    players, attrs = per90.load_wide(conn, save)
+    players, attrs = per90.load_saison(conn, save, config_dir=a.config_dir)  # Saisonbasis
     if players.empty:
         common.die(f"Keine Spielerdaten für Save '{save}' – erst live.py/import.py ausführen.")
     cfg = common.load_yaml("rollen.yaml", a.config_dir)
@@ -208,6 +208,7 @@ def main(argv=None) -> None:
         )
     own = build(players, attrs, cfg, status)
     own["wert_mio"] = own["value"] / 1e6
+    own["minutes"] = per90.minuten_anzeige(own)  # Saisonbasis sichtbar
     cols = ["name", "position", "age", "minutes", "share", "status", "wert_mio", "fv_ratio",
             "vs_alter", "contract_end", "vorschlag", "grund"]  # fmt: skip
     table = own[cols].sort_values(["status", "vorschlag", "name"]).round(2)
@@ -218,6 +219,7 @@ def main(argv=None) -> None:
     from tabulate import tabulate
 
     print(tabulate(table, headers="keys", tablefmt="github", showindex=False))
+    print("\n" + per90.saison_text(players.attrs.get("saison")))
     print(
         "\nVorschlag, keine Entscheidung. Schwellen: rollen.yaml sell_keep (Setzungen aus FMMT-27, "
         "ungeprüft). Fair Value fehlt, wenn die Gruppe < fv_min_n Spieler hat."

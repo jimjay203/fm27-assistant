@@ -354,3 +354,13 @@ details.spiele summary { cursor: pointer; color: var(--muted); }
 #suche_ergebnis { display: grid; gap: 1rem; }
 #suche_ergebnis .karte h3 { margin-top: 0; }
 #suche_ergebnis td.grund { color: var(--muted); }
+
+/* Key-Attribute der Rollen (nur ausgewiesen): Kurzwert in Tabellen, Markierung im Attribut-Raster */
+.key-k { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.key-warn { margin-right: .25rem; font-size: .8rem; }
+.p-key { margin: .2rem 0 .6rem; }
+.p-key .kv { grid-template-columns: 9rem minmax(0, 1fr); }
+.p-key p.hinweis { margin: .3rem 0 0; }
+.key-name { font-weight: 700; }
+.key-name::after { content: "K"; font-size: .62rem; font-weight: 700; color: var(--muted); margin-left: .2rem; vertical-align: super; }
+.a-wert.unter { outline: 2px solid var(--warn); outline-offset: -1px; }

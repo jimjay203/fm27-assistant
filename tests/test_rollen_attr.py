@@ -192,3 +192,20 @@ def test_rollen_table_adds_attribute_columns_without_changing_order():
     txt = rollen._tabelle(t)
     assert txt.index("| A ") < txt.index("| B ") < txt.index("| C ")  # Reihenfolge unverändert
     assert "1/1" in txt and "0/1" in txt and list(cols["key_fehlt"].isna()) == [False, False, True]
+
+
+def test_failure_list_is_structured_like_the_text_column():
+    attrs = {
+        "Passen": (14.0, 14.0, 14.0), "Technik": (11.0, 11.0, 11.0), "Teamwork": (None, 11.0, 15.0),
+        "Deckung": (None, None, None),
+    }  # fmt: skip
+    liste = rollen_attr.ausfall_liste(attrs, MIT, OHNE, 12)
+    assert [(e["attribut"], e["art"], e["anzeige"]) for e in liste] == [
+        ("Technik", "fehlt", "11"), ("Teamwork", "unsicher", "11-15"), ("Deckung", "unbekannt", "?"),
+    ]  # fmt: skip
+    assert liste[1]["phasen"] == ["mit", "ohne"] and liste[1]["mitte"] == 13
+    assert not liste[1]["exakt"]
+    p = rollen_attr.paar(attrs, MIT, OHNE, 12)
+    assert p["key_fehlt"] == sum(e["art"] == "fehlt" for e in liste)
+    assert p["key_unsicher"] == sum(e["art"] in ("fehlt", "unsicher") for e in liste)
+    assert rollen_attr.ausfall_liste(None, MIT, None, 12)[0]["art"] == "unbekannt"

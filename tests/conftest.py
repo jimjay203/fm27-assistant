@@ -60,6 +60,32 @@ def mini_df(n=400):
     return pd.concat([cand, own], ignore_index=True)
 
 
+# Key-Attribute: Quelle nur für die Rolle mit Ball (über den Aliasnamen), ohne Ball ohne Eintrag
+MINI_RA = {
+    "liga_schwelle": {"Exzellent": 12},  # eigene Spieler in der Bundesliga -> Schwelle 12
+    "liga_schwelle_default": 8,
+    "rollen": {"Neuer Name|mit": {"key": ["Passen", "Technik"], "preferred": ["Dribbling"]}},
+}
+MINI_ATTRS = {
+    "A": {"Passen": (14.0, 14.0, 14.0), "Technik": (9.0, 9.0, 9.0), "Dribbling": (13.0, 13.0, 13.0)},
+    "k399": {"Passen": (None, 10.0, 16.0), "Technik": (None, 12.0, 15.0)},  # 0 fehlt, Passen unsicher
+    "k398": {"Passen": (None, 6.0, 10.0), "Technik": (None, 7.0, 9.0)},  # beide unter 12
+}  # fmt: skip
+
+
+def mini_key_ctx():
+    """Wie mini_ctx, dazu Key-Attribute; Attribute nur im Cache (ohne DB), alle anderen ohne Attribute."""
+    lg, defaults = ligen.Ligen.laden(), {"min_minuten": 900}
+    ctx = planer.kontext_bauen(mini_df(), mini_rk(), lg, defaults, MINI_FORMATIONEN, ra=MINI_RA)
+    ctx.attrs.update(MINI_ATTRS)
+    return ctx
+
+
+@pytest.fixture
+def key_ctx():
+    return mini_key_ctx()
+
+
 @pytest.fixture
 def mini_ctx():
     return planer.kontext_bauen(

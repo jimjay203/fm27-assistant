@@ -193,7 +193,8 @@ def main(argv=None) -> None:
 
     save = common.resolve_save(a.save)
     conn = common.connect(a.db)
-    players, attrs = per90.load_wide(conn, save, a.view)
+    views = (a.view,) if a.view else per90.SAISON_VIEWS
+    players, attrs = per90.load_saison(conn, save, views, a.config_dir)  # Saisonbasis
     if players.empty:
         common.die(f"Keine Spielerdaten für Save '{save}' – erst scripts/import.py ausführen.")
     leagues = None
@@ -223,6 +224,7 @@ def main(argv=None) -> None:
     df = df.sort_values(sort_col, ascending=False)
     df["kosten_mio"] = df["kosten_saison"] / 1e6
     df["fair_value_mio"] = df["fair_value"] / 1e6
+    df["minutes"] = per90.minuten_anzeige(df)  # "2940 (VS, w=0,93) + 90", wenn die Vorsaison zählt
     out = df[
         [
             "name",
@@ -253,6 +255,7 @@ def main(argv=None) -> None:
         from tabulate import tabulate
 
         print(tabulate(out, headers="keys", tablefmt="github", showindex=False))
+        print("\n" + per90.saison_text(players.attrs.get("saison")))
 
 
 if __name__ == "__main__":

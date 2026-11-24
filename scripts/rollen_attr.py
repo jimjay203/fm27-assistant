@@ -143,6 +143,37 @@ def paar(
     }
 
 
+AUSFALL_ARTEN = ("fehlt", "unsicher", "unbekannt")
+
+
+def ausfall_liste(
+    attrs: dict[str, tuple] | None, d_mit: dict | None, d_ohne: dict | None, schwelle: float
+) -> list[dict]:
+    """Ausfälle des Rollenpaars strukturiert (für die Web-App), gleiche Regeln wie paar():
+    art fehlt (Mitte < Schwelle), unsicher (lo < Schwelle <= Mitte) oder unbekannt; anzeige = Wert bzw. Spanne,
+    phasen = Rollen (mit/ohne), zu denen das key-Attribut gehört. Reihenfolge: fehlt, unsicher, unbekannt."""
+    attrs = attrs or {}
+    phasen: dict[str, list[str]] = {}
+    for ph, d in (("mit", d_mit), ("ohne", d_ohne)):
+        for k in (d or {}).get("key") or []:
+            phasen.setdefault(k, []).append(ph)
+    out = []
+    for k, ph in phasen.items():
+        v = attrs.get(k, (None, None, None))
+        m, lo = _mitte(v)
+        if m is None:
+            art = "unbekannt"
+        elif m < schwelle:
+            art = "fehlt"
+        elif lo < schwelle:
+            art = "unsicher"
+        else:
+            continue
+        out.append({"attribut": k, "art": art, "anzeige": _fmt(v), "mitte": m, "exakt": _ok(v[0]),
+                    "phasen": ph})  # fmt: skip
+    return sorted(out, key=lambda e: AUSFALL_ARTEN.index(e["art"]))
+
+
 def attribute_laden(
     conn, save: str, uids: Iterable, bevorzugt: dict | None = None
 ) -> tuple[dict[str, dict[str, tuple]], dict[str, str]]:

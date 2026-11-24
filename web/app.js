@@ -149,11 +149,13 @@ function steuerungAufbauen() {
     s.quelle === "live" ? `Live, Stand ${s.datum ?? "?"}` : `DB: Kader ${s.kader_datum ?? "–"}, Suche ${s.suche_datum ?? "–"}`,
     `${zahl(s.n_eigene)} eigene, ${zahl(s.n_suche)} aus der Spielersuche`,
     `Pool ab ${s.pool_min_stufe}`,
-  ];
+    s.saison && Object.keys(s.saison.vs || {}).length ? `Saisonbasis ${s.saison.aktuell} + VS ${s.saison.vorsaison}` : "",
+  ].filter(Boolean);
   if (s.verein) teile.splice(1, 0, s.verein);
   const e = META.einsaetze;
   if (e) teile.push(e.spieler ? `Spiele erfasst: ${e.spieler} Spieler` : "Spiele nicht erfasst");
   $("#stand").textContent = teile.join(" · ");
+  $("#stand").title = s.saisonbasis || "";
   $("#erfassen").hidden = !META.erfassen_moeglich;
 }
 
@@ -249,13 +251,16 @@ function slotsAktualisieren() {
     el.classList.add(stufe(g ? g.paar_gew : null));
     // "!" nur bei spürbaren Lücken: eine Rolle zu weniger als 80 % bewertbar (Details im Panel)
     const warn = s.luecken.some((l) => l.abdeckung != null && l.abdeckung < 0.8);
-    el.querySelector("[data-warn]").innerHTML = warn
-      ? '<span class="warn" title="Rolle nur teilweise bewertbar, Details im Panel">!</span>' : "";
+    // "K": gesetzter Spieler verfehlt Key-Attribute der Rollen (nur Hinweis, Score unverändert)
+    const kf = g && g.key ? g.key.key_fehlt : null;
+    el.querySelector("[data-warn]").innerHTML = (kf ? `<span class="warn key-warn" title="${esc(`Key ${keyText(g.key)}\n` +
+      keyTitel(g.key, s.key))}">K</span>` : "") +
+      (warn ? '<span class="warn" title="Rolle nur teilweise bewertbar, Details im Panel">!</span>' : "");
     el.querySelector("[data-pill]").innerHTML = g ? `<span class="pill ${stufe(g.paar_gew)}">${zahl(g.paar_gew)}</span>` : "";
     const gr = gesetztGrund(s);
     el.classList.toggle("rueckfall", PLAN.aufstellung_nach === "einsaetze" && s.gesetzt_grund?.art === "score");
     el.querySelector("[data-spieler]").innerHTML = g
-      ? `${gesicht(g.uid, g.name, 28)}<span class="name" title="${esc(g.name + " – " + gr)}">${esc(kurzName(g.name))}</span>`
+      ? `${gesicht(g.uid, g.name, 28)}<span class="name" title="${esc(`${g.name} – ${gr}\nKey ${keyText(g.key)}`)}">${esc(kurzName(g.name))}</span>`
       : `<span class="leer">niemand bewertbar</span>`;
     // Schattenteam: bester Kandidat, der den Gesetzten übertrifft
     const best = s.verbesserungen[0];
@@ -334,10 +339,69 @@ function aufPosition(z) {
   return `<span class="${kl}" title="${z.pos_spiele} von ${z.erfasst_spiele} erfassten Spielen auf dieser Position` +
     `${z.pos_note != null ? ", Ø Note " + zahl(z.pos_note, 2) : ""}">${zahl(z.pos_min)} Min. (${zahl(anteil * 100)} %)</span>`;
 }
+// Key-Attribute des Rollenpaars (scripts/rollen_attr.py): nur ausgewiesen, ändern weder Score noch Rangfolge
+const AUSFALL = { fehlt: "unter der Schwelle", unsicher: "unsicher (Spanne reicht unter die Schwelle)", unbekannt: "unbekannt" };
+function keyText(k) {
+  if (!k) return "–";
+  if (!k.attribute) return "keine Attribute";
+  if (k.key_fehlt == null) return "keine Key-Attribute";
+  const unsicher = (k.key_unsicher ?? 0) - k.key_fehlt;
+  return `${zahl(k.key_mit, 1)} / ${zahl(k.key_ohne, 1)} · ${k.key_fehlt}/${k.key_n} fehlt` +
+    (unsicher > 0 ? ` · ${unsicher} unsicher` : "") + (k.exakt ? "" : " · Spanne");
+}
+function keyKurz(k) {
+  const kl = !k || !k.attribute || k.key_fehlt == null ? "hinweis" : k.key_fehlt > 0 ? "warn-text" : "";
+  return `<span class="key-k ${kl}">${esc(keyText(k))}</span>`;
+}
+// Erklärung als Text (title bzw. Info-Popover): Schwelle, Key-Attribute je Rolle, Ausfallliste mit Wert bzw. Spanne
+function keyTitel(k, defs) {
+  const teile = [`Key-Attribute (Quelle FM26, config/rollen_attribute.yaml), Schwelle ${defs.schwelle} ` +
+    `(Liga-Stufe des eigenen Vereins: ${defs.stufe ?? "–"}). Nur ausgewiesen, ändert den Score nicht.`];
+  for (const ph of ["mit", "ohne"]) {
+    const d = defs[ph];
+    teile.push(`${ph === "mit" ? "Mit Ball" : "Ohne Ball"} (${d.rolle}): ${d.key.length ? d.key.join(", ") : d.hinweis}`);
+  }
+  if (k === null) return teile.join("\n");
+  if (!k || !k.attribute) {
+    teile.push("Keine Attribute in der DB (Spieler in keinem Kader- oder Suche-Export; live nur eigene Spieler).");
+    return teile.join("\n");
+  }
+  teile.push(`Ø key mit Ball ${zahl(k.key_mit, 1)}, ohne Ball ${zahl(k.key_ohne, 1)}; Ø preferred mit Ball ${zahl(k.pref_mit, 1)}.`);
+  teile.push(k.ausfaelle.length
+    ? "Ausfälle:\n" + k.ausfaelle.map((a) => `  ${a.attribut} ${a.anzeige}: ${AUSFALL[a.art]} (${a.phasen.join(" + ")})`).join("\n")
+    : "Keine Ausfälle.");
+  teile.push((k.exakt ? "Exakte Werte" : "Scouting-Spannen: Mitte zählt; „unsicher“ = untere Grenze unter der Schwelle") +
+    (k.datum ? `, Attribute vom ${k.datum}.` : "."));
+  return teile.join("\n");
+}
+const spKey = (defs) => ({
+  k: "key", l: "Key", titel: "Ø key-Attribute mit / ohne Ball · fehlend unter der Schwelle (Details beim Darüberfahren)",
+  f: (z) => `<span title="${esc(keyTitel(z.key, defs))}">${keyKurz(z.key)}</span>`,
+  sort: (z) => (z.key && z.key.key_fehlt != null ? -z.key.key_fehlt : null),
+});
+// Key-Spalte hinter "vs Top" einfügen
+const mitKey = (spalten, defs) => {
+  const i = spalten.findIndex((s) => s.k === "vs_top") + 1;
+  return [...spalten.slice(0, i), spKey(defs), ...spalten.slice(i)];
+};
+function keyHinweis(defs) {
+  const ohneQuelle = ["mit", "ohne"].filter((ph) => !defs[ph].key.length)
+    .map((ph) => `${ph === "mit" ? "mit" : "ohne"} Ball: keine Key-Attribute in der Quelle`);
+  return `<p class="hinweis">Key-Attribute: Schwelle ${defs.schwelle}` +
+    `${ohneQuelle.length ? " · " + esc(ohneQuelle.join(", ")) : ""} ${info(keyTitel(null, defs))}</p>`;
+}
+
+// Saisonbasis (per90.kombinieren): Minuten = Vorsaison × w + laufende Saison; Basis als Tag und Tooltip
+const MIN_TITEL = "Minuten der Per-90-Basis: Vorsaison × w + laufende Saison (w = 1 − Min. neu / 1200, config/saison.yaml)";
+function minutenZelle(z) {
+  if (z.min_vs == null || !(z.min_vs > 0)) return zahl(z.minutes);
+  return `<span title="${esc(z.minuten_text)}">${zahl(z.minutes)} <span class="tag">VS w=${zahl(z.w_vs, 2)}</span></span>`;
+}
+
 const SP_EIGENE = [
   SP_NAME,
   { k: "age", l: "Alter", num: true },
-  { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+  { k: "minutes", l: "Min.", num: true, f: minutenZelle, titel: MIN_TITEL },
   { k: "pos_min", l: "auf Pos.", num: true, f: aufPosition,
     titel: "Minuten auf dieser Position in den erfassten Spielen (letzte 20 je Spieler, „Spiele erfassen“)" },
   ...SP_SCORES,
@@ -348,7 +412,7 @@ const SP_KAND = [
   { k: "club", l: "Verein", f: (z) => esc(z.club) },
   { k: "liga_stufe", l: "Liga", f: (z) => esc(z.liga_stufe ?? "–"), titel: "Ansehen der Liga", sort: (z) => (z.liga_stufe ? META.stufen.indexOf(z.liga_stufe) : null) },
   { k: "age", l: "Alter", num: true },
-  { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+  { k: "minutes", l: "Min.", num: true, f: minutenZelle, titel: MIN_TITEL },
   ...SP_SCORES,
   { k: "delta", l: "Δ", num: true, f: (z) => `<b>${z.delta == null ? "–" : "+" + zahl(z.delta)}</b>` },
   { k: "value", l: "Marktwert", num: true, f: (z) => spanne(z.value, z.value_min, z.value_max), sort: (z) => z.value ?? z.value_max },
@@ -407,8 +471,9 @@ function panelZeichnen() {
   p.innerHTML =
     `<div class="panel-kopf"><h2>${esc(meta.label)} ${info(slotInfo)}</h2>` +
     (g ? `<span class="gesetzt-info">${gesicht(g.uid, g.name, 32)}gesetzt: <b>${esc(g.name)}</b> ${score(g.paar_gew)}` +
+      `<span title="${esc(keyTitel(g.key, s.key))}">Key ${keyKurz(g.key)}</span>` +
       `<span class="hinweis">${esc(gesetztGrund(s))}</span></span>` : "") +
-    `</div>` + rollenWahlHtml(aktiverSlot) + aliasText +
+    `</div>` + rollenWahlHtml(aktiverSlot) + aliasText + keyHinweis(s.key) +
     s.hinweise.map((h) => `<p class="hinweis">Hinweis: ${esc(h)}</p>`).join("") +
     lueckenHtml(s) +
     `<div class="panel-raster">` +
@@ -429,10 +494,10 @@ function panelZeichnen() {
   );
   streuVerdrahten(s);
   $("#t_eigene").appendChild(s.eigene.length
-    ? tabelle(SP_EIGENE, s.eigene, { gesetzt: s.gesetzt, beiKlick: (uid) => profilOeffnen(uid) })
+    ? tabelle(mitKey(SP_EIGENE, s.key), s.eigene, { gesetzt: s.gesetzt, beiKlick: (uid) => profilOeffnen(uid) })
     : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Kein eigener Spieler bewertbar." }));
   $("#t_kand").appendChild(s.verbesserungen.length
-    ? tabelle(SP_KAND, s.verbesserungen, { beiKlick: (uid) => profilOeffnen(uid) })
+    ? tabelle(mitKey(SP_KAND, s.key), s.verbesserungen, { beiKlick: (uid) => profilOeffnen(uid) })
     : Object.assign(document.createElement("p"), { className: "hinweis", textContent: "Kein Kandidat übertrifft den gesetzten Spieler (mit diesen Filtern)." }));
 }
 
@@ -636,7 +701,7 @@ function profilSeite(p, slot) {
     `<div class="p-meta">${zahl(z.age)} J. · ${esc(z.position ?? "–")}</div></div></div>`;
   const scoreInfo = `Score = Paar-Score ${zahl(z.paar)} (Mittel aus mit und ohne Ball) × Liga-Gewicht ${zahl(z.liga_gewicht, 2)}.\n` +
     `0 = Schlecht, 50 = OK, 100 = Gut. vs Top: 50 = Median der Topclub-Spieler.\n` +
-    `${zahl(z.minutes)} Min., Datenbasis ${z.datenbasis ?? "–"}.`;
+    `${z.min_vs > 0 ? z.minuten_text + " = " : ""}${zahl(z.minutes)} Min. (Saisonbasis), Datenbasis ${z.datenbasis ?? "–"}.`;
   const scores = `<div class="p-scores">` +
     `<div class="p-score-gross"><span class="pill ${stufe(z.paar_gew)}">${zahl(z.paar_gew)}</span>` +
     `<span class="k">Score ${info(scoreInfo)}</span></div>` +
@@ -679,8 +744,22 @@ function profilSeite(p, slot) {
 
 // ------------------------------------------------------------------ Profil: Attribute und Kennzahlen der Rolle
 
-function profilAttribute(a) {
-  if (!a.gruppen.length) return `<h3>Attribute</h3><p class="hinweis">${esc(a.grund || "Keine Attribute vorhanden.")}</p>`;
+// Key-Attribute der gewählten Rollen: Kurzwert für Spieler (und Vergleich), Tooltip mit der Ausfallliste
+function profilKey(ka, p) {
+  if (!ka) return "";
+  const zeile = (k, name) => `<div class="kv" title="${esc(keyTitel(k, ka))}"><span class="k">${esc(name)}</span>` +
+    `<span class="v">${keyKurz(k)}</span></div>`;
+  return `<div class="p-key">${zeile(ka.spieler, "Key " + kurzName(p.spieler.name))}` +
+    (p.vergleich ? zeile(ka.vergleich, "Key " + kurzName(p.vergleich.name)) : "") +
+    keyHinweis(ka) + `</div>`;
+}
+
+function profilAttribute(a, ka, p) {
+  const keyKopf = profilKey(ka, p);
+  if (!a.gruppen.length) return `<h3>Attribute</h3>${keyKopf}<p class="hinweis">${esc(a.grund || "Keine Attribute vorhanden.")}</p>`;
+  // Key-Attribute der Rollen markieren; unter der Schwelle (Mitte) umrandet
+  const keys = new Set(ka ? [...ka.mit.key, ...ka.ohne.key] : []);
+  const unter = new Set(ka && ka.spieler ? ka.spieler.ausfaelle.filter((x) => x.art === "fehlt").map((x) => x.attribut) : []);
   const quelle = `Export „${a.quelle.ansicht}“ vom ${a.quelle.datum}: ${a.n_exakt} exakt, ${a.n_spanne} als Spanne ` +
     `(Scouting-Kenntnisstand im Spiel, kein geschätzter Wert; gestrichelt, Farbe nach der Mitte der Spanne).\n` +
     `Farben wie im FM-Farbschema: ab 15, ab 12, ab 10, ab 7, ab 4, darunter.`;
@@ -690,10 +769,13 @@ function profilAttribute(a) {
       const exakt = x.wert != null;
       const lo = x.lo, hi = x.hi;
       const anzeige = exakt ? zahl(x.wert) : lo != null ? (lo === hi ? zahl(lo) : `${zahl(lo)}–${zahl(hi)}`) : "?";
-      const klasse = attrKlasse(exakt ? x.wert : lo != null ? (lo + hi) / 2 : null) + (exakt ? "" : " spanne");
-      return `<div class="attr"><span>${esc(x.name)}</span><span class="a-wert ${klasse}">${anzeige}</span></div>`;
+      const klasse = attrKlasse(exakt ? x.wert : lo != null ? (lo + hi) / 2 : null) + (exakt ? "" : " spanne") +
+        (unter.has(x.name) ? " unter" : "");
+      const name = keys.has(x.name) ? `<span class="key-name" title="Key-Attribut der gewählten Rollen">${esc(x.name)}</span>` : esc(x.name);
+      return `<div class="attr"><span>${name}</span><span class="a-wert ${klasse}">${anzeige}</span></div>`;
     }).join("") + `</div>`).join("");
-  return `<h3>Attribute ${info(quelle)} ${legende}</h3><div class="attr-raster">${spalten}</div>`;
+  const keyErkl = ka ? `\nFett mit „K“ = Key-Attribut der gewählten Rollen; umrandet = unter der Schwelle ${ka.schwelle} (Spanne: Mitte).` : "";
+  return `<h3>Attribute ${info(quelle + keyErkl)} ${legende}</h3>${keyKopf}<div class="attr-raster">${spalten}</div>`;
 }
 
 // Die Statistiken der beiden gewählten Rollen, nach Baustein gruppiert: Wert, Perzentil, ggf. Vergleich
@@ -939,7 +1021,7 @@ function profilEinsaetze(p, slot) {
 function profilHtml(p, slot) {
   // Jeder Bereich eine Karte (.karte), damit sich die Bereiche klar voneinander abheben
   return `<div class="profil-oben">${profilSeite(p, slot)}` +
-    `<div class="p-stapel"><section class="karte">${profilAttribute(p.attribute)}</section>` +
+    `<div class="p-stapel"><section class="karte">${profilAttribute(p.attribute, p.key_attribute, p)}</section>` +
     `<section class="karte">${profilKennzahlen(p)}</section></div>` +
     `<section class="p-radar karte">${profilVergleich(p, slot)}</section></div>` +
     `<div class="profil-unten"><section class="karte">${profilStatistiken(p)}</section>` +
@@ -1070,6 +1152,7 @@ async function sucheHolen() {
       mit: wahl.mit, ohne: wahl.ohne, text: z.text, min_alter: z.min_alter, max_alter: z.max_alter,
       max_wert_mio: z.max_wert_mio, min_stufe: z.min_stufe, min_minuten: z.min_minuten, eigene: z.eigene,
       nur_suche: META.stand.quelle === "live" && z.nur_suche, nur_volle_daten: z.nur_volle_daten,
+      key_max_fehlt: z.key_max_fehlt ?? null,
       gewichtung: (zustand.filter && zustand.filter.gewichtung) || null,
     });
     if (nr !== sucheNr) return;
@@ -1090,26 +1173,30 @@ function sucheZeichnen(r, slot) {
   const gw = r.gewertet_als;
   const alias = [r.mit !== gw.mit ? `mit Ball gewertet wie ${gw.mit}` : "", r.ohne !== gw.ohne ? `ohne Ball gewertet wie ${gw.ohne}` : ""];
   $("#s_rollen").textContent = alias.filter(Boolean).join(" · ");
+  const kf = r.key.filter;
   $("#suche_info").textContent = `${zahl(r.n_treffer)} mit Score` + (r.n_treffer > r.limit ? `, die besten ${r.limit} gezeigt` : "") +
+    (kf.max_fehlt != null ? ` · ${zahl(kf.ausgeblendet)} ausgeblendet (mehr als ${kf.max_fehlt} Key unter ${r.key.schwelle}), ` +
+      `${zahl(kf.ohne_attribute)} ohne Attribute bleiben drin` : "") +
     (basis != null ? ` · Δ gegenüber dem Gesetzten (${zahl(basis)})` : "");
-  const spalten = [
+  const spalten = mitKey([
     SP_NAME,
     { k: "club", l: "Verein", f: (z) => esc(z.club ?? "–") },
     { k: "liga_stufe", l: "Liga", f: (z) => esc(z.liga_stufe ?? "–"), titel: "Ansehen der Liga", sort: (z) => (z.liga_stufe ? META.stufen.indexOf(z.liga_stufe) : null) },
     { k: "position", l: "Pos.", f: (z) => esc(z.position ?? "–") },
     { k: "age", l: "Alter", num: true },
-    { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+    { k: "minutes", l: "Min.", num: true, f: minutenZelle, titel: MIN_TITEL },
     ...SP_SCORES,
     { k: "delta", l: "Δ", num: true, titel: "Abstand zum gesetzten Spieler dieses Slots",
       f: (z) => { if (z.delta == null) return "–"; const d = Math.round(z.delta) || 0; return `<b>${d > 0 ? "+" : ""}${zahl(d)}</b>`; } },
     { k: "value", l: "Marktwert", num: true, f: (z) => spanne(z.value, z.value_min, z.value_max), sort: (z) => z.value ?? z.value_max },
     { k: "wage", l: "Gehalt/J.", num: true, f: (z) => spanne(z.wage, z.wage_min, z.wage_max), sort: (z) => z.wage ?? z.wage_max },
     { k: "contract_end", l: "Vertrag" },
-  ];
+  ], r.key);
   const erkl = "Score = Paar-Score des Rollenpaars × Liga-Gewicht (0 = Schlecht, 50 = OK, 100 = Gut), Rollen wie im gewählten Slot. " +
-    "Fremde Marktwerte und Gehälter sind Scouting-Spannen. Zeile anklicken öffnet das Profil (Vergleich: gesetzter Spieler), Spaltenkopf sortiert.";
+    "Key = Ø key-Attribute mit / ohne Ball und wie viele unter der Schwelle liegen (nur ausgewiesen, Rangfolge unverändert). " +
+    "Fremde Marktwerte, Gehälter und Attribute sind Scouting-Spannen. Zeile anklicken öffnet das Profil (Vergleich: gesetzter Spieler), Spaltenkopf sortiert.";
   const el = $("#suche_ergebnis");
-  el.innerHTML = `<section class="karte"><h3>Treffer ${info(erkl)}</h3><div id="s_treffer"></div></section>` +
+  el.innerHTML = `<section class="karte"><h3>Treffer ${info(erkl)}</h3>${keyHinweis(r.key)}<div id="s_treffer"></div></section>` +
     (r.ohne_score.length
       ? `<section class="karte"><h3>Gefunden, aber ohne Score (${r.ohne_score.length}) ${info("Passen zum Suchtext, " +
         "sind für diese Rollen aber nicht bewertbar; Grund in der letzten Spalte.")}</h3><div id="s_ohne"></div></section>`
@@ -1123,7 +1210,7 @@ function sucheZeichnen(r, slot) {
       { k: "club", l: "Verein", f: (z) => esc(z.club ?? "–") },
       { k: "position", l: "Pos.", f: (z) => esc(z.position ?? "–") },
       { k: "age", l: "Alter", num: true },
-      { k: "minutes", l: "Min.", num: true, f: (z) => zahl(z.minutes) },
+      { k: "minutes", l: "Min.", num: true, f: minutenZelle, titel: MIN_TITEL },
       { k: "grund", l: "Grund", f: (z) => `<span class="hinweis">${esc(z.grund)}</span>` },
     ], r.ohne_score, {}));
   }

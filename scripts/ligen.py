@@ -6,14 +6,26 @@ Daten: config/ligen.yaml (`ranking` aus der Spiel-Ansicht, `alias` + `alias_rege
 
 from __future__ import annotations
 
+import math
 import re
 import sys
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
 
 MIT_LAND = re.compile(r"^(.*) \(([^()]+)\)$")
+
+
+def _minuten(x) -> float:
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return 0.0
+    return 0.0 if math.isnan(v) else v
 
 
 def mit_land(df):
@@ -79,6 +91,29 @@ class Ligen:
         if st is None:
             return None
         return (self.gewichte.get(schema or self.standard) or {}).get(st)
+
+    def gewicht_saisons(self, league, schema=None, league_vs=None, min_neu=None, min_vs_w=None):
+        """Liga-Gewicht je Saison (Saisonbasis, per90.kombinieren): Mittel der Gewichte der Liga der laufenden
+        Saison und der Vorsaison, gewichtet mit den Minuten (Vorsaison x w). Ohne Vorsaison = gewicht()."""
+        g = self.gewicht(league, schema)
+        mv = _minuten(min_vs_w)
+        if mv <= 0:
+            return g
+        teile = [(x, m) for x, m in ((g, _minuten(min_neu)), (self.gewicht(league_vs, schema), mv))
+                 if x is not None and m > 0]  # fmt: skip
+        if not teile:
+            return g
+        return sum(x * m for x, m in teile) / sum(m for _, m in teile)
+
+    def gewicht_spalte(self, df, schema=None):
+        """gewicht_saisons() je Zeile eines DataFrames (ohne Saisonspalten: gewicht() der Liga)."""
+        if "min_vs_w" not in df or "league_vs" not in df:
+            return df["league"].map(lambda d: self.gewicht(d, schema))
+        werte = [
+            self.gewicht_saisons(lg, schema, lv, mn, mv)
+            for lg, lv, mn, mv in zip(df["league"], df["league_vs"], df["min_neu"], df["min_vs_w"], strict=True)
+        ]  # fmt: skip
+        return pd.Series([np.nan if x is None else x for x in werte], index=df.index, dtype=float)
 
     def schemata(self) -> list[str]:
         return list(self.gewichte)

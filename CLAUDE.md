@@ -16,6 +16,9 @@ Aktiver Save: saves/werder/ – lies dort immer zuerst kontext.md und taktik.md.
 ## Quellen je Thema (Pflicht bei Taktik, Entwicklung, Verpflichtungen)
 Immer zuerst: `uv run python scripts/stand.py` (Datenstand, Live ja/nein, veraltete Quellen, offene log.md-Prüfungen),
 dazu kontext.md, taktik.md, log.md. Live (FMMT-27) bevorzugen; sonst DB-Stand mit Snapshot-Datum nennen.
+Per-90-Basis = Vorsaison + laufende Saison (Saisongrenze 01.07., je Saison und Quelle der letzte Snapshot;
+Vorsaison-Gewicht w = max(0, 1 − Min. neu/1200), config/saison.yaml); Minuten wie ausgegeben nennen
+(„2940 (VS, w=0,93) + 90“). Attribute, Marktwert, Gehalt, Vertrag, Verein: immer neuester Stand.
 
 | Thema | Skripte / Daten | Wissen |
 |---|---|---|

@@ -27,6 +27,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
+import fmparse
 import ligen
 import live
 import per90
@@ -149,17 +150,43 @@ def load_live(url: str, cfg: dict, derived: dict) -> pd.DataFrame:
     return df
 
 
-def load_db(conn, save: str) -> pd.DataFrame:
-    """Spieler aus dem jeweils neuesten Kader-, Suche- und Live-Snapshot (ältere Suchen sind veraltet)."""
-    snaps = per90.letzte_snapshots(conn, save)
-    players, _ = per90.load_wide(conn, save, snapshot_ids=[i for i, _ in snaps.values()])
+def load_db(conn, save: str, eigene: bool = False, config_dir=None) -> pd.DataFrame:
+    """Spieler mit Saisonbasis (per90.load_saison): je Quelle (Kader, Suche, Live) der letzte Snapshot der laufenden
+    Saison und der Vorsaison, Vorsaison gewichtet (config/saison.yaml). Ältere Suchen derselben Saison sind veraltet.
+
+    `eigene`: Spieler des neuesten Kader-Snapshots als eigene markieren (own, eigen = kader, team = Senior Team);
+    sonst own = False wie bisher (eigene Spieler markiert sonst nur die Live-Quelle)."""
+    players, _ = per90.load_saison(conn, save, config_dir=config_dir)
+    s = players.attrs.get("saison") or {}
+    snaps = {**(s.get("vs") or {}), **(s.get("neu") or {})}  # je Quelle der neueste
     players = players.rename(columns={"player_uid": "uid"})
     players.attrs["date"] = max((d for _, d in snaps.values() if d), default=None)
     players.attrs["snapshots"] = {v: d for v, (_, d) in snaps.items()}
+    players.attrs["saison"] = s
+    if not len(players):
+        return players
     players["league"] = ligen.mit_land(players)  # gleichnamige Ligen (Bundesliga DE/AT) eindeutig
-    players["own"] = False
-    players["datenbasis"] = datenbasis_spalte(players) if len(players) else pd.Series(dtype=object)
+    kader = snaps.get("kader")
+    players["own"] = (players["snapshot_id"] == kader[0]) if eigene and kader else False
+    if eigene:
+        players["eigen"] = np.where(players["own"], "kader", None)
+        if "team" not in players:
+            players["team"] = "Senior Team"  # Exporte haben kein Team-Feld
+    players["datenbasis"] = datenbasis_spalte(players)
     return players
+
+
+def load_live_saison(
+    url: str, cfg: dict, derived: dict, conn, save: str, config_dir=None
+) -> pd.DataFrame:
+    """load_live() mit Saisonbasis: Vorsaison aus der DB dazu (per90.mit_vorsaison), datenbasis neu berechnet."""
+    df = load_live(url, cfg, derived)
+    if df.empty:
+        return df
+    datum = fmparse.parse_date(df.attrs.get("date"))
+    df = per90.mit_vorsaison(conn, save, df, datum, config_dir=config_dir)
+    df["datenbasis"] = datenbasis_spalte(df)
+    return df
 
 
 def calibration(df: pd.DataFrame, profile: dict, defaults: dict) -> pd.DataFrame:
@@ -200,7 +227,8 @@ def topclub_referenz(
 ) -> dict[str, np.ndarray]:
     """Je Statistik die sortierten Werte der Topclub-Spieler dieser Rolle (Senior, ab Mindestminuten, volle Daten)."""
     pool = df[
-        df["club"].isin(clubs) & (df["minutes"].fillna(0) >= defaults.get("min_minuten", 900))
+        statistik_liga(df, "club").isin(clubs)
+        & (df["minutes"].fillna(0) >= defaults.get("min_minuten", 900))
     ]
     if "team" in pool:
         pool = pool[pool["team"] == "Senior Team"]
@@ -249,6 +277,15 @@ ANKER_DATEI = "anker_fm27.yaml"
 STANDARD_PERZENTILE = {"schlecht": 25, "ok": 55, "gut": 90}
 
 
+def statistik_liga(df: pd.DataFrame, spalte: str = "league") -> pd.Series:
+    """Liga (bzw. Verein mit spalte="club"), in der die Statistiken überwiegend entstanden sind (Saisonbasis): die
+    der Vorsaison, solange deren gewichtete Minuten überwiegen, sonst die aktuelle. Ohne Saisonspalten: aktuell."""
+    if f"{spalte}_vs" not in df or "min_vs_w" not in df:
+        return df[spalte]
+    vs = df[f"{spalte}_vs"].notna() & (df["min_vs_w"].fillna(0) > df["min_neu"].fillna(0))
+    return df[f"{spalte}_vs"].where(vs, df[spalte])
+
+
 def anker_pool(
     df: pd.DataFrame, prof: dict, defaults: dict, lg: ligen.Ligen, min_stufe: str
 ) -> pd.DataFrame:
@@ -261,7 +298,7 @@ def anker_pool(
     pool = pool[pool["position"].map(lambda p: position_ok(p, prof["positionen"]))]
     limit = lg.stufe_index(min_stufe)
     ok = (
-        pool["league"]
+        statistik_liga(pool)
         .map(lg.stufe)
         .map(lambda x: isinstance(x, str) and lg.stufe_index(x) <= limit)
     )
@@ -440,9 +477,11 @@ def main(argv=None) -> None:
     if a.quelle == "live":
         live_cfg = common.load_yaml("live_spalten.yaml", a.config_dir)
         derived = common.load_yaml("spalten.yaml", a.config_dir).get("abgeleitet") or {}
-        df = load_live(a.url, live_cfg, derived)
+        conn = common.connect(a.db)
+        save = common.resolve_save(a.save)
+        df = load_live_saison(a.url, live_cfg, derived, conn, save, a.config_dir)
     else:
-        df = load_db(common.connect(a.db), common.resolve_save(a.save))
+        df = load_db(common.connect(a.db), common.resolve_save(a.save), config_dir=a.config_dir)
     if df.empty:
         common.die("Keine Spielerdaten.")
 
@@ -540,7 +579,7 @@ def main(argv=None) -> None:
     if schema != "aus":
         if schema not in lg.schemata():
             common.die(f"Unbekanntes Schema '{schema}'. Vorhanden: aus, {', '.join(lg.schemata())}")
-        sc = sc.assign(liga_gewicht=sc["league"].map(lambda d: lg.gewicht(d, schema)))
+        sc = sc.assign(liga_gewicht=lg.gewicht_spalte(sc, schema))  # je Saison (Saisonbasis)
         n_ohne = int(sc["liga_gewicht"].isna().sum())
         note = f"Gewichtung '{schema}'; {n_ohne} Spieler aus Ligen ohne Stufe ausgeblendet."
         sc = sc[sc["liga_gewicht"].notna()]
@@ -549,6 +588,7 @@ def main(argv=None) -> None:
     sc = sc.assign(
         wert_mio=sc["value"] / 1e6,
         stats=sc["n_stats"].astype(int).astype(str) + "/" + str(len(prof["stats"])),
+        minutes=per90.minuten_anzeige(sc),  # "2940 (VS, w=0,93) + 90", wenn die Vorsaison zählt
     )
     cols = [
         "name",

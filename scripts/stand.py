@@ -2,7 +2,8 @@
 
 Schreibt nichts. Zeigt je Quelle das letzte In-Game-Datum und den Abstand zum neuesten Stand im Save, ob der
 FMMT-27-Reader (live) erreichbar ist, nicht importierte Rohdateien, ob config/taktik_slots.yaml älter als
-taktik.md ist, offene TODO-Felder in kontext.md und Einträge in log.md ohne Ergebnis.
+taktik.md ist, offene TODO-Felder in kontext.md, Einträge in log.md ohne Ergebnis und die Saisonbasis der
+Per-90-Werte (Snapshots der laufenden Saison und der Vorsaison, Gewicht w; config/saison.yaml).
 
 Aufruf:  uv run python scripts/stand.py --save werder [--ohne-live]
 """
@@ -19,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common  # noqa: E402
 import fmmt  # noqa: E402
 import live  # noqa: E402
+import per90
 import spiele  # noqa: E402
 
 IMPORT_EXT = {".csv", ".html", ".htm"}
@@ -103,12 +105,45 @@ def log_offen(log_md: Path) -> list[dict]:
     return out
 
 
+def saisonbasis(conn, save: str, config_dir=None) -> dict | None:
+    """Saisonbasis der Per-90-Werte (per90.load_saison): Saisons, Snapshots je Quelle, Gewicht der Vorsaison."""
+    sc = per90.saison_cfg(config_dir)
+    snaps = per90.saison_snapshots(conn, save, per90.SAISON_VIEWS, sc["grenze"])
+    if not snaps:
+        return None
+    aktuell = max(snaps)
+    vs = per90.vorsaison(aktuell)
+    ids_neu, ids_vs = snaps.get(aktuell, {}), snaps.get(vs, {})
+    eigene = None
+    if "kader" in ids_neu:
+        mins = sorted(r[0] or 0 for r in conn.execute(
+            "select minutes from players where snapshot_id=?", (ids_neu["kader"][0],)))  # fmt: skip
+        if mins:
+            eigene = {"max": mins[-1], "median": mins[len(mins) // 2]}
+    return {**per90.saison_info(aktuell, vs, ids_neu, ids_vs, sc["uebergang"]), "eigene": eigene}
+
+
+def saison_ausgeben(saison: dict | None) -> None:
+    if not saison:
+        print("\nSaisonbasis: keine Spieler-Snapshots")
+        return
+    print(f"\n{per90.saison_text(saison)}")
+    e, u = saison.get("eigene"), saison["uebergang"]
+    if e:
+        w = [max(0.0, 1 - m / u) for m in (e["max"], e["median"])]
+        print(f"  Kader {saison['aktuell']}: Min. neu max {e['max']:.0f} (w={w[0]:.2f}), Median {e['median']:.0f} "
+              f"(w={w[1]:.2f}); w je Spieler, Mindestminuten gelten auf Vorsaison x w + neu")  # fmt: skip
+    if not saison.get("vs"):
+        print(f"  keine Snapshots der Vorsaison {saison['vorsaison']}: nur laufende Saison")
+
+
 def _kurz(s: str, n: int = 70) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
 def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft: bool, raw: list[str],
-             drift: str | None, todos: list[str], offen: list[dict]) -> None:  # fmt: skip
+             drift: str | None, todos: list[str], offen: list[dict],
+             saison: dict | None = None) -> None:  # fmt: skip
     neuestes = max((d for q in quellen if (d := _datum(q["letztes"]))), default=None)
     print(f"Datenstand Save '{save}' (neuestes In-Game-Datum in der DB: {neuestes or '-'})\n")
     print(f"{'Quelle':<16}{'Anzahl':>8}{'letztes':>12}{'Tage zurück':>13}{'Zeilen':>9}")
@@ -118,6 +153,8 @@ def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft:
         print(f"{q['quelle']:<16}{q['snapshots']:>8}{q['letztes'] or '-':>12}"
               f"{'' if rueck is None else rueck:>13}{'-' if q['zeilen'] is None else q['zeilen']:>9}")  # fmt: skip
     print("  Zeilen = Spieler im letzten Snapshot; team_matches = Spiele; spieleinsaetze = Spieler mit Spielliste")
+
+    saison_ausgeben(saison)
 
     print("\nLive (FMMT-27):", end=" ")
     if not live_geprueft:
@@ -165,7 +202,7 @@ def main(argv=None) -> None:
     ausgeben(
         save, quellen, reader, not a.ohne_live, nicht_importiert(conn, save, sdir / "data" / "raw"),
         taktik_drift(sdir / "taktik.md", cfg_dir / "taktik_slots.yaml"),
-        kontext_todos(sdir / "kontext.md"), log_offen(sdir / "log.md"),
+        kontext_todos(sdir / "kontext.md"), log_offen(sdir / "log.md"), saisonbasis(conn, save, a.config_dir),
     )  # fmt: skip
 
 

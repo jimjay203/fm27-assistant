@@ -5,7 +5,7 @@ import ligen
 import planer
 import pytest
 import webapp
-from conftest import MINI_FORMATIONEN, mini_df, mini_rk
+from conftest import MINI_FORMATIONEN, mini_df, mini_key_ctx, mini_rk
 from fastapi.testclient import TestClient
 
 
@@ -155,3 +155,20 @@ def test_suche_endpoint(client):
     assert j["ohne_score"][0]["uid"] == "C"
     assert client.post("/api/suche", json={"mit": "X", "ohne": "Ohne"}).status_code == 400
     assert client.post("/api/suche", json={"mit": "Mit", "ohne": "Ohne", "limit": 0}).status_code == 422
+
+
+def test_key_attribute_in_plan_suche_und_profil():
+    start = {"quelle": "db", "pool_min_stufe": "Gut", "anker_min_n": 100}
+    c = TestClient(webapp.create_app(lambda e: mini_key_ctx(), start))
+    s = c.post("/api/plan", json={"formation": "2er"}).json()["slots"]["ST r"]
+    assert s["key"]["mit"]["key"] == ["Passen", "Technik"] and s["key"]["ohne"]["key"] == []
+    a = next(z for z in s["eigene"] if z["uid"] == "A")
+    assert a["key"]["key_fehlt"] == 1 and a["key"]["ausfaelle"][0]["attribut"] == "Technik"
+    body = {"mit": "Mit", "ohne": "Ohne", "key_max_fehlt": 0, "limit": 1000}
+    r = c.post("/api/suche", json=body).json()
+    assert r["key"]["filter"]["ausgeblendet"] == 2 and "A" not in {z["uid"] for z in r["treffer"]}
+    assert c.post("/api/suche", json={**body, "key_max_fehlt": -1}).status_code == 422
+    q = {"mit": "Mit", "ohne": "Ohne", "vergleich": "A"}
+    ka = c.get("/api/spieler/k399", params=q).json()["key_attribute"]
+    assert ka["schwelle"] == 12 and ka["spieler"]["key_unsicher"] == 1
+    assert ka["spieler"]["exakt"] is False and ka["vergleich"]["key_fehlt"] == 1
