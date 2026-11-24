@@ -62,6 +62,9 @@ function scoreKlasse(v) {
 }
 const score = (v) => `<span class="score ${scoreKlasse(v)}">${zahl(v)}</span>`;
 const STATUS = { kader: "", leihe_ein: "Leihe", leihe_aus: "verliehen" };
+const datumDE = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ""); return m ? `${m[3]}.${m[2]}.${m[1]}` : (d || ""); };
+// "verliehen bis 29.06.2028" / "Leihe bis 30.06.2027" (Server liefert z.leihe, sonst aus eigen + loan_end)
+const statusText = (z) => z.leihe || (STATUS[z.eigen] ? STATUS[z.eigen] + (z.loan_end ? " bis " + datumDE(z.loan_end) : "") : "");
 const kurzName = (n) => (n || "").split(" ").slice(-1)[0];
 const initialen = (n) => (n || "?").split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 // Spielerbild aus dem FM27-Faces-Ordner; fehlt es, bleiben die Initialen darunter sichtbar
@@ -147,7 +150,7 @@ function steuerungAufbauen() {
   const teile = [
     `Save ${s.save ?? ""}`,
     s.quelle === "live" ? `Live, Stand ${s.datum ?? "?"}` : `DB: Kader ${s.kader_datum ?? "–"}, Suche ${s.suche_datum ?? "–"}`,
-    `${zahl(s.n_eigene)} eigene, ${zahl(s.n_suche)} aus der Spielersuche`,
+    `${zahl(s.n_eigene)} eigene${s.n_verliehen ? ` (+${zahl(s.n_verliehen)} verliehen)` : ""}, ${zahl(s.n_suche)} aus der Spielersuche`,
     `Pool ab ${s.pool_min_stufe}`,
     s.saison && Object.keys(s.saison.vs || {}).length ? `Saisonbasis ${s.saison.aktuell} + VS ${s.saison.vorsaison}` : "",
   ].filter(Boolean);
@@ -324,7 +327,7 @@ function tabelle(spalten, zeilen, { gesetzt, sortierung, beiKlick } = {}) {
 const SP_NAME = {
   k: "name", l: "Name",
   f: (z) => `<span class="mit-gesicht">${gesicht(z.uid, z.name, 24)}${esc(z.name)}</span>` +
-    (STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : ""),
+    (statusText(z) ? `<span class="tag">${esc(statusText(z))}</span>` : ""),
 };
 const SP_SCORES = [
   { k: "mit", l: "mit", num: true, f: (z) => score(z.mit), titel: "Rolle mit Ball" },
@@ -465,8 +468,13 @@ function panelZeichnen() {
     : "";
   const ohneWertung = s.ohne_wertung.length
     ? `<h3>Eigene ohne Wertung ${info(s.ohne_wertung
-        .map((o) => `${o.name} (${o.grund}${STATUS[o.eigen] ? ", " + STATUS[o.eigen] : ""})`).join("\n"))}</h3>` +
+        .map((o) => `${o.name} (${o.grund}${statusText(o) ? ", " + statusText(o) : ""})`).join("\n"))}</h3>` +
       `<p class="hinweis">${s.ohne_wertung.map((o) => esc(kurzName(o.name))).join(", ")}</p>`
+    : "";
+  const verliehen = (s.verliehen || []).length
+    ? `<h3>Verliehen (nicht verfügbar) ${info("Eigene Spieler, die an andere Vereine verliehen sind: zählen nicht für " +
+        "Elf, Aufstellung und Rangliste. Leihrückkehrer im Blick behalten.")}</h3>` +
+      `<p class="hinweis">${s.verliehen.map((o) => `${esc(o.name)} (${esc(o.leihe)}${o.club ? ", " + esc(o.club) : ""})`).join(", ")}</p>`
     : "";
   p.innerHTML =
     `<div class="panel-kopf"><h2>${esc(meta.label)} ${info(slotInfo)}</h2>` +
@@ -484,7 +492,7 @@ function panelZeichnen() {
     `<div id="t_kand"></div></section>` +
     `<section class="pr-eigene"><h3>Eigene Spieler (${s.n_eigene} bewertet) ${info("„auf Pos.“ = Minuten auf der " +
       "FM-Position dieses Slots in den erfassten Spielen (letzte 20 je Spieler); orange unter 25 % der erfassten Minuten.")}</h3>` +
-    `<div id="t_eigene"></div>${ohneWertung}</section></div>`;
+    `<div id="t_eigene"></div>${ohneWertung}${verliehen}</section></div>`;
   p.querySelectorAll(".rollen-wahl select").forEach((se) =>
     se.addEventListener("change", () => {
       rollenWahl()[aktiverSlot][se.dataset.phase] = se.value;
@@ -691,7 +699,7 @@ function profilSeite(p, slot) {
   const inf = Object.fromEntries((p.attribute.info || []).map((i) => [i.feld, i.text]));
   const t = (f) => (inf[f] == null ? null : esc(inf[f]));
   const tags = [
-    STATUS[z.eigen] ? `<span class="tag">${STATUS[z.eigen]}</span>` : "",
+    statusText(z) ? `<span class="tag">${esc(statusText(z))}</span>` : "",
     z.eigen ? '<span class="tag">eigener Spieler</span>' : z.in_suche ? '<span class="tag">Spielersuche</span>' : "",
   ].join("");
   const delta = v && z.paar_gew != null && v.paar_gew != null ? z.paar_gew - v.paar_gew : null;

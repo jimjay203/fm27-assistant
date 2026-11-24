@@ -23,7 +23,7 @@ Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 
 | LV | Ndiaye (Deman) | Flügelverteidiger | Pressender Außenverteidiger |
 | DM l | Lynen (Keidel, Stark; Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
-| OM r | Arthur (Erevbenagie, Mbangula solange im Kader) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; Backups Teamwork 8; Mbangula Verkaufskandidat; kein Transfer OM r nötig) |
+| OM r | Arthur (Chuki nur als Plan E, Grüll) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; kein Transfer OM r nötig. Stand 17.07.2027: Erevbenagie verliehen bis 29.06.2028, Mbangula nicht mehr im Kader-Export 17.07.2027; Backup OM r damit Chuki (Plan E, Medina auf die Zehn) oder Grüll) |
 | OM z | Chuki (Medina, Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner (Medina seit 17.07.2027 Rotation/Backup hinter Chuki, Entscheidung Jimmy; nicht als Option auf der Sechs) |
 | OM l | Grüll (Manneh) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
 | ST | Kaars (Manneh, Itten) | Halbraumstürmer | Mittelstürmer (Standard) |
@@ -93,7 +93,7 @@ Begründung Defensivlinie Höher (01.07.2027): IV Córdoba 15/15 und Pfeiffer 16
 |---|---|
 | Ballverluste in der eigenen Hälfte | Passspiel zurück auf Standard |
 | Konter über links (Raum hinter Ndiaye) | Ndiaye ohne Ball Abwartender Außenverteidiger |
-| Fehlende Rückarbeit rechts (OM r) | Seit 06.07.2027 Arthur auf OM r; Erevbenagie/Mbangula (je Teamwork 8) nur als Ersatz. Kein OM-r-Transfer geplant |
+| Fehlende Rückarbeit rechts (OM r) | Seit 06.07.2027 Arthur auf OM r. Kein OM-r-Transfer geplant. Ersatz seit 17.07.2027 (Erevbenagie verliehen): Chuki (Plan E) oder Grüll; bei Plan E ohne Ball Mitarbeitender Flügelspieler statt Inverser Umschaltflügelspieler |
 | Aufbau über rechts stockt (Ballverluste Keidel, wenig progressive Pässe vom RV); Schwelle: Ø über 3 Spiele Passquote (Team) < 83,5 % und progressive Pässe (Team) < 33,5 (je P25 der 13 Pflichtspiele 2026/27, team_match_stats 17.10.2026-09.01.2027) | Gechter auf RV (Rollen-Score Passsicherheit 89 gegen Keidel 1, siehe "Besetzung RV/OM r"); gegen Tempo-Flügel Keidel behalten |
 | Gegner mit Tempo-Flügel auf unserer rechten Seite | Keidel behalten (Antritt 13, Aggressivität 15, Pressing-Score 73), nicht auf Gechter wechseln |
 | Bälle hinter die Kette | Defensivlinie Standard |
@@ -135,6 +135,7 @@ Anlass: Gegner nimmt Chuki aus dem Spiel (gegnerische Sechser stören gut). Evid
 | B – Zehner weicht aus | Chuki mit Ball Halbraumspieler statt Vorgeschobener Spielmacher (ohne Ball weiter Mitarbeitender Zehner) | Chuki zieht in Halbraum/Flügel; folgt der gegnerische Sechser, wird die Zehnerzone frei für späte Läufe von Stage (Box-to-Box) und Kaars (lässt sich fallen); sonst ist Chuki frei | Halbraumspieler mit Ball: Chuki Key Ø 13,9, alle ≥ 12. Fällt Chuki aus: Medina als Alternative (Key-Werte für Halbraumspieler nicht geprüft) | Überschneidung mit Grüll (Inverser Außenstürmer) im linken Halbraum |
 | C – Zweiter Mann vorne | Chuki mit Ball Zweiter Stürmer (läuft hinter den Sechser zwischen die IV); Alternative: Manneh als Zweiter Stürmer für Chuki | Zweiter Angreifer bindet die IV, der Sechser verliert seinen Bezugspunkt | Zweiter Stürmer mit Ball: Manneh Key Ø 13,5, keins < 12; Chuki Key Ø 13,2 (Abschluss 11). Rollen-Score Vorsaison Chuki als Zweiter Stürmer 89 (bester Wert), 8 Tore 2026/27 | Aufbau hängt an der Doppelsechs (Stage Box-to-Box Key Ø 15,5) |
 | D – Direkt über außen (letzte 20–30 Min. / tiefer Block) | ST Itten als Zielspieler für Kaars; Flankenstil Hohe Flanken statt Flache Flanken; optional Pass-Aufnahme Pass in die Tiefe | Flanken von außen auf einen Kopfballspieler statt Spiel durch die zugestellte Mitte | Zielspieler mit Ball: Itten Key Ø 15,0 (Kopfball 16, Sprunghöhe 16; Ausdauer 10 → nur Joker ~30 Min.). Flanken: Arthur 13, Ndiaye 12 | Itten nicht für 90 Min.; weg vom Kurzpass-Standard |
+| E – Chuki nach rechts, Medina auf die Zehn (Ergänzung 17.07.2027) | OM r: Chuki mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler. OM z: Medina Vorgeschobener Spielmacher / Mitarbeitender Zehner. Keidel bleibt RV, Arthur auf die Bank (Entscheidung Jimmy 18.07.2027: Chuki arbeitet ohne Ball als Inverser Umschaltflügelspieler nicht zurück, Keidel gegen den Ball stärker: Key ohne Ball 14,3 vs. Arthur 13,0, Rollen-Score ohne Ball 60 vs. 49, Vorsaison) | Chuki (Linksfuß) zieht von rechts nach innen auf den starken Fuß; Diagonal-/Seitenwechselpässe statt Spiel durch die vom Sechser zugestellte Mitte. Gegenüber B: B ist die kleinere, dynamische Umstellung; E ist fest und braucht Medina | Chuki Äußerer Spielmacher Key Ø 14,0, Inverser Umschaltflügelspieler Key Ø 13,0, keins < 12 (Mitarbeitender Flügelspieler ohne Ball nur Ø 11,7, Deckung 7). Medina Vorgeschobener Spielmacher / Mitarbeitender Zehner Key Ø 13,9 / 13,0 | Inverser Umschaltflügelspieler bleibt ohne Ball hoch (Outlet) → Rückarbeit rechts fehlt, Keidel (Pressender AV) und Stage müssen absichern; gegen starke linke Gegnerflügel ohne Ball Mitarbeitender Flügelspieler trotz schwächerer Werte. Zwei Spielmacher gleichzeitig konkurrierten in älteren Versionen um den Ball (aus FM24, für FM27 ungeprüft); Medina "spielt lieber ab" |
 
 Auslöser (eigene Setzungen, nicht aus Daten – die DB hat keine Ballkontakte/Pässe je Spieler und Spiel):
 
@@ -143,8 +144,10 @@ Auslöser (eigene Setzungen, nicht aus Daten – die DB hat keine Ballkontakte/P
 | Halbzeit: Chuki ≤ 1 Schlüsselpass und gegnerischer Sechser mit vielen Tacklings/abgefangenen Bällen | B |
 | Nach 60 Min. weiter kaum Großchancen (0–1) | C |
 | Ab 70. Min. Rückstand oder tiefer Block des Gegners (deckt sich mit Spickzettel "Rückstand ab ca. 70.") | D |
+| Gegnerischer Sechser nimmt Chuki zentral auf (wie B, aber feste Umstellung; nur mit Medina im Kader/auf der Bank) | E (Alternative zu B) |
+| Arthur fällt auf OM r aus (Verletzung, Sperre) | E |
 
-Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik).
+Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik); Plan E: Eintrag 2027-07-17 (Taktik).
 
 ### Abgeschlossener Test: Arthur Pressender Außenverteidiger (Beschluss Jimmy, 21.11.2026)
 - Änderung: Arthur ohne Ball: Pressender Außenverteidiger statt Abwartender Außenverteidiger (Rolle mit Ball bleibt Außenverteidiger). Von Jimmy bestätigt; Umgesetzt und seit dem 21.11.2026 fest im Standard.
@@ -428,7 +431,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Punkt | Inhalt |
 |---|---|
 | Entscheidung | OM r: Arthur (vorher RV). RV: Keidel. Rollen unverändert (RV Inverser Flügelverteidiger / Pressender AV; OM r Flügelspieler / Mitarbeitender Flügelspieler) |
-| Backups | RV: Gechter, dann mit Abstrichen Agu, Pieper (verletzt), Schmetgens, Reis. OM r: Erevbenagie, Mbangula (solange im Kader, Verkaufskandidat) |
+| Backups | RV: Gechter, dann mit Abstrichen Agu, Pieper (verletzt), Schmetgens, Reis. OM r (Stand 17.07.2027): Chuki (Plan E, Medina auf die Zehn), Grüll. Gestrichen: Erevbenagie (verliehen bis 29.06.2028, Kader-Export 17.07.2027), Mbangula (nicht mehr im Kader-Export 17.07.2027). Ebenfalls verliehen und keine Option: Topp, Stalmach, Čović, Quetant |
 | Evidenz gegen die Wahl | Keidel vor Gechter entgegen Rollen-Score (Jimmy). Rollen-Score Vorsaison RV Inverser FV / Pressender AV (nur lesender Wrapper, Snapshots 244/245): Keidel mit 5 (Aufbau 9, Passsicherheit 1) / ohne 60 (Pressing 73), Daten Elversberg BL 2862 Min., Rolle dort unbekannt; Gechter mit 66 (Aufbau 50, Passsicherheit 89) / ohne 50, Daten Hertha 2. BL 3150 Min.; Arthur 41/49 |
 | Begründung Jimmy | Keidel erfüllt den Kernfilter klar (Antritt 13, Aggressivität 15, Ausdauer 15, Einsatz 15, Teamwork 16); Passen/Technik 12. Arthur auf OM R im Spiel "passabel", laut Jimmy bald "gut" |
 | Risiko | Der Inverse FV rückt mit Ball neben Lynen in den Aufbau, genau dort hat Keidel den schwächsten Score (Passsicherheit 1). Vergleichsdaten aus verschiedenen Ligen (Keidel BL, Gechter 2. BL) und unbekannten Rollen |

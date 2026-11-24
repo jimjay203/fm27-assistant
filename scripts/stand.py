@@ -140,8 +140,16 @@ def saisonbasis(conn, save: str, config_dir=None) -> dict | None:
     ids_neu, ids_vs = snaps.get(aktuell, {}), snaps.get(vs, {})
     eigene = None
     if "kader" in ids_neu:
+        # ohne verliehene eigene Spieler (Club != eigener Verein = häufigster Verein; Leihende nach dem Export)
+        sid, datum = ids_neu["kader"]
         mins = sorted(r[0] or 0 for r in conn.execute(
-            "select minutes from players where snapshot_id=?", (ids_neu["kader"][0],)))  # fmt: skip
+            "SELECT p.minutes FROM players p WHERE p.snapshot_id = ? AND NOT ("
+            " p.club IS NOT (SELECT club FROM players WHERE snapshot_id = p.snapshot_id AND club IS NOT NULL"
+            "  GROUP BY club ORDER BY COUNT(*) DESC LIMIT 1)"
+            " AND EXISTS (SELECT 1 FROM player_info i WHERE i.snapshot_id = p.snapshot_id"
+            "  AND i.player_uid = p.player_uid AND i.field = 'ausgeliehen_von')"
+            " AND COALESCE(p.loan_end, '9999') >= ?)",
+            (sid, datum)))  # fmt: skip
         if mins:
             eigene = {"max": mins[-1], "median": mins[len(mins) // 2]}
     return {**per90.saison_info(aktuell, vs, ids_neu, ids_vs, sc["uebergang"]), "eigene": eigene}

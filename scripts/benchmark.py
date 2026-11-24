@@ -154,8 +154,9 @@ def load_db(conn, save: str, eigene: bool = False, config_dir=None) -> pd.DataFr
     """Spieler mit Saisonbasis (per90.load_saison): je Quelle (Kader, Suche, Live) der letzte Snapshot der laufenden
     Saison und der Vorsaison, Vorsaison gewichtet (config/saison.yaml). Ältere Suchen derselben Saison sind veraltet.
 
-    `eigene`: Spieler des neuesten Kader-Snapshots als eigene markieren (own, eigen = kader, team = Senior Team);
-    sonst own = False wie bisher (eigene Spieler markiert sonst nur die Live-Quelle)."""
+    `eigene`: Spieler des neuesten Kader-Snapshots als eigene markieren (own, team = Senior Team; eigen = kader |
+    leihe_ein | leihe_aus nach sellkeep.squad_status, Verein = häufigster Verein im Kader-Snapshot, Leihende gegen
+    das neueste In-Game-Datum); sonst own = False wie bisher (eigene Spieler markiert sonst nur die Live-Quelle)."""
     players, _ = per90.load_saison(conn, save, config_dir=config_dir)
     s = players.attrs.get("saison") or {}
     snaps = {**(s.get("vs") or {}), **(s.get("neu") or {})}  # je Quelle der neueste
@@ -169,7 +170,16 @@ def load_db(conn, save: str, eigene: bool = False, config_dir=None) -> pd.DataFr
     kader = snaps.get("kader")
     players["own"] = (players["snapshot_id"] == kader[0]) if eigene and kader else False
     if eigene:
-        players["eigen"] = np.where(players["own"], "kader", None)
+        players["eigen"] = None
+        if kader:
+            import sellkeep  # erst hier: sellkeep lädt value/fairvalue
+
+            verein = sellkeep.verein_aus_kader(players, kader[0])
+            status = sellkeep.squad_status(
+                players.rename(columns={"uid": "player_uid"}), conn, verein, players.attrs["date"]
+            )
+            players["eigen"] = status.where(players["own"]).replace({np.nan: None})
+            players["own"] = players["eigen"].notna()
         if "team" not in players:
             players["team"] = "Senior Team"  # Exporte haben kein Team-Feld
     players["datenbasis"] = datenbasis_spalte(players)
@@ -617,9 +627,13 @@ def main(argv=None) -> None:
         f"{anker_info})"
     )
     own = sc[sc["own"]].sort_values(rank_col, ascending=False)
-    if len(own):
+    weg = own["eigen"] == "leihe_aus" if "eigen" in own else pd.Series(False, index=own.index)
+    if (~weg).any():
         print("\n### Eigene Spieler (Maßstab)")
-        print(tabulate(own[cols].round(2), headers="keys", tablefmt="github", showindex=False))
+        print(tabulate(own.loc[~weg, cols].round(2), headers="keys", tablefmt="github", showindex=False))
+    if weg.any():  # verliehen: nicht verfügbar, aber im Blick (Leihrückkehrer)
+        print("\n### Verliehene eigene Spieler (nicht verfügbar)")
+        print(tabulate(own.loc[weg, cols].round(2), headers="keys", tablefmt="github", showindex=False))
     cand = sc[~sc["own"]].sort_values(rank_col, ascending=False).head(a.top)
     print(f"\n### Kandidaten (Top {a.top} von {int((~sc['own']).sum())})")
     print(tabulate(cand[cols].round(2), headers="keys", tablefmt="github", showindex=False))

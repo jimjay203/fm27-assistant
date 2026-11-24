@@ -175,12 +175,31 @@ def paar_bewerten(sub, mit, ohne, rk, anker, ref, defaults) -> pd.DataFrame:
     return out
 
 
-def kandidaten_slot(df, mit, ohne, rk, anker, ref, defaults, lg, a, eigene_min):
-    """-> (eigene, kandidaten) als bewertete Tabellen für das Rollenpaar."""
+def verliehene_eigene(df, rk, mit) -> list[str]:
+    """Verliehene eigene Spieler der Positionsgruppe als 'Name (verliehen bis TT.MM.JJJJ, Verein)'."""
+    if "eigen" not in df:
+        return []
+    import sellkeep
+
+    rules = rk["positionsgruppen"][rk["rollen"][mit]["gruppe"]]
+    sub = df[(df["eigen"] == "leihe_aus") & df["position"].map(lambda p: b.position_ok(p, rules))]
+    return [
+        f"{r['name']} ({sellkeep.leihe_text('leihe_aus', r.get('loan_end'))}, {r.get('club') or '?'})"
+        for _, r in sub.sort_values("name").iterrows()
+    ]
+
+
+def kandidaten_slot(df, mit, ohne, rk, anker, ref, defaults, lg, a, eigene_min, verliehene=False):
+    """-> (eigene, kandidaten) als bewertete Tabellen für das Rollenpaar.
+
+    Eigene = verfügbare eigene Spieler (Kader + an uns geliehene); verliehene (eigen = leihe_aus) nur mit
+    `verliehene=True` (z. B. Spielersuche), Kandidaten sind sie nie."""
     rules = rk["positionsgruppen"][rk["rollen"][mit]["gruppe"]]
     base = df[df["team"] == "Senior Team"]
     base = base[base["position"].map(lambda p: b.position_ok(p, rules))]
     own = base[base["own"] & (base["minutes"].fillna(0) >= eigene_min)]
+    if not verliehene and "eigen" in own:
+        own = own[own["eigen"] != "leihe_aus"]
     cand = base[~base["own"] & (base["minutes"].fillna(0) >= a.min_minuten)]
     if a.nur_volle_daten:
         cand = cand[cand["datenbasis"] == "voll"]
@@ -381,9 +400,10 @@ def main(argv=None) -> None:
         f"gleicher Positionsgruppe in Ligen ab '{a.pool_min_stufe}'; Rollen-Zuordnung ungeprüft, siehe wissen/rollen-kpis.md)"
     )
     for name, s in todo.items():
-        own, cand = kandidaten_slot(
-            df, s["mit"], s["ohne"], rk, anker, ref, defaults, lg, a, a.min_minuten_eigene
-        )
+        own, cand = kandidaten_slot(  # --detail: auch verliehene eigene Spieler (Entwicklung)
+            df, s["mit"], s["ohne"], rk, anker, ref, defaults, lg, a, a.min_minuten_eigene,
+            verliehene=bool(a.detail),
+        )  # fmt: skip
         rm, ro = rk["rollen"][s["mit"]], rk["rollen"][s["ohne"]]
         own_a, _, d_mit, d_ohne = attribut_spalten(own, s, rk, ra, conn, save, schwelle)
         cand_a, cand_attrs, _, _ = attribut_spalten(cand, s, rk, ra, conn, save, schwelle)
@@ -448,6 +468,9 @@ def main(argv=None) -> None:
             continue
         print(f"\nEigene Spieler (ab {a.min_minuten_eigene} Min.), n={len(own)}")
         print(_tabelle(own.sort_values("paar", ascending=False)) if len(own) else "  keine")
+        weg = verliehene_eigene(df, rk, s["mit"])
+        if weg:
+            print(f"  Verliehen (nicht verfügbar, Detail mit --detail NAME): {', '.join(weg)}")
         top = cand.sort_values("paar_gew", ascending=False).head(a.top)
         print(f"\nKandidaten (Top {a.top} von {len(cand)}, sortiert nach paar_gew)")
         print(_tabelle(top) if len(top) else "  keine")

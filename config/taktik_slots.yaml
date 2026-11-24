@@ -48,8 +48,8 @@ slots:
   "OM r":
     mit: "Flügelspieler"
     ohne: "Mitarbeitender Flügelspieler"
-    stamm: [Arthur, Erevbenagie, Mbangula]
-    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); Mbangula Verkaufskandidat; kein Transfer OM r nötig."
+    stamm: [Arthur, Chuki]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); kein Transfer OM r nötig. Seit 17.07.2027: Erevbenagie verliehen (bis 29.06.2028), Mbangula nicht mehr im Kader; Chuki nur als Plan E (mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler), Rollen-Score hier mit Standardrollen gerechnet."
   "OM z":
     mit: "Vorgeschobener Spielmacher"
     ohne: "Mitarbeitender Zehner"

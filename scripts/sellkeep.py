@@ -12,7 +12,9 @@ Stammspieler = Minuten / Minuten des meistgenutzten Kaderspielers >= `stamm_ante
 
 Das ist ein Vorschlag, keine Entscheidung. Entscheidungen mit Messkriterium + Prüftermin in log.md.
 Eigene Spieler: Snapshot-Typ `live` (player_info.eigen); sonst Verein = häufigster Verein im letzten
-Kader-Snapshot (wie planer.py), Override mit --verein "<Name>".
+Kader-Snapshot (wie planer.py), Override mit --verein "<Name>". Nur der aktuelle Kader (Live bzw. letzter
+Kader-Export der laufenden Saison). Verliehene eigene Spieler (Leihende nach dem In-Game-Datum) bilden eine eigene
+Kategorie "Verliehen (Leihrückkehrer)" und zählen nicht als verfügbar; an uns geliehene: "Leihe (Kaufentscheid)".
 
 Aufruf:  uv run python scripts/sellkeep.py --save werder [--verein "Werder Bremen"]
 """
@@ -122,8 +124,43 @@ def verein_aus_kader(players: pd.DataFrame, kader_id: int | None) -> str | None:
     return None if clubs.empty else str(clubs.mode().iat[0])
 
 
-def squad_status(players: pd.DataFrame, conn, verein: str | None) -> pd.Series:
-    """kader | leihe_ein | leihe_aus je Spieler (sonst NaN): live-Flag, sonst über --verein."""
+VERFUEGBAR = ("kader", "leihe_ein")  # verliehene eigene Spieler (leihe_aus) stehen nicht zur Verfügung
+
+
+def leihe_beendet(players: pd.DataFrame, stichtag=None) -> pd.Series:
+    """loan_end liegt vor dem Stichtag (Standard: In-Game-Datum der Zeile) -> Leihe ist vorbei."""
+    if "loan_end" not in players:
+        return pd.Series(False, index=players.index)
+    end = pd.to_datetime(players["loan_end"], errors="coerce")
+    if stichtag is not None:
+        ref = pd.Series(pd.to_datetime(stichtag, errors="coerce"), index=players.index)
+    elif "ingame_date" in players:
+        ref = pd.to_datetime(players["ingame_date"], errors="coerce")
+    else:
+        return pd.Series(False, index=players.index)
+    return end.notna() & ref.notna() & (end < ref)
+
+
+def verfuegbar(eigen: pd.Series) -> pd.Series:
+    """Eigene Spieler, die uns zur Verfügung stehen: Kader + an uns geliehene, nicht die verliehenen."""
+    return eigen.isin(VERFUEGBAR)
+
+
+def leihe_text(eigen, loan_end) -> str | None:
+    """'verliehen bis 29.06.2028' / 'Leihe bis 30.06.2027' (ohne Leihende nur 'verliehen' / 'Leihe')."""
+    art = {"leihe_aus": "verliehen", "leihe_ein": "Leihe"}.get(eigen)
+    if art is None:
+        return None
+    end = pd.to_datetime(loan_end, errors="coerce")
+    return f"{art} bis {end:%d.%m.%Y}" if pd.notna(end) else art
+
+
+def squad_status(players: pd.DataFrame, conn, verein: str | None, stichtag=None) -> pd.Series:
+    """kader | leihe_ein | leihe_aus je Spieler (sonst NaN): live-Flag, sonst über --verein.
+
+    Export-Leihen mit Leihende (loan_end) vor dem Stichtag (Standard: In-Game-Datum der Zeile) sind vorbei:
+    ein verliehener eigener Spieler zählt wieder zum Kader, ein an uns geliehener nicht mehr. Live liefert der
+    Reader nur aktive Leihen (Club ID/Loaned From ID nach Datum), dort gibt es kein loan_end."""
     info = pd.read_sql_query(
         "SELECT snapshot_id, player_uid, field, text FROM player_info "
         "WHERE field IN ('eigen', 'ausgeliehen_von')",
@@ -146,7 +183,22 @@ def squad_status(players: pd.DataFrame, conn, verein: str | None) -> pd.Series:
         )
         status = status.where(status.notna(), pd.Series(by_name, index=players.index))
         status = status.replace("", np.nan)
-    return status
+    vorbei = leihe_beendet(players, stichtag)
+    status = status.mask(vorbei & (status == "leihe_aus"), "kader")
+    return status.mask(vorbei & (status == "leihe_ein"), np.nan)
+
+
+def eigener_snapshot(players: pd.DataFrame) -> int | None:
+    """Snapshot, der den eigenen Kader festlegt: der neuere von Live und Kader-Export der laufenden Saison."""
+    neu = (players.attrs.get("saison") or {}).get("neu") or {}
+    kand = [(d or "", sid) for v, (sid, d) in neu.items() if v in ("live", "kader") and sid is not None]
+    return int(max(kand)[1]) if kand else None
+
+
+def stichtag_aus(players: pd.DataFrame) -> str | None:
+    """Neuestes In-Game-Datum der Saisonbasis (für Leihende)."""
+    neu = (players.attrs.get("saison") or {}).get("neu") or {}
+    return max((d for _, d in neu.values() if d), default=None)
 
 
 def group_scores(players, attrs, cfg) -> pd.DataFrame:
@@ -186,7 +238,8 @@ def build(players, attrs, cfg, status: pd.Series) -> pd.DataFrame:
             wert = f"Marktwert {r['value'] / 1e6:.1f} Mio." if pd.notna(r["value"]) else "kein Wert"
             labels.append(("Leihe (Kaufentscheid)", wert))
         else:
-            labels.append(("Verliehen", "Rückkehr/Verlauf prüfen"))
+            labels.append(("Verliehen (Leihrückkehrer)", leihe_text("leihe_aus", r.get("loan_end"))
+                           + ", Rückkehr/Verlauf im Blick behalten"))
     own["vorschlag"] = [lb for lb, _ in labels]
     own["grund"] = [g for _, g in labels]
     return own
@@ -211,14 +264,20 @@ def main(argv=None) -> None:
     if players.empty:
         common.die(f"Keine Spielerdaten für Save '{save}' – erst live.py/import.py ausführen.")
     cfg = common.load_yaml("rollen.yaml", a.config_dir)
-    status = squad_status(players, conn, a.verein)
+    stichtag = stichtag_aus(players)
+    status = squad_status(players, conn, a.verein, stichtag)
     if status.notna().sum() == 0 and not a.verein:  # kein Live-Flag: Verein aus dem Kader-Snapshot
         kader = per90.letzter_snapshot(conn, save, "kader")
         verein = verein_aus_kader(players, kader[0] if kader else None)
         if verein:
             print(f"Eigener Verein: {verein} (häufigster Verein im Kader-Snapshot vom {kader[1]}; "
                   'Override: --verein "<Name>")', file=sys.stderr)  # fmt: skip
-            status = squad_status(players, conn, verein)
+            status = squad_status(players, conn, verein, stichtag)
+    # Nur der aktuelle Kader (Live bzw. letzter Kader-Export): Spieler nur aus der Vorsaison sind abgegeben,
+    # ihre damaligen Leihen vorbei.
+    sid = eigener_snapshot(players)
+    if sid is not None and "snapshot_id" in players:
+        status = status.where(players["snapshot_id"] == sid)
     if status.notna().sum() == 0:
         common.die(
             "Keine eigenen Spieler erkannt: weder Live-Snapshot noch Kader-Export "
@@ -227,9 +286,12 @@ def main(argv=None) -> None:
     own = build(players, attrs, cfg, status)
     own["wert_mio"] = own["value"] / 1e6
     own["minutes"] = per90.minuten_anzeige(own)  # Saisonbasis sichtbar
-    cols = ["name", "position", "age", "minutes", "share", "status", "wert_mio", "fv_ratio",
+    ende = own["loan_end"] if "loan_end" in own else pd.Series(None, index=own.index)
+    own["leihe"] = [leihe_text(s, e) or "" for s, e in zip(own["status"], ende, strict=True)]
+    own["_rang"] = own["status"].map({"kader": 0, "leihe_ein": 1, "leihe_aus": 2})
+    cols = ["name", "position", "age", "minutes", "share", "status", "leihe", "wert_mio", "fv_ratio",
             "vs_alter", "contract_end", "vorschlag", "grund"]  # fmt: skip
-    table = own[cols].sort_values(["status", "vorschlag", "name"]).round(2)
+    table = own.sort_values(["_rang", "vorschlag", "name"])[cols].round(2)
     if a.csv:
         table.to_csv(a.csv, index=False)
         print(f"{len(table)} Zeilen -> {a.csv}")

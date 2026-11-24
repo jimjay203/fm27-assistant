@@ -117,7 +117,7 @@ def test_main_without_live_detects_own_club(monkeypatch, capsys):
     })  # fmt: skip
     seen = {}
 
-    def fake_status(p, conn, verein):
+    def fake_status(p, conn, verein, stichtag=None):
         seen.setdefault("calls", []).append(verein)
         own = ["kader" if verein and c == verein else np.nan for c in p["club"]]
         return pd.Series(own, index=p.index)

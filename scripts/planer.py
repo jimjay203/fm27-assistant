@@ -63,8 +63,9 @@ def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
     ist_kader = players["snapshot_id"] == kader[0]
     if verein is None:
         verein = sellkeep.verein_aus_kader(players, kader[0])
-    status = sellkeep.squad_status(players, conn, verein)
-    # Eigene Spieler nur aus dem Kader-Snapshot; dort stehen auch Verliehene (Status leihe_aus).
+    datum = max(d for d in (kader[1], suche[1] if suche else None) if d)
+    status = sellkeep.squad_status(players, conn, verein, datum)  # Leihende gegen das neueste In-Game-Datum
+    # Eigene Spieler nur aus dem Kader-Snapshot; dort stehen auch Verliehene (Status leihe_aus, nicht verfügbar).
     players["eigen"] = status.where(ist_kader)
     players["own"] = players["eigen"].notna()
     # Ein Spieler im Kader und in der Suche: die Kader-Zeile gilt (load_wide behält eine Zeile je uid).
@@ -79,7 +80,7 @@ def daten_db(conn, save: str, verein: str | None = None) -> pd.DataFrame:
     players.attrs["stand"] = {
         "quelle": "db",
         "verein": verein,
-        "datum": max(d for d in (kader[1], suche[1] if suche else None) if d),
+        "datum": datum,
         "kader_datum": kader[1],
         "suche_datum": suche[1] if suche else None,
         "saison": saison,
@@ -109,6 +110,15 @@ def daten_live(url: str, conn, save: str, config_dir=None) -> pd.DataFrame:
         }
     df["in_suche"] = df["uid"].astype(str).isin(uids)
     df["quelle"] = np.where(df["own"], "kader", "live")
+    # Live kennt kein Leihende (der Reader liefert nur aktive Leihen): aus dem letzten Kader-Export ergänzen
+    kader = per90.letzter_snapshot(conn, save, "kader")
+    if kader and "eigen" in df:
+        ende = dict(conn.execute(
+            "SELECT player_uid, loan_end FROM players WHERE snapshot_id = ? AND loan_end IS NOT NULL", (kader[0],)
+        ).fetchall())  # fmt: skip
+        leihe = df["eigen"].isin(["leihe_aus", "leihe_ein"])
+        alt = df["loan_end"] if "loan_end" in df else pd.Series(None, index=df.index, dtype=object)
+        df["loan_end"] = alt.where(alt.notna() | ~leihe, df["uid"].astype(str).map(ende))
     df.attrs["stand"] = {
         "quelle": "live",
         "verein": None,
@@ -187,7 +197,8 @@ def kontext_bauen(
     stand = dict(df.attrs.get("stand") or {})
     stand.update(
         n_spieler=len(df),
-        n_eigene=int(df["own"].sum()) if "own" in df else 0,
+        n_eigene=int(sellkeep.verfuegbar(df["eigen"]).sum()) if "eigen" in df else 0,  # ohne Verliehene
+        n_verliehen=int((df["eigen"] == "leihe_aus").sum()) if "eigen" in df else 0,
         n_suche=int(df["in_suche"].sum()) if "in_suche" in df else 0,
         pool_min_stufe=pool_min_stufe,
         anker_min_n=anker_min_n,
@@ -383,6 +394,7 @@ def _zeilen(ctx: Kontext, sub: pd.DataFrame, mit: str, ohne: str) -> list[dict]:
     for idx, r in sub.iterrows():
         z = {k: _wert(r.get(k)) for k in SPIELER_FELDER}
         z["uid"] = str(r["uid"])
+        z["leihe"] = sellkeep.leihe_text(r.get("eigen"), r.get("loan_end"))  # "verliehen bis ..." / "Leihe bis ..."
         z["bausteine"] = {
             "mit": {k: _wert(v) for k, v in d_m.loc[idx].dropna().items()},
             "ohne": {k: _wert(v) for k, v in d_o.loc[idx].dropna().items()},
@@ -485,10 +497,11 @@ def slot_bewerten(ctx: Kontext, mit_name: str, ohne_name: str, f: Filter):
 
 
 def ohne_wertung(ctx: Kontext, mit: str, bewertet: pd.DataFrame, f: Filter) -> list[dict]:
-    """Eigene Spieler der Positionsgruppe, die keinen Score haben, mit Grund."""
+    """Verfügbare eigene Spieler der Positionsgruppe, die keinen Score haben, mit Grund (Verliehene: verliehen())."""
     rules = ctx.rk["positionsgruppen"][ctx.rk["rollen"][mit]["gruppe"]]
     df = ctx.df
-    sub = df[df["own"] & df["position"].map(lambda p: b.position_ok(p, rules))]
+    da = df["eigen"] != "leihe_aus" if "eigen" in df else True
+    sub = df[df["own"] & da & df["position"].map(lambda p: b.position_ok(p, rules))]
     sub = sub[~sub["uid"].astype(str).isin(set(bewertet["uid"].astype(str)))]
     out = []
     for _, r in sub.sort_values("minutes", ascending=False).iterrows():
@@ -499,8 +512,24 @@ def ohne_wertung(ctx: Kontext, mit: str, bewertet: pd.DataFrame, f: Filter) -> l
             else "zu wenige Statistiken (Abdeckung < 60 %)"
         )
         out.append({"uid": str(r["uid"]), "name": r["name"], "position": r["position"],
-                    "minutes": _wert(mins), "eigen": _wert(r.get("eigen")), "grund": grund})  # fmt: skip
+                    "minutes": _wert(mins), "eigen": _wert(r.get("eigen")), "grund": grund,
+                    "leihe": sellkeep.leihe_text(r.get("eigen"), r.get("loan_end"))})  # fmt: skip
     return out
+
+
+def verliehen(ctx: Kontext, mit: str) -> list[dict]:
+    """Verliehene eigene Spieler der Positionsgruppe: nicht verfügbar, nur zum Im-Blick-Behalten (Leihrückkehrer)."""
+    if "eigen" not in ctx.df:
+        return []
+    rules = ctx.rk["positionsgruppen"][ctx.rk["rollen"][mit]["gruppe"]]
+    df = ctx.df
+    sub = df[(df["eigen"] == "leihe_aus") & df["position"].map(lambda p: b.position_ok(p, rules))]
+    return [
+        {"uid": str(r["uid"]), "name": r["name"], "position": _wert(r.get("position")), "club": _wert(r.get("club")),
+         "minutes": _wert(r.get("minutes")), "loan_end": _wert(r.get("loan_end")),
+         "leihe": sellkeep.leihe_text("leihe_aus", r.get("loan_end"))}
+        for _, r in sub.sort_values("name").iterrows()
+    ]  # fmt: skip
 
 
 # --------------------------------------------------------------------------- Spielersuche
@@ -543,8 +572,8 @@ def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
         min_minuten=s.min_minuten, nur_volle_daten=s.nur_volle_daten, max_alter=s.max_alter,
         max_wert_mio=s.max_wert_mio, gewichtung=s.gewichtung, min_stufe=s.min_stufe,
     )  # fmt: skip
-    own, cand = rollen.kandidaten_slot(
-        df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, s.min_minuten
+    own, cand = rollen.kandidaten_slot(  # Suche: verliehene eigene Spieler mit Hinweis "verliehen bis ..."
+        df, mit, ohne, ctx.rk, ctx.anker, ctx.ref, ctx.defaults, ctx.lg, a, s.min_minuten, verliehene=True
     )
     if s.nur_suche and "in_suche" in cand:
         cand = cand[cand["in_suche"]]
@@ -590,6 +619,7 @@ def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
                 "uid": str(r["uid"]), "name": r.get("name"), "club": _wert(r.get("club")),
                 "position": _wert(r.get("position")), "age": _wert(r.get("age")), "minutes": _wert(mins),
                 "eigen": _wert(r.get("eigen")), "grund": grund,
+                "leihe": sellkeep.leihe_text(r.get("eigen"), r.get("loan_end")),
             })  # fmt: skip
     treffer = _zeilen(ctx, alle.head(s.limit), mit, ohne)
     key_ergaenzen(ctx, treffer, mit_name, ohne_name)
@@ -603,7 +633,7 @@ def suche(ctx: Kontext, mit_name: str, ohne_name: str, s: Suche) -> dict:
 def aufstellung(eigene: dict[str, pd.DataFrame]) -> dict[str, str | None]:
     """Beste eigene Elf ohne Doppelbesetzung: greedy über (Slot, Spieler) absteigend nach paar_gew.
 
-    Verliehene Spieler (eigen = leihe_aus) werden nicht gesetzt."""
+    Verliehene Spieler (eigen = leihe_aus) werden nicht gesetzt (slot_bewerten lässt sie schon weg)."""
     paare = []
     for slot, df in eigene.items():
         for _, r in df.iterrows():
@@ -785,7 +815,7 @@ def plan(
             "hinweise": [r["luecken"] for r in (rm, ro) if r.get("luecken")],
             "gesetzt": gesetzt, "gesetzt_grund": gruende.get(sn), "basis": _wert(basis),
             "eigene": eig, "n_eigene": len(own), "key": key_defs(ctx, mit_n, ohne_n),
-            "ohne_wertung": ohne_wertung(ctx, mit, own, f),
+            "ohne_wertung": ohne_wertung(ctx, mit, own, f), "verliehen": verliehen(ctx, mit),
             "verbesserungen": kand, "n_verbesserungen": len(besser), "n_kandidaten": len(cand),
             "luecken": slot_luecken(ctx, mit, ohne),
             "n_pool": {"mit": ctx.anker[rm["gruppe"]]["n_pool"], "ohne": ctx.anker[ro["gruppe"]]["n_pool"]},
