@@ -19,8 +19,8 @@ slots:
   RV:
     mit: "Inverser Flügelverteidiger"
     ohne: "Pressender Außenverteidiger"
-    stamm: [Arthur, Agu]
-    hinweis: "Seit 03.07.2027: rückt mit Ball neben den DM (Lynen). Bis 2026/27 mit Ball Außenverteidiger."
+    stamm: [Keidel, Gechter, Agu, Pieper, Schmetgens, Reis]
+    hinweis: "Seit 03.07.2027: rückt mit Ball neben den DM (Lynen). Bis 2026/27 mit Ball Außenverteidiger. Seit 06.07.2027 Keidel vor Gechter (Entscheidung Jimmy, entgegen Rollen-Score)."
   "IV r":
     mit: "Innenverteidiger"
     ohne: "Absichernder Innenverteidiger"
@@ -39,6 +39,7 @@ slots:
     mit: "Defensiver Mittelfeldspieler"
     ohne: "Abschirmender Sechser"
     stamm: [Lynen, Keidel, Stark]
+    hinweis: "Keidel seit 06.07.2027 Stamm-RV (Doppelrolle); im Normalfall Stark erster Ersatz."
   "DM Svanberg":
     mit: "Box-to-Box-Spieler"
     ohne: "Pressender Sechser"
@@ -47,8 +48,8 @@ slots:
   "OM r":
     mit: "Flügelspieler"
     ohne: "Mitarbeitender Flügelspieler"
-    stamm: [Mbangula, Erevbenagie]
-    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Mbangula Verkaufskandidat, Transferbedarf OM r."
+    stamm: [Arthur, Erevbenagie, Mbangula]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); Mbangula Verkaufskandidat; kein Transfer OM r nötig."
   "OM z":
     mit: "Vorgeschobener Spielmacher"
     ohne: "Mitarbeitender Zehner"

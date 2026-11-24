@@ -17,18 +17,18 @@ Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 
 | Position | Spieler (Alternativen) | Mit Ball | Ohne Ball |
 |---|---|---|---|
 | TW | Hein (Schlager) | Torwart (Standard) | Linientorhüter |
-| RV | Arthur (Agu) | Inverser Flügelverteidiger (rückt neben den DM Lynen; Inverser Außenverteidiger, der neben den IV schiebt, nicht gewählt) | Pressender Außenverteidiger |
+| RV | Keidel (Gechter; mit Abstrichen Agu, Pieper verletzt, Schmetgens, Reis) | Inverser Flügelverteidiger (rückt neben den DM Lynen; Inverser Außenverteidiger, der neben den IV schiebt, nicht gewählt) | Pressender Außenverteidiger (Entscheidung Jimmy 06.07.2027: Keidel vor Gechter entgegen Rollen-Score, siehe "Besetzung RV/OM r") |
 | IV r | Pfeiffer (Gechter, Stark; Pieper verletzt) | Innenverteidiger | Absichernder Innenverteidiger |
 | IV l | Córdoba (Linksfuß; Ndiaye) | Innenverteidiger | Absichernder Innenverteidiger (statt Stoppender: laut Jimmy riss der Stoppende IV ständig Lücken; subjektive Beobachtung, nicht gemessen) |
 | LV | Ndiaye (Deman) | Flügelverteidiger | Pressender Außenverteidiger |
-| DM l | Lynen (Keidel, Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
+| DM l | Lynen (Keidel, Stark; Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
-| OM r | Mbangula (Erevbenagie) | Flügelspieler | Mitarbeitender Flügelspieler (Schwachstelle: beide Teamwork 8; Mbangula Verkaufskandidat, Transferbedarf OM r) |
+| OM r | Arthur (Erevbenagie, Mbangula solange im Kader) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; Backups Teamwork 8; Mbangula Verkaufskandidat; kein Transfer OM r nötig) |
 | OM z | Chuki (Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner |
 | OM l | Grüll (Manneh) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
 | ST | Kaars (Manneh, Itten) | Halbraumstürmer | Mittelstürmer (Standard) |
 
-Idee mit Ball: links Überladung (Grüll innen, Ndiaye außen), rechts Breite über den Flügelspieler, Arthur rückt innen neben Lynen; Seitenwechsel auf den freien rechten Flügel. Chuki kommt kurz, Kaars läuft in die Schnittstelle, Stage spät in den Strafraum.
+Idee mit Ball: links Überladung (Grüll innen, Ndiaye außen), rechts Breite über den Flügelspieler (Arthur), Keidel rückt innen neben Lynen; Seitenwechsel auf den freien rechten Flügel. Chuki kommt kurz, Kaars läuft in die Schnittstelle, Stage spät in den Strafraum.
 
 Bis 2026/27 (Paket B, 05.12.2026, Kurzfassung; Details in den Test-Abschnitten unten): TW TW/Linientorhüter; RV und LV Außenverteidiger/Pressender AV; IV r IV/Absichernder IV; IV l Spielaufbauender IV (SpIV)/Stoppender IV; DM Lynen DM/Abschirmender Sechser; DM Svanberg (Reis) B2B/Flügelsichernder Sechser; OM r Außenstürmer/Umschaltflügelspieler (Weiser, Dinkçi); OM z Zweiter Stürmer/Mitarbeitender Zehner (Hack, Chuki); OM l Inverser Außenstürmer/Mitarbeitender Flügelspieler; ST Zielspieler/Zentraler Umschaltstürmer (Füllkrug, Itten). Vor 05.12.2026 mit Ball KTW/KIV/KIV. Nicht mehr im Kader (01.07.2027): Friedl, Füllkrug, Hack, Dinkçi, Weiser, Wójcik, Bartesaghi, Regeer, Mayke.
 
@@ -93,7 +93,9 @@ Begründung Defensivlinie Höher (01.07.2027): IV Córdoba 15/15 und Pfeiffer 16
 |---|---|
 | Ballverluste in der eigenen Hälfte | Passspiel zurück auf Standard |
 | Konter über links (Raum hinter Ndiaye) | Ndiaye ohne Ball Abwartender Außenverteidiger |
-| Fehlende Rückarbeit rechts (OM r) | Transfer OM r (Mbangula/Erevbenagie Teamwork 8) |
+| Fehlende Rückarbeit rechts (OM r) | Seit 06.07.2027 Arthur auf OM r; Erevbenagie/Mbangula (je Teamwork 8) nur als Ersatz. Kein OM-r-Transfer geplant |
+| Aufbau über rechts stockt (Ballverluste Keidel, wenig progressive Pässe vom RV) | Gechter auf RV (Rollen-Score Passsicherheit 89 gegen Keidel 1, siehe "Besetzung RV/OM r") |
+| Gegner mit Tempo-Flügel auf unserer rechten Seite | Keidel behalten (Antritt 13, Aggressivität 15, Pressing-Score 73), nicht auf Gechter wechseln |
 | Bälle hinter die Kette | Defensivlinie Standard |
 
 Hinweis: Das Feld (Spitzen-Taktiken im FM-Arena-Aggregator) pressen hoch und spielen Attacking; die Top 23 liegen statistisch gleichauf (66-71 Punkte), der mittlere Block ist weder widerlegt noch belegt.
@@ -385,7 +387,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 |---|---|---|
 | Ballbesitz | Ballbesitz mit etwas Pressing, realistisch moderat (Richtwert ca. 50 %) | Basis 2026/27: Ø 45,0 % Ballbesitz in 10 BL-Spielen (17.10.2026-09.01.2027, DB team_matches; spätere Spiele fehlen in der DB). Analyse 01.-03.07.: Ballsicherheit des Kaders unter BL-Median, Engpass ist der Aufbau aus der Tiefe; Pressing im Mittelfeld stark (Stage, Reis, Svanberg 88.-97. Perzentil). Deshalb moderat, nicht Dominanz |
 | Mentalität | Ausgewogen (Kontrolliert-offensiv nur Option, Heim gegen Schwächere) | Entscheidung Jimmy 03.07.2027 |
-| Bewegung | Gegenläufige Bewegungen und schnelle Flankenwechsel: links Überladung (Grüll innen, Ndiaye außen), rechts Breite (Flügelspieler) + Arthur innen neben Lynen; Seitenwechsel auf den freien rechten Flügel; Chuki kommt kurz, Kaars in die Schnittstelle, Stage spät in den Strafraum | Absicht Jimmy; keine eigene UI-Anweisung für Seitenwechsel, umgesetzt über Rollen + Angriffsbreite Breiter, Passspiel Kürzer, Flache Flanken. Seitenwechsel nicht messbar (kein Feld in DB) |
+| Bewegung | Gegenläufige Bewegungen und schnelle Flankenwechsel: links Überladung (Grüll innen, Ndiaye außen), rechts Breite (Flügelspieler Arthur) + Keidel innen neben Lynen (seit 06.07.2027; vorher Arthur als RV); Seitenwechsel auf den freien rechten Flügel; Chuki kommt kurz, Kaars in die Schnittstelle, Stage spät in den Strafraum | Absicht Jimmy; keine eigene UI-Anweisung für Seitenwechsel, umgesetzt über Rollen + Angriffsbreite Breiter, Passspiel Kürzer, Flache Flanken. Seitenwechsel nicht messbar (kein Feld in DB) |
 | Defensivlinie | Höher, gegen Angreifer mit Tempo >= 17 Standard | log.md 2027-07-01 |
 | Formation | 4-2-3-1 mit Doppelsechs | |
 | Doppelsechs | Lynen: Defensiver Mittelfeldspieler / Abschirmender Sechser (hält). Stage: Box-to-Box-Spieler / Pressender Sechser (presst, spät in den Strafraum) | Laut wissen/rollen.md: ein Sechser presst, einer hält (Paarungshinweis der Quelle, aus FM26, für FM27 ungeprüft). Vorher Option "Testpaket 2", jetzt beschlossen |
@@ -403,13 +405,26 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Risiko | Mitarbeitender Zehner verlangt Rückarbeit; Chuki Einsatzfreude 12, Aggressivität 8. Fallback ohne Ball: Offensiver Mittelfeldspieler (Standardrolle) |
 | Rotation | Svanberg laut Rollentabelle (kein kreativer Zehner: Schlüsselpässe 14., xA 19. Perzentil); extern Skyttä (log.md 2027-07-03, Transfer) |
 
+### Besetzung RV/OM r (Entscheidung Jimmy, 06.07.2027)
+| Punkt | Inhalt |
+|---|---|
+| Entscheidung | OM r: Arthur (vorher RV). RV: Keidel. Rollen unverändert (RV Inverser Flügelverteidiger / Pressender AV; OM r Flügelspieler / Mitarbeitender Flügelspieler) |
+| Backups | RV: Gechter, dann mit Abstrichen Agu, Pieper (verletzt), Schmetgens, Reis. OM r: Erevbenagie, Mbangula (solange im Kader, Verkaufskandidat) |
+| Evidenz gegen die Wahl | Keidel vor Gechter entgegen Rollen-Score (Jimmy). Rollen-Score Vorsaison RV Inverser FV / Pressender AV (nur lesender Wrapper, Snapshots 244/245): Keidel mit 5 (Aufbau 9, Passsicherheit 1) / ohne 60 (Pressing 73), Daten Elversberg BL 2862 Min., Rolle dort unbekannt; Gechter mit 66 (Aufbau 50, Passsicherheit 89) / ohne 50, Daten Hertha 2. BL 3150 Min.; Arthur 41/49 |
+| Begründung Jimmy | Keidel erfüllt den Kernfilter klar (Antritt 13, Aggressivität 15, Ausdauer 15, Einsatz 15, Teamwork 16); Passen/Technik 12. Arthur auf OM R im Spiel "passabel", laut Jimmy bald "gut" |
+| Risiko | Der Inverse FV rückt mit Ball neben Lynen in den Aufbau, genau dort hat Keidel den schwächsten Score (Passsicherheit 1). Vergleichsdaten aus verschiedenen Ligen (Keidel BL, Gechter 2. BL) und unbekannten Rollen |
+| Doppelrolle | Keidel bleibt in der DM-l-Zeile als Backup für Lynen (log.md 2027-07-06, Kader); als Stamm-RV dort praktisch nur, wenn RV anders besetzt ist. Erster Ersatz DM l im Normalfall: Stark |
+| Schalter | Beobachtungs-Schalter: Aufbau rechts stockt -> Gechter auf RV; Tempo-Flügel -> Keidel behalten |
+| Folge Kader | Kein Transfer OM r nötig; Mbangula-Erlös frei |
+| Messkriterium | log.md 2027-07-06 (Taktik/Kader) |
+
 ### Offen (nicht beschlossen)
 | Punkt | Stand / Option |
 |---|---|
-| OM r | Schwachstelle der Rolle Mitarbeitender Flügelspieler: Mbangula und Erevbenagie je Teamwork 8; Mbangula Verkaufskandidat. Transferbedarf OM r (Thema scouting) |
+| OM r | Erledigt 06.07.2027: Arthur auf OM r (Entscheidung Jimmy), kein Transfer nötig. Siehe "Besetzung RV/OM r" |
 | Doppelsechs mit Neuzugang | Amatucci (Wunschziel) als Tiefer Spielmacher neben Lynen; abhängig vom Transfer |
 | Mentalität Heim | Kontrolliert-offensiv gegen Schwächere (Option) |
-| Rollen-Score | rollen.py hat für 2027/28 noch keine Minuten eigener Spieler (n=0 in allen Slots, Stand 03.07.2027); Fit der neuen Rollenpaare für Kaars, Arthur (Inverser Flügelverteidiger), Ndiaye (Flügelverteidiger), Mbangula (Flügelspieler) nicht berechnet. KPI-Zuverlässigkeit gering für Inverser Flügelverteidiger und Halbraumstürmer |
+| Rollen-Score | rollen.py hat für 2027/28 noch keine Minuten eigener Spieler (n=0 in allen Slots, Stand 03.07.2027); Fit der neuen Rollenpaare für Kaars, Ndiaye (Flügelverteidiger) nicht mit eigenen Minuten berechnet; RV/OM r siehe "Besetzung RV/OM r" (Vorsaison, Snapshots 244/245). KPI-Zuverlässigkeit gering für Inverser Flügelverteidiger und Halbraumstürmer |
 | Form ohne Ball | Im UI neu ablesen (alte Angabe 4-3-2-1 galt für Flügelsichernden Sechser und Hack) |
 
 ### Messkriterien Paket "Standard 2027/28" (Prüfung nach Vorbereitung und nach 3 BL-Spielen 2027/28, Datum offen)
