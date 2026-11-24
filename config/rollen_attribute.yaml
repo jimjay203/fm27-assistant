@@ -1,0 +1,392 @@
+# Schlüsselattribute je FM-Rolle (key / preferred / unnecessary)
+# Quelle: sortitoutsi.net, 'FM26: Important Attributes for Every Role' (edgardavids8, 08.11.2025),
+# https://sortitoutsi.net/content/75078 . Aus FM26; laut Jimmy (24.11.2026 real) 1:1 auf FM27 übertragbar.
+# Ohne-Ball-Rollen: nur 'key' (3 Attribute) veröffentlicht. Standard-Rollen ohne Ball (z. B. Mittelstürmer,
+# Innenverteidiger, Außenverteidiger, Flügelspieler, Offensiver Mittelfeldspieler ohne Ball) fehlen in der Quelle.
+# Deutsche Rollennamen nach wissen/rollen.md; Attributnamen wie in player_attributes.
+rollen:
+  "Torwart|mit":
+    englisch: "Goalkeeper"
+    bereich: "TW"
+    phase: mit
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Beweglichkeit", "Konzentration", "Stellungsspiel"]
+    preferred: ["Abschlag", "Eins gegen Eins", "Abwurf", "Antizipation", "Entscheidungen"]
+    unnecessary: ["Exzentrizität"]
+  "Ballspielender Torhüter|mit":
+    englisch: "Ball-Playing Goalkeeper"
+    bereich: "TW"
+    phase: mit
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Abschlag", "Reflexe", "Beweglichkeit", "Konzentration", "Stellungsspiel"]
+    preferred: ["Exzentrizität", "Eins gegen Eins", "Abwurf", "Antizipation", "Nervenstärke", "Entscheidungen", "Passen"]
+  "Kompromissloser Torhüter|mit":
+    englisch: "No-Nonsense Goalkeeper"
+    bereich: "TW"
+    phase: mit
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Beweglichkeit", "Konzentration", "Stellungsspiel"]
+    preferred: ["Eins gegen Eins", "Antizipation", "Entscheidungen"]
+    unnecessary: ["Exzentrizität", "Passen"]
+  "Linientorhüter|ohne":
+    englisch: "Line-Holding Keeper"
+    bereich: "TW"
+    phase: ohne
+    key: ["Stellungsspiel", "Konzentration"]
+  "Libero-Torhüter|ohne":
+    englisch: "Sweeper Keeper"
+    bereich: "TW"
+    phase: ohne
+    key: ["Herauslaufen (Tendenz)", "Antizipation", "Entscheidungen"]
+  "Innenverteidiger|mit":
+    englisch: "Centre-Back"
+    bereich: "IV"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Schnelligkeit"]
+    unnecessary: ["Passen"]
+  "Spielaufbauender Innenverteidiger|mit":
+    englisch: "Ball-Playing Centre-Back"
+    bereich: "IV"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Passen", "Tackling", "Antizipation", "Nervenstärke", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Ballannahme", "Technik", "Aggressivität", "Mut", "Konzentration", "Entscheidungen", "Übersicht", "Schnelligkeit"]
+  "Kompromissloser Innenverteidiger|mit":
+    englisch: "No-Nonsense Centre-Back"
+    bereich: "IV"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Aggressivität", "Mut", "Konzentration", "Schnelligkeit"]
+    unnecessary: ["Passen", "Nervenstärke"]
+  "Halbraumverteidiger|mit":
+    englisch: "Wide Centre-Back"
+    bereich: "IV"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Dribbling", "Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Einsatzfreude", "Antritt", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+    unnecessary: ["Passen"]
+  "Aufrückender Innenverteidiger|mit":
+    englisch: "Advanced Centre-Back"
+    bereich: "IV"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Passen", "Tackling", "Technik", "Antizipation", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Teamwork", "Sprunghöhe", "Kraft"]
+    preferred: ["Dribbling", "Ballannahme", "Aggressivität", "Mut", "Konzentration", "Übersicht", "Schnelligkeit", "Ausdauer"]
+  "Hinterlaufender Halbraumverteidiger|mit":
+    englisch: "Overlapping Centre-Back"
+    bereich: "IV"
+    phase: mit
+    key: ["Flanken", "Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Einsatzfreude", "Sprunghöhe", "Schnelligkeit", "Ausdauer", "Kraft"]
+    preferred: ["Dribbling", "Technik", "Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Ohne Ball", "Stellungsspiel", "Antritt", "Beweglichkeit"]
+  "Absichernder Innenverteidiger|ohne":
+    englisch: "Covering Centre-Back"
+    bereich: "IV"
+    phase: ohne
+    key: ["Antizipation", "Schnelligkeit", "Deckung"]
+  "Stoppender Innenverteidiger|ohne":
+    englisch: "Stopping Centre-Back"
+    bereich: "IV"
+    phase: ohne
+    key: ["Aggressivität", "Tackling", "Kraft"]
+  "Absichernder Halbraumverteidiger|ohne":
+    englisch: "Covering Wide Centre-Back"
+    bereich: "IV"
+    phase: ohne
+    key: ["Antizipation", "Schnelligkeit", "Deckung"]
+  "Stoppender Halbraumverteidiger|ohne":
+    englisch: "Stopping Wide Centre-Back"
+    bereich: "IV"
+    phase: ohne
+    key: ["Aggressivität", "Tackling", "Kraft"]
+  "Außenverteidiger|mit":
+    englisch: "Full-Back"
+    bereich: "AV"
+    phase: mit
+    key: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Teamwork", "Antritt"]
+    preferred: ["Flanken", "Dribbling", "Passen", "Technik", "Entscheidungen", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Inverser Außenverteidiger|mit":
+    englisch: "Inside Full-Back"
+    bereich: "AV"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Kraft"]
+    preferred: ["Dribbling", "Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Einsatzfreude", "Antritt", "Beweglichkeit", "Sprunghöhe", "Schnelligkeit", "Ausdauer"]
+  "Abwartender Außenverteidiger|ohne":
+    englisch: "Holding Full-Back"
+    bereich: "AV"
+    phase: ohne
+    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+  "Pressender Außenverteidiger|ohne":
+    englisch: "Pressing Full-Back"
+    bereich: "AV"
+    phase: ohne
+    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+  "Inverser Flügelverteidiger|mit":
+    englisch: "Inside Wing-Back"
+    bereich: "AV/FV"
+    phase: mit
+    key: ["Passen", "Tackling", "Antizipation", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Teamwork", "Antritt"]
+    preferred: ["Ballannahme", "Deckung", "Technik", "Konzentration", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Spielmachender Flügelverteidiger|mit":
+    englisch: "Playmaking Wing-Back"
+    bereich: "AV/FV"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Tackling", "Technik", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Teamwork", "Übersicht", "Antritt"]
+    preferred: ["Flanken", "Dribbling", "Deckung", "Antizipation", "Konzentration", "Ohne Ball", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Flügelverteidiger|mit":
+    englisch: "Wing-Back"
+    bereich: "AV/FV"
+    phase: mit
+    key: ["Flanken", "Deckung", "Tackling", "Teamwork", "Einsatzfreude", "Antritt", "Schnelligkeit", "Ausdauer"]
+    preferred: ["Dribbling", "Ballannahme", "Passen", "Technik", "Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Stellungsspiel", "Beweglichkeit", "Balance"]
+  "Vorgeschobener Flügelverteidiger|mit":
+    englisch: "Advanced Wing-Back"
+    bereich: "FV"
+    phase: mit
+    key: ["Flanken", "Dribbling", "Technik", "Ohne Ball", "Teamwork", "Einsatzfreude", "Antritt", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+    preferred: ["Ballannahme", "Deckung", "Passen", "Tackling", "Antizipation", "Entscheidungen", "Kreativität", "Stellungsspiel", "Balance"]
+  "Abwartender Flügelverteidiger|ohne":
+    englisch: "Holding Wing-Back"
+    bereich: "FV"
+    phase: ohne
+    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+  "Pressender Flügelverteidiger|ohne":
+    englisch: "Pressing Wing-Back"
+    bereich: "FV"
+    phase: ohne
+    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+  "Defensiver Mittelfeldspieler|mit":
+    englisch: "Defensive Midfielder"
+    bereich: "DM"
+    phase: mit
+    key: ["Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Teamwork"]
+    preferred: ["Ballannahme", "Deckung", "Passen", "Aggressivität", "Nervenstärke", "Entscheidungen", "Einsatzfreude", "Ausdauer", "Kraft"]
+  "Box-to-Box-Spieler|mit":
+    englisch: "Box-to-Box Midfielder"
+    bereich: "DM"
+    phase: mit
+    key: ["Passen", "Tackling", "Ohne Ball", "Teamwork", "Einsatzfreude", "Ausdauer"]
+    preferred: ["Dribbling", "Abschluss", "Ballannahme", "Weitschüsse", "Technik", "Aggressivität", "Antizipation", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Antritt", "Balance", "Schnelligkeit", "Kraft"]
+  "Box-to-Box-Spielmacher|mit":
+    englisch: "Box-to-Box Playmaker"
+    bereich: "DM"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht", "Einsatzfreude", "Ausdauer"]
+    preferred: ["Dribbling", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Antritt", "Beweglichkeit", "Balance", "Schnelligkeit"]
+  "Tiefer Spielmacher|mit":
+    englisch: "Deep-Lying Playmaker"
+    bereich: "DM"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht"]
+    preferred: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Einsatzfreude", "Balance", "Ausdauer"]
+  "Abkippender Sechser|mit":
+    englisch: "Half-Back"
+    bereich: "DM"
+    phase: mit
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Teamwork", "Sprunghöhe", "Kraft"]
+    preferred: ["Ballannahme", "Passen", "Aggressivität", "Mut", "Nervenstärke", "Entscheidungen", "Einsatzfreude", "Ausdauer"]
+  "Halbverteidiger|ohne":
+    englisch: "Dropping Defensive Midfielder"
+    bereich: "DM"
+    phase: ohne
+    key: ["Stellungsspiel", "Entscheidungen", "Antizipation"]
+  "Pressender Sechser|ohne":
+    englisch: "Pressing Defensive Midfielder"
+    bereich: "DM"
+    phase: ohne
+    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+  "Abschirmender Sechser|ohne":
+    englisch: "Screening Defensive Midfielder"
+    bereich: "DM"
+    phase: ohne
+    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+  "Flügelsichernder Sechser|ohne":
+    englisch: "Wide Covering Defensive Midfielder"
+    bereich: "DM"
+    phase: ohne
+    key: ["Antizipation", "Schnelligkeit", "Einsatzfreude"]
+  "Zentraler Mittelfeldspieler|mit":
+    englisch: "Central Midfielder"
+    bereich: "ZM"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Tackling", "Entscheidungen", "Teamwork"]
+    preferred: ["Technik", "Antizipation", "Nervenstärke", "Konzentration", "Ohne Ball", "Stellungsspiel", "Übersicht", "Einsatzfreude", "Ausdauer"]
+  "Vorgeschobener Spielmacher|mit":
+    englisch: "Advanced Playmaker"
+    bereich: "ZM"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht"]
+    preferred: ["Flanken", "Dribbling", "Antizipation", "Kreativität", "Antritt", "Beweglichkeit"]
+  "Spielmacher|mit":
+    englisch: "Midfield Playmaker"
+    bereich: "ZM"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht"]
+    preferred: ["Dribbling", "Tackling", "Antizipation", "Kreativität", "Stellungsspiel", "Einsatzfreude", "Beweglichkeit", "Ausdauer"]
+  "Weiter Achter|mit":
+    englisch: "Wide Central Midfielder"
+    bereich: "ZM"
+    phase: mit
+    key: ["Ballannahme", "Passen", "Tackling", "Entscheidungen", "Teamwork"]
+    preferred: ["Flanken", "Dribbling", "Technik", "Antizipation", "Nervenstärke", "Konzentration", "Ohne Ball", "Stellungsspiel", "Übersicht", "Einsatzfreude", "Beweglichkeit", "Ausdauer"]
+  "Pressender Achter|ohne":
+    englisch: "Pressing Central Midfielder"
+    bereich: "ZM"
+    phase: ohne
+    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+  "Abschirmender Achter|ohne":
+    englisch: "Screening Central Midfielder"
+    bereich: "ZM"
+    phase: ohne
+    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+  "Flügelsichernder Achter|ohne":
+    englisch: "Wide Covering Central Midfielder"
+    bereich: "ZM"
+    phase: ohne
+    key: ["Antizipation", "Schnelligkeit", "Einsatzfreude"]
+  "Äußerer Mittelfeldspieler|mit":
+    englisch: "Wide Midfielder"
+    bereich: "M außen"
+    phase: mit
+    key: ["Flanken", "Passen", "Technik", "Teamwork", "Einsatzfreude", "Schnelligkeit", "Ausdauer"]
+    preferred: ["Dribbling", "Ballannahme", "Antizipation", "Nervenstärke", "Ohne Ball", "Übersicht", "Antritt", "Beweglichkeit"]
+  "Mitarbeitender Außenspieler|ohne":
+    englisch: "Tracking Wide Midfielder"
+    bereich: "M außen"
+    phase: ohne
+    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+  "Äußerer Umschaltspieler|ohne":
+    englisch: "Wide Outlet Wide Midfielder"
+    bereich: "M außen"
+    phase: ohne
+    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+  "Halbraumflügel|mit":
+    englisch: "Inside Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: mit
+    key: ["Dribbling", "Ballannahme", "Technik", "Nervenstärke", "Teamwork", "Antritt", "Beweglichkeit"]
+    preferred: ["Flanken", "Weitschüsse", "Passen", "Antizipation", "Kreativität", "Ohne Ball", "Übersicht", "Einsatzfreude", "Balance", "Schnelligkeit", "Ausdauer"]
+  "Äußerer Spielmacher|mit":
+    englisch: "Playmaking Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: mit
+    key: ["Flanken", "Dribbling", "Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht", "Antritt"]
+    preferred: ["Antizipation", "Kreativität", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Flügelspieler|mit":
+    englisch: "Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: mit
+    key: ["Flanken", "Dribbling", "Technik", "Teamwork", "Antritt", "Beweglichkeit", "Schnelligkeit"]
+    preferred: ["Ballannahme", "Passen", "Antizipation", "Kreativität", "Ohne Ball", "Einsatzfreude", "Balance", "Ausdauer"]
+  "Außenstürmer|mit":
+    englisch: "Wide Forward"
+    bereich: "Flügel (M/OM R/L)"
+    phase: mit
+    key: ["Dribbling", "Ballannahme", "Technik", "Antizipation", "Ohne Ball", "Antritt", "Beweglichkeit", "Schnelligkeit"]
+    preferred: ["Flanken", "Abschluss", "Passen", "Nervenstärke", "Kreativität", "Einsatzfreude", "Balance", "Ausdauer"]
+  "Inverser Außenstürmer|mit":
+    englisch: "Inside Forward"
+    bereich: "Flügel (M/OM R/L)"
+    phase: mit
+    key: ["Dribbling", "Ballannahme", "Technik", "Antizipation", "Nervenstärke", "Ohne Ball", "Antritt", "Beweglichkeit"]
+    preferred: ["Flanken", "Abschluss", "Weitschüsse", "Passen", "Kreativität", "Übersicht", "Einsatzfreude", "Balance", "Schnelligkeit", "Ausdauer"]
+  "Inverser Umschaltflügelspieler|ohne":
+    englisch: "Inside Outlet Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: ohne
+    key: ["Ohne Ball", "Entscheidungen", "Antizipation"]
+  "Mitarbeitender Flügelspieler|ohne":
+    englisch: "Tracking Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: ohne
+    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+  "Umschaltflügelspieler|ohne":
+    englisch: "Wide Outlet Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: ohne
+    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+  "Offensiver Mittelfeldspieler|mit":
+    englisch: "Attacking Midfielder"
+    bereich: "OM zentral"
+    phase: mit
+    key: ["Ballannahme", "Weitschüsse", "Passen", "Technik", "Nervenstärke", "Kreativität", "Ohne Ball"]
+    preferred: ["Flanken", "Dribbling", "Abschluss", "Antizipation", "Entscheidungen", "Übersicht", "Antritt", "Beweglichkeit"]
+  "Halbraumspieler|mit":
+    englisch: "Channel Midfielder"
+    bereich: "OM zentral"
+    phase: mit
+    key: ["Flanken", "Ballannahme", "Passen", "Technik", "Nervenstärke", "Ohne Ball", "Einsatzfreude", "Antritt"]
+    preferred: ["Dribbling", "Weitschüsse", "Antizipation", "Entscheidungen", "Kreativität", "Übersicht", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Freigeist|mit":
+    englisch: "Free Role"
+    bereich: "OM zentral"
+    phase: mit
+    key: ["Dribbling", "Ballannahme", "Weitschüsse", "Passen", "Technik", "Nervenstärke", "Kreativität", "Ohne Ball", "Übersicht"]
+    preferred: ["Flanken", "Abschluss", "Antizipation", "Entscheidungen", "Antritt", "Beweglichkeit"]
+  "Zweiter Stürmer|mit":
+    englisch: "Second Striker"
+    bereich: "OM zentral"
+    phase: mit
+    key: ["Abschluss", "Ballannahme", "Antizipation", "Nervenstärke", "Ohne Ball", "Antritt"]
+    preferred: ["Dribbling", "Weitschüsse", "Passen", "Technik", "Konzentration", "Entscheidungen", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Zentraler Umschaltzehner|ohne":
+    englisch: "Central Outlet Attacking Midfielder"
+    bereich: "OM zentral"
+    phase: ohne
+    key: ["Ohne Ball", "Entscheidungen", "Antizipation"]
+  "Ausweichender Umschaltzehner|ohne":
+    englisch: "Splitting Outlet Attacking Midfielder"
+    bereich: "OM zentral"
+    phase: ohne
+    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+  "Mitarbeitender Zehner|ohne":
+    englisch: "Tracking Attacking Midfielder"
+    bereich: "OM zentral"
+    phase: ohne
+    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+  "Mittelstürmer|mit":
+    englisch: "Centre Forward"
+    bereich: "ST"
+    phase: mit
+    key: ["Abschluss", "Ballannahme", "Kopfballtechnik", "Technik", "Nervenstärke", "Ohne Ball", "Antritt", "Kraft"]
+    preferred: ["Dribbling", "Passen", "Antizipation", "Entscheidungen", "Beweglichkeit", "Balance", "Sprunghöhe", "Schnelligkeit"]
+  "Halbraumstürmer|mit":
+    englisch: "Channel Forward"
+    bereich: "ST"
+    phase: mit
+    key: ["Dribbling", "Abschluss", "Ballannahme", "Technik", "Nervenstärke", "Ohne Ball", "Einsatzfreude", "Antritt"]
+    preferred: ["Flanken", "Kopfballtechnik", "Passen", "Antizipation", "Entscheidungen", "Beweglichkeit", "Balance", "Schnelligkeit", "Ausdauer"]
+  "Hängende Spitze|mit":
+    englisch: "Deep-Lying Forward"
+    bereich: "ST"
+    phase: mit
+    key: ["Abschluss", "Ballannahme", "Technik", "Nervenstärke", "Ohne Ball", "Kraft"]
+    preferred: ["Dribbling", "Passen", "Antizipation", "Entscheidungen", "Teamwork", "Übersicht", "Balance"]
+  "Falsche Neun|mit":
+    englisch: "False Nine"
+    bereich: "ST"
+    phase: mit
+    key: ["Dribbling", "Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht", "Antritt"]
+    preferred: ["Abschluss", "Antizipation", "Kreativität", "Beweglichkeit", "Balance"]
+  "Knipser|mit":
+    englisch: "Poacher"
+    bereich: "ST"
+    phase: mit
+    key: ["Abschluss", "Kopfballtechnik", "Antizipation", "Nervenstärke", "Konzentration", "Ohne Ball", "Antritt"]
+    preferred: ["Ballannahme", "Technik", "Entscheidungen", "Balance"]
+  "Zielspieler|mit":
+    englisch: "Target Forward"
+    bereich: "ST"
+    phase: mit
+    key: ["Abschluss", "Kopfballtechnik", "Aggressivität", "Mut", "Nervenstärke", "Ohne Ball", "Balance", "Sprunghöhe", "Kraft"]
+    preferred: ["Ballannahme", "Antizipation", "Entscheidungen", "Teamwork"]
+  "Zentraler Umschaltstürmer|ohne":
+    englisch: "Central Outlet Centre Forward"
+    bereich: "ST"
+    phase: ohne
+    key: ["Ohne Ball", "Entscheidungen", "Antizipation"]
+  "Ausweichender Umschaltstürmer|ohne":
+    englisch: "Splitting Outlet Centre Forward"
+    bereich: "ST"
+    phase: ohne
+    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+  "Mitarbeitender Mittelstürmer|ohne":
+    englisch: "Tracking Centre Forward"
+    bereich: "ST"
+    phase: ohne
+    key: ["Deckung", "Einsatzfreude", "Ausdauer"]

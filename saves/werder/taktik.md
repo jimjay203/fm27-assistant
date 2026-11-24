@@ -94,7 +94,7 @@ Begründung Defensivlinie Höher (01.07.2027): IV Córdoba 15/15 und Pfeiffer 16
 | Ballverluste in der eigenen Hälfte | Passspiel zurück auf Standard |
 | Konter über links (Raum hinter Ndiaye) | Ndiaye ohne Ball Abwartender Außenverteidiger |
 | Fehlende Rückarbeit rechts (OM r) | Seit 06.07.2027 Arthur auf OM r; Erevbenagie/Mbangula (je Teamwork 8) nur als Ersatz. Kein OM-r-Transfer geplant |
-| Aufbau über rechts stockt (Ballverluste Keidel, wenig progressive Pässe vom RV) | Gechter auf RV (Rollen-Score Passsicherheit 89 gegen Keidel 1, siehe "Besetzung RV/OM r") |
+| Aufbau über rechts stockt (Ballverluste Keidel, wenig progressive Pässe vom RV); Schwelle: Ø über 3 Spiele Passquote (Team) < 83,5 % und progressive Pässe (Team) < 33,5 (je P25 der 13 Pflichtspiele 2026/27, team_match_stats 17.10.2026-09.01.2027) | Gechter auf RV (Rollen-Score Passsicherheit 89 gegen Keidel 1, siehe "Besetzung RV/OM r"); gegen Tempo-Flügel Keidel behalten |
 | Gegner mit Tempo-Flügel auf unserer rechten Seite | Keidel behalten (Antritt 13, Aggressivität 15, Pressing-Score 73), nicht auf Gechter wechseln |
 | Bälle hinter die Kette | Defensivlinie Standard |
 
@@ -414,7 +414,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Begründung Jimmy | Keidel erfüllt den Kernfilter klar (Antritt 13, Aggressivität 15, Ausdauer 15, Einsatz 15, Teamwork 16); Passen/Technik 12. Arthur auf OM R im Spiel "passabel", laut Jimmy bald "gut" |
 | Risiko | Der Inverse FV rückt mit Ball neben Lynen in den Aufbau, genau dort hat Keidel den schwächsten Score (Passsicherheit 1). Vergleichsdaten aus verschiedenen Ligen (Keidel BL, Gechter 2. BL) und unbekannten Rollen |
 | Doppelrolle | Keidel bleibt in der DM-l-Zeile als Backup für Lynen (log.md 2027-07-06, Kader); als Stamm-RV dort praktisch nur, wenn RV anders besetzt ist. Erster Ersatz DM l im Normalfall: Stark |
-| Schalter | Beobachtungs-Schalter: Aufbau rechts stockt -> Gechter auf RV; Tempo-Flügel -> Keidel behalten |
+| Schalter | Beobachtungs-Schalter: Aufbau rechts stockt -> Gechter auf RV; Tempo-Flügel -> Keidel behalten. Schwelle (Jimmy, 06.07.2027): Ø über 3 Spiele Passquote (Team) < 83,5 % und progressive Pässe (Team) < 33,5 (je P25 der 13 Pflichtspiele 2026/27, team_match_stats 17.10.2026-09.01.2027; wie Spickzettel 2027/28) |
 | Folge Kader | Kein Transfer OM r nötig; Mbangula-Erlös frei |
 | Messkriterium | log.md 2027-07-06 (Taktik/Kader) |
 
