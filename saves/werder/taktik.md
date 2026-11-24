@@ -127,6 +127,25 @@ Einträge mit "Bis 2026/27" beziehen sich auf alte Rollen/Spieler (Dinkçi, Weis
 | Bis 2026/27: Favorit, Auswärts | Mentalität Ausgewogen, Tempo nur beim Umschalten; Lynen + Reis |
 | Bis 2026/27: Hohes Pressing gegen uns | Keine Änderung nötig (Torhüter, IV, Zielspieler spielen schon direkt) |
 
+### Ausweichpläne Offensive (Entscheidung Jimmy, 07.07.2027)
+Anlass: Gegner nimmt Chuki aus dem Spiel (gegnerische Sechser stören gut). Evidenz: Rollenlogik + Key-Attribute aus config/rollen_attribute.yaml (FM26-Quelle, laut Jimmy 1:1 FM27), nicht getestet. Je Anlass nur einen Plan ziehen.
+
+| Plan | Änderung | Idee | Key-Attribute / Daten | Risiko / Preis |
+|---|---|---|---|---|
+| B – Zehner weicht aus | Chuki mit Ball Halbraumspieler statt Vorgeschobener Spielmacher (ohne Ball weiter Mitarbeitender Zehner) | Chuki zieht in Halbraum/Flügel; folgt der gegnerische Sechser, wird die Zehnerzone frei für späte Läufe von Stage (Box-to-Box) und Kaars (lässt sich fallen); sonst ist Chuki frei | Halbraumspieler mit Ball: Chuki Key Ø 13,9, alle ≥ 12 | Überschneidung mit Grüll (Inverser Außenstürmer) im linken Halbraum |
+| C – Zweiter Mann vorne | Chuki mit Ball Zweiter Stürmer (läuft hinter den Sechser zwischen die IV); Alternative: Manneh als Zweiter Stürmer für Chuki | Zweiter Angreifer bindet die IV, der Sechser verliert seinen Bezugspunkt | Zweiter Stürmer mit Ball: Manneh Key Ø 13,5, keins < 12; Chuki Key Ø 13,2 (Abschluss 11). Rollen-Score Vorsaison Chuki als Zweiter Stürmer 89 (bester Wert), 8 Tore 2026/27 | Aufbau hängt an der Doppelsechs (Stage Box-to-Box Key Ø 15,5) |
+| D – Direkt über außen (letzte 20–30 Min. / tiefer Block) | ST Itten als Zielspieler für Kaars; Flankenstil Hohe Flanken statt Flache Flanken; optional Pass-Aufnahme Pass in die Tiefe | Flanken von außen auf einen Kopfballspieler statt Spiel durch die zugestellte Mitte | Zielspieler mit Ball: Itten Key Ø 15,0 (Kopfball 16, Sprunghöhe 16; Ausdauer 10 → nur Joker ~30 Min.). Flanken: Arthur 13, Ndiaye 12 | Itten nicht für 90 Min.; weg vom Kurzpass-Standard |
+
+Auslöser (eigene Setzungen, nicht aus Daten – die DB hat keine Ballkontakte/Pässe je Spieler und Spiel):
+
+| Auslöser | Plan |
+|---|---|
+| Halbzeit: Chuki ≤ 1 Schlüsselpass und gegnerischer Sechser mit vielen Tacklings/abgefangenen Bällen | B |
+| Nach 60 Min. weiter kaum Großchancen (0–1) | C |
+| Ab 70. Min. Rückstand oder tiefer Block des Gegners (deckt sich mit Spickzettel "Rückstand ab ca. 70.") | D |
+
+Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik).
+
 ### Abgeschlossener Test: Arthur Pressender Außenverteidiger (Beschluss Jimmy, 21.11.2026)
 - Änderung: Arthur ohne Ball: Pressender Außenverteidiger statt Abwartender Außenverteidiger (Rolle mit Ball bleibt Außenverteidiger). Von Jimmy bestätigt; Umgesetzt und seit dem 21.11.2026 fest im Standard.
 - Begründung: Beide Gegentore aus dem Spiel entstanden nach Flügelspiel über unsere rechte Seite. Paderborn: Obermair am Flügel frei, Pieper rückte auf, Arthur und Svanberg standen nach innen gezogen. Mainz: Mwene trug den Ball in ca. 3 Sekunden etwa 20 m bis kurz vor die Grundlinie; bei der Ballannahme war Weiser ca. 14 m, Arthur ca. 17 m entfernt, danach hielt Arthur ca. 4 m Abstand und griff nicht an. Arthur Schnelligkeit/Antritt 15/15.
