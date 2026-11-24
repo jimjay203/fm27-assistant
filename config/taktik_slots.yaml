@@ -38,7 +38,7 @@ slots:
   "DM Lynen":
     mit: "Defensiver Mittelfeldspieler"
     ohne: "Abschirmender Sechser"
-    stamm: [Lynen, Keidel]
+    stamm: [Lynen, Keidel, Stark]
   "DM Svanberg":
     mit: "Box-to-Box-Spieler"
     ohne: "Pressender Sechser"

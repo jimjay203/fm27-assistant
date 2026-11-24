@@ -21,7 +21,7 @@ Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 
 | IV r | Pfeiffer (Gechter, Stark; Pieper verletzt) | Innenverteidiger | Absichernder Innenverteidiger |
 | IV l | Córdoba (Linksfuß; Ndiaye) | Innenverteidiger | Absichernder Innenverteidiger (statt Stoppender: laut Jimmy riss der Stoppende IV ständig Lücken; subjektive Beobachtung, nicht gemessen) |
 | LV | Ndiaye (Deman) | Flügelverteidiger | Pressender Außenverteidiger |
-| DM l | Lynen (Keidel) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
+| DM l | Lynen (Keidel, Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
 | OM r | Mbangula (Erevbenagie) | Flügelspieler | Mitarbeitender Flügelspieler (Schwachstelle: beide Teamwork 8; Mbangula Verkaufskandidat, Transferbedarf OM r) |
 | OM z | Chuki (Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner |
