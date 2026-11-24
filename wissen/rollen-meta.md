@@ -47,6 +47,17 @@ nicht (Annahme: Bundesliga, Liga-Rang 4, Ansehen "Exzellent").
 
 Hybridrollen: Spieler, der zerstören und danach gestalten soll, braucht Destroyer- und Creator-Attribute.
 
+### Verwendung im Scouting (Entscheidung Jimmy, 06.07.2027)
+Der volle Filter (alle Baseline- plus Creator/Destroyer-Attribute ≥ Schwelle) ist zu streng: Bei der OM-r-Suche
+(Suche 31.05.2027) erfüllte ihn 1 von 40 Kandidaten (Marktwert 29,6 Mio.), 0 von 120 unter 28 Jahren. Häufigste
+Ausfälle: Sprunghöhe, Konzentration, Übersicht.
+
+- **Kernfilter (Pflicht)**: Antritt, Aggressivität, Ausdauer, Einsatzfreude, Teamwork je ≥ Liga-Schwelle
+  (Bundesliga 12). Bei Scouting-Spannen gilt die Mitte; Spanne nennen.
+- **Übrige Schwellen (Hinweis)**: Konzentration, Sprunghöhe und die Creator/Destroyer-Attribute nur ausweisen
+  ("x von n verfehlt"), nicht ausschließen. Sprunghöhe für Flügelspieler und OM praktisch irrelevant.
+- Rangfolge bleibt: Rollen-Score (rollen.py) zuerst, Kernfilter als Gegenprobe.
+
 Abgleich mit [attribut-gewichte.md](attribut-gewichte.md): Dort (FM-Arena) sind Antritt und Schnelligkeit die
 stärksten Hebel; hier zählen zusätzlich Aggressivität, Konzentration, Einsatzfreude als "Meta". Widerspruch
 nicht aufgelöst; Schnelligkeit fehlt hier. Verwendung: als Mindestfilter (Gegenprobe), nicht als Gewichtung.

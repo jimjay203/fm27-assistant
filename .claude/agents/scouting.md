@@ -15,6 +15,9 @@ Pflichtquellen (über analyst oder direkt per `uv run`):
 - Kandidaten: `rollen.py --slot "<Slot>" [--max-alter N] [--min-stufe Gut]` (Rollen-Fit, Liga-Gewicht, `vs_top`).
 - Preis/Leistung: `value.py --rolle … --sort fv --nur-moneyball` (Kosten, Value-Score, xG-Delta, Fair Value mit R²).
 - Gegenprobe: `benchmark.py --profil …`; Liga-Stufe aus config/ligen.yaml.
+- Kernfilter (Pflicht, wissen/rollen-meta.md): Antritt, Aggressivität, Ausdauer, Einsatzfreude, Teamwork je ≥ 12
+  (Bundesliga; Schwelle je Liga-Stufe dort). Übrige Meta-Schwellen (Konzentration, Sprunghöhe, Creator/Destroyer)
+  nur als Hinweis „x von n verfehlt“ ausweisen, nicht ausschließen. Quelle der Schwellen für FM27 ungeprüft.
 - Eigener Kader zum Vergleich: `rollen.py --detail NAME`, `sellkeep.py` (wer geht, wo entsteht Bedarf).
 - Budget, Kaufoptionen der Leihspieler: kontext.md. Marktwert/Gehalt live exakt, sonst Spanne des Spiels nennen.
 - Fremde Attribute nur als Scouting-Spanne (lo–hi) ausweisen.
