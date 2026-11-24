@@ -4,6 +4,22 @@
 # Ohne-Ball-Rollen: nur 'key' (3 Attribute) veröffentlicht. Standard-Rollen ohne Ball (z. B. Mittelstürmer,
 # Innenverteidiger, Außenverteidiger, Flügelspieler, Offensiver Mittelfeldspieler ohne Ball) fehlen in der Quelle.
 # Deutsche Rollennamen nach wissen/rollen.md; Attributnamen wie in player_attributes.
+# Verwendung: scripts/rollen_attr.py (Spalten key_mit/key_ohne/key_fehlt in rollen.py). Der Filter weist Ausfälle
+# aus, verwirft aber nicht (außer mit --key-max-fehlt); die Entscheidung trifft Scouting.
+
+# Mindestwert eines key-Attributs je Liga-Stufe des ZIELVEREINS (wir), nicht der Liga des Spielers.
+# Schwellen aus wissen/rollen-meta.md (Elite 12 · L1 11 · L2 10 · L3 9 · L4 8). Zuordnung Elite/L1/... zu den
+# Ansehen-Stufen aus config/ligen.yaml von Claude vorgeschlagen, von Jimmy bestätigt (in-game 07.07.2027);
+# Bundesliga (Exzellent) = 12. Schwellen selbst aus einer Tabelle unbekannter FM-Version, für FM27 ungeprüft.
+# Stufen ohne Eintrag: liga_schwelle_default.
+liga_schwelle:
+  Herausragend: 12
+  Exzellent: 12
+  Beeindruckend: 11
+  Gut: 10
+  "Recht gut": 9
+liga_schwelle_default: 8
+
 rollen:
   "Torwart|mit":
     englisch: "Goalkeeper"

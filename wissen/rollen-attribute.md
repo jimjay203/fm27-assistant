@@ -12,7 +12,8 @@ FM27 übertragbar** (Rollensystem mit/ohne Ball identisch). Maschinenlesbar: `co
 - Deutsche Rollennamen nach [rollen.md](rollen.md). Unsicher: Half-Back = Abkippender Sechser,
   Dropping Defensive Midfielder = Halbverteidiger.
 - Verwendung: Rollenabhängiger Mindestfilter im Scouting ersetzt den positionsneutralen Kernfilter aus
-  [rollen-meta.md](rollen-meta.md) (Liga-Schwelle von dort, Bundesliga 12).
+  [rollen-meta.md](rollen-meta.md) (Liga-Schwelle von dort, Bundesliga 12). Umsetzung: `scripts/rollen_attr.py`,
+  Spalten key_mit/key_ohne/key_fehlt/key_unsicher in `rollen.py` (weist aus, verwirft nicht).
 
 
 ## TW

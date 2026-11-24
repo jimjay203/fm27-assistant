@@ -15,9 +15,15 @@ Pflichtquellen (über analyst oder direkt per `uv run`):
 - Kandidaten: `rollen.py --slot "<Slot>" [--max-alter N] [--min-stufe Gut]` (Rollen-Fit, Liga-Gewicht, `vs_top`).
 - Preis/Leistung: `value.py --rolle … --sort fv --nur-moneyball` (Kosten, Value-Score, xG-Delta, Fair Value mit R²).
 - Gegenprobe: `benchmark.py --profil …`; Liga-Stufe aus config/ligen.yaml.
-- Kernfilter (Pflicht, wissen/rollen-meta.md): Antritt, Aggressivität, Ausdauer, Einsatzfreude, Teamwork je ≥ 12
-  (Bundesliga; Schwelle je Liga-Stufe dort). Übrige Meta-Schwellen (Konzentration, Sprunghöhe, Creator/Destroyer)
-  nur als Hinweis „x von n verfehlt“ ausweisen, nicht ausschließen. Quelle der Schwellen für FM27 ungeprüft.
+- Rollenbasierter Attribut-Filter (Pflicht; ersetzt den Kernfilter aus wissen/rollen-meta.md): Spalten `key_mit`,
+  `key_ohne` (Ø key-Attribute), `key_fehlt` (x/n key unter Liga-Schwelle des Zielvereins, Bundesliga 12),
+  `key_unsicher` (lo < Schwelle) aus `rollen.py`; Ausfälle je Spieler mit `--detail NAME`. Quelle
+  `config/rollen_attribute.yaml` (sortitoutsi FM26); Zuordnung Liga-Stufe -> Schwelle ist eine Annahme.
+  Der Filter weist aus, er verwirft nicht: jeden Ausfall nennen und bewerten, nicht automatisch ausschließen.
+  Die Ausgabe nennt je Rolle die häufigsten Ausfälle im Kandidatenpool; fast nie erfüllte key-Attribute (z. B.
+  Deckung beim Mitarbeitenden Zehner, Vorsaison 93 % verfehlt) sind ein Hinweis auf die Rolle, kein
+  Ausschlussgrund. Fehlt eine Rolle ohne Ball in der Quelle (z. B. Mittelstürmer), gibt es dafür keinen Filter.
+  `--key-max-fehlt N` nur bewusst einsetzen und nennen.
 - Eigener Kader zum Vergleich: `rollen.py --detail NAME`, `sellkeep.py` (wer geht, wo entsteht Bedarf).
 - Budget, Kaufoptionen der Leihspieler: kontext.md. Marktwert/Gehalt live exakt, sonst Spanne des Spiels nennen.
 - Fremde Attribute nur als Scouting-Spanne (lo–hi) ausweisen.

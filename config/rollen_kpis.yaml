@@ -164,7 +164,11 @@ positionsgruppen:
   dm: [{pos: DM}]
   zm: [{pos: M, seiten: [C]}, {pos: DM}]
   zm_seite: [{pos: M}]
-  om: [{pos: AM, seiten: [C]}, {pos: M, seiten: [C]}]
+  # om: nur Spieler mit OM (Z) (Pflicht). Bis 2026-11-24 auch M (Z): der Pool bestand dann zu ~40 % aus reinen
+  # Achtern/Sechsern ("DM, M (Z)" u. a., Stand DB 244/245: 379 von 957), deren Pass-Volumen echte Zehner bei
+  # Aufbau/Passsicherheit systematisch unter "Schlecht" drückte (Chuki als Vorgeschobener Spielmacher: Aufbau 3,
+  # Passsicherheit 1). Auch die Kandidatenliste der om-Rollen verlangt damit OM (Z). Entscheidung Jimmy 2026-11-24.
+  om: [{pos: AM, seiten: [C]}]
   fluegel: [{pos: AM, seiten: [R, L]}, {pos: M, seiten: [R, L]}]
   st: [{pos: ST}]
 

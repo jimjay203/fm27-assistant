@@ -9,6 +9,11 @@ Statistiken, Rollen-Score = gewichtetes Mittel der Bausteine, Paar-Score = Mitte
 `paar_gew` = Paar-Score x Liga-Gewicht (Stufe der Liga, Schema je Positionsgruppe). `vs_top` = Anteil der Topclub-
 Spieler derselben Positionsgruppe, den der Spieler je Statistik übertrifft (50 = Topclub-Median).
 
+Attribut-Filter (scripts/rollen_attr.py, config/rollen_attribute.yaml): key_mit/key_ohne = Ø der key-Attribute der
+Rollen, key_fehlt = x/n key-Attribute unter der Liga-Schwelle des Zielvereins (Mitte der Spanne), key_unsicher =
+nicht sicher darüber (lo < Schwelle). Ergänzt nur; Rangfolge bleibt paar_gew. --key-max-fehlt N blendet
+Kandidaten mit mehr als N Ausfällen aus (Spieler ohne Attribute bleiben, markiert).
+
 Aufruf:  uv run python scripts/rollen.py --slot "OM r" [--max-alter 28] [--top 8]
          uv run python scripts/rollen.py --alle --top 5
          uv run python scripts/rollen.py --rolle-mit "Zielspieler" --rolle-ohne "Zentraler Umschaltstürmer"
@@ -28,6 +33,7 @@ import benchmark as b
 import common
 import ligen
 import live
+import rollen_attr
 
 PERZENTILE = {"schlecht": 25, "ok": 55, "gut": 90}
 
@@ -208,15 +214,56 @@ COLS = [
     "paar",
     "paar_gew",
     "vs_top",
+    "key_mit",
+    "key_ohne",
+    "key_fehlt",
+    "key_unsicher",
     "wert_mio",
     "contract_end",
 ]
+
+
+def attribut_spalten(sub, s, rk, ra, conn, save, schwelle):
+    """rollen_attr-Spalten für die Zeilen von sub (Rollenpaar des Slots s); Attribute aus der DB."""
+    d_mit = rollen_attr.rolle_def(s["mit_anzeige"], "mit", ra, rk)
+    d_ohne = rollen_attr.rolle_def(s["ohne_anzeige"], "ohne", ra, rk)
+    bev = dict(zip(sub["uid"], sub["snapshot_id"], strict=True)) if "snapshot_id" in sub else None
+    attrs, _ = rollen_attr.attribute_laden(conn, save, sub["uid"], bev)
+    cols = rollen_attr.spalten(sub, attrs, d_mit and d_mit[1], d_ohne and d_ohne[1], schwelle)
+    return cols, attrs, d_mit, d_ohne
+
+
+def _key_fehlt_text(t: pd.DataFrame) -> pd.Series:
+    return pd.Series(
+        [
+            "-" if pd.isna(f) else f"{int(f)}/{int(n)}"
+            for f, n in zip(t["key_fehlt"], t["key_n"], strict=True)
+        ],
+        index=t.index,
+        dtype=object,
+    )
+
+
+def _attr_detail(r, schwelle) -> str:
+    def f(v):
+        return "-" if v is None or pd.isna(v) else f"{v:.1f}"
+
+    kf = "-" if pd.isna(r["key_fehlt"]) else f"{int(r['key_fehlt'])}/{int(r['key_n'])}"
+    ku = "-" if pd.isna(r["key_unsicher"]) else str(int(r["key_unsicher"]))
+    return (
+        f"Attribute (Schwelle {schwelle}): key_mit {f(r['key_mit'])}, key_ohne {f(r['key_ohne'])}, "
+        f"pref_mit {f(r['pref_mit'])}, key_fehlt {kf}, unsicher {ku}"
+    )
 
 
 def _tabelle(t: pd.DataFrame) -> str:
     from tabulate import tabulate
 
     t = t.assign(wert_mio=t["value"] / 1e6)
+    if "key_fehlt" in t:
+        t = t.assign(key_fehlt=_key_fehlt_text(t))
+    else:
+        t = t.assign(**{c: np.nan for c in ("key_mit", "key_ohne", "key_fehlt", "key_unsicher")})
     if "eigen" in t and t["own"].any():
         t = t.assign(status=t["eigen"].fillna(""))
         cols = [*COLS[:2], "status", *COLS[2:]]
@@ -255,6 +302,16 @@ def main(argv=None) -> None:
     ap.add_argument("--topclubs", type=int, default=20)
     ap.add_argument("--top", type=int, default=8)
     ap.add_argument("--detail", metavar="NAME", help="Baustein-Scores für Spieler mit diesem Namen")
+    ap.add_argument(
+        "--key-max-fehlt",
+        type=int,
+        help="Kandidaten mit mehr als N key-Attributen unter der Liga-Schwelle ausblenden (Default: nur ausweisen)",
+    )
+    ap.add_argument(
+        "--attr-schwelle",
+        type=int,
+        help="Mindestwert key-Attribute (Default: Liga-Stufe des eigenen Vereins, config/rollen_attribute.yaml)",
+    )
     a = ap.parse_args(argv)
 
     rk = common.load_yaml("rollen_kpis.yaml", a.config_dir)
@@ -293,6 +350,15 @@ def main(argv=None) -> None:
     anker = anker_je_gruppe(df, rk, specs, lg, defaults, a.pool_min_stufe)
     clubs = b.topclub_liste(df, a.topclubs)
     ref = topclub_referenz_je_gruppe(df, rk, specs, clubs, defaults)
+    ra = rollen_attr.laden(a.config_dir)
+    ziel = rollen_attr.ziel_stufe(df, lg)
+    schwelle = (
+        a.attr_schwelle
+        if a.attr_schwelle is not None
+        else rollen_attr.schwelle_fuer_stufe(ziel, ra)
+    )
+    conn = common.connect(a.db)
+    save = common.resolve_save(a.save)
 
     print(
         f"# Rollen-Score (Daten vom {df.attrs.get('date')}; Anker: Perzentile {list(PERZENTILE.values())} der Spieler "
@@ -303,6 +369,12 @@ def main(argv=None) -> None:
             df, s["mit"], s["ohne"], rk, anker, ref, defaults, lg, a, a.min_minuten_eigene
         )
         rm, ro = rk["rollen"][s["mit"]], rk["rollen"][s["ohne"]]
+        own_a, _, d_mit, d_ohne = attribut_spalten(own, s, rk, ra, conn, save, schwelle)
+        cand_a, cand_attrs, _, _ = attribut_spalten(cand, s, rk, ra, conn, save, schwelle)
+        own, cand = pd.concat([own, own_a], axis=1), pd.concat([cand, cand_a], axis=1)
+        n_vor = len(cand)
+        if a.key_max_fehlt is not None:
+            cand = cand[cand["key_fehlt"].isna() | (cand["key_fehlt"] <= a.key_max_fehlt)]
 
         print(
             f"\n## {name}: {_anzeige(s, 'mit')} (Zuverlässigkeit {rm['verlaesslichkeit']}) / {_anzeige(s, 'ohne')} (Zuverlässigkeit {ro['verlaesslichkeit']})"
@@ -314,6 +386,31 @@ def main(argv=None) -> None:
             print(f"  Hinweis Zuordnung: {s['hinweis']}")
         if s.get("stamm"):
             print(f"  Laut taktik.md eingesetzt: {', '.join(s['stamm'])}")
+        quelle = (
+            "Argument --attr-schwelle"
+            if a.attr_schwelle is not None
+            else f"Stufe Zielverein '{ziel}'"
+        )
+        print(
+            f"  Attribut-Filter: Schwelle {schwelle} ({quelle}; Zuordnung Stufe->Schwelle = Annahme)"
+        )
+        for ph, d in (("mit", d_mit), ("ohne", d_ohne)):
+            if d is None:
+                print(
+                    f"    {ph}: '{s[f'{ph}_anzeige']}|{ph}' fehlt in config/rollen_attribute.yaml (Quelle ohne "
+                    "Eintrag) -> kein Attribut-Filter für diese Phase"
+                )
+                continue
+            hf = rollen_attr.haeufigste_ausfaelle(cand_attrs.values(), d[1], schwelle)
+            txt = ", ".join(f"{k} {p:.0f} %" for k, p, _ in hf) or "-"
+            print(
+                f"    {ph} ({d[0]}): key {', '.join(d[1]['key'])}. Häufigste Ausfälle der Kandidaten: {txt}"
+            )
+        if a.key_max_fehlt is not None:
+            print(
+                f"  --key-max-fehlt {a.key_max_fehlt}: {n_vor - len(cand)} von {n_vor} Kandidaten ausgeblendet "
+                f"({int(cand['key_fehlt'].isna().sum())} ohne Attribute bleiben drin)"
+            )
         if a.detail:
             for sub in (own, cand):
                 hit = sub[sub["name"].fillna("").str.contains(a.detail, case=False)]
@@ -329,6 +426,9 @@ def main(argv=None) -> None:
                             f"    {lbl}: "
                             + ", ".join(f"{bn} {v:.0f}" for bn, v in d.iloc[0].dropna().items())
                         )
+                    print(f"    {_attr_detail(r, schwelle)}")
+                    if r["ausfaelle"]:
+                        print(f"    Ausfälle: {r['ausfaelle']}")
             continue
         print(f"\nEigene Spieler (ab {a.min_minuten_eigene} Min.), n={len(own)}")
         print(_tabelle(own.sort_values("paar", ascending=False)) if len(own) else "  keine")
@@ -338,7 +438,10 @@ def main(argv=None) -> None:
     print(
         "\npaar = Mittel aus mit und ohne Ball (0 = Schlecht, 50 = OK, 100 = Gut; Perzentile 25/55/90 des Pools). "
         f"vs_top: 50 = Topclub-Median. Topclubs = Top {a.topclubs} nach Kaderwert. Marktwert = gespeicherter Basiswert."
+        f"\nkey_mit/key_ohne = Ø key-Attribute (Spanne: Mitte), key_fehlt = x/n unter Schwelle {schwelle}, "
+        "key_unsicher = lo < Schwelle (Quelle sortitoutsi FM26, config/rollen_attribute.yaml). Weist aus, verwirft nicht."
     )
+    conn.close()
 
 
 if __name__ == "__main__":

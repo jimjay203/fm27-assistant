@@ -47,7 +47,20 @@ nicht (Annahme: Bundesliga, Liga-Rang 4, Ansehen "Exzellent").
 
 Hybridrollen: Spieler, der zerstören und danach gestalten soll, braucht Destroyer- und Creator-Attribute.
 
-### Verwendung im Scouting (Entscheidung Jimmy, 06.07.2027)
+### Abgelöst durch rollenbasierten Filter (Entscheidung Jimmy, 24.11.2026 real)
+Der positionsneutrale Kernfilter unten ist **abgelöst durch den rollenbasierten Filter** (key-/preferred-Attribute
+je Rolle, `config/rollen_attribute.yaml`, Quelle sortitoutsi FM26, siehe [rollen-attribute.md](rollen-attribute.md)).
+Umsetzung: `scripts/rollen_attr.py`, Spalten `key_mit`, `key_ohne`, `key_fehlt` (x/n unter Schwelle, Spanne: Mitte),
+`key_unsicher` (lo < Schwelle) in `rollen.py --slot/--alle/--detail`; optional `--key-max-fehlt N`.
+- Schwelle wie oben (Elite 12 · L1 11 · L2 10 · L3 9 · L4 8), aus der Liga des **Zielvereins**, nicht der des
+  Spielers. Zuordnung zu den Ansehen-Stufen (config/ligen.yaml) als **Annahme** (Claude, ungeprüft):
+  Herausragend/Exzellent 12 (Bundesliga) · Beeindruckend 11 · Gut 10 · Recht gut 9 · darunter 8.
+- Der Filter verwirft nicht, er weist aus; Scouting entscheidet. Rangfolge bleibt `paar_gew`.
+- Rollen ohne Eintrag in der Quelle (Standard-Rollen ohne Ball, z. B. Mittelstürmer, Innenverteidiger, Torwart):
+  kein Ohne-Ball-Filter, wird in der Ausgabe genannt.
+- Der Abschnitt unten bleibt als Historie (Grundlage der Entscheidungen bis 24.11.2026, z. B. Keidel 06.07.2027).
+
+### Verwendung im Scouting (Entscheidung Jimmy, 06.07.2027; abgelöst, s. o.)
 Der volle Filter (alle Baseline- plus Creator/Destroyer-Attribute ≥ Schwelle) ist zu streng: Bei der OM-r-Suche
 (Suche 31.05.2027) erfüllte ihn 1 von 40 Kandidaten (Marktwert 29,6 Mio.), 0 von 120 unter 28 Jahren. Häufigste
 Ausfälle: Sprunghöhe, Konzentration, Übersicht.
