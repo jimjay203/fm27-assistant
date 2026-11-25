@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    BepInEx-6-Plugin (IL2CPP) für FM27: schreibt Match-Ereignisse und Positionen als JSONL mit (Test).
+    Bauen:      dotnet build -c Release            (FM27-Ordner über FM27_DIR oder -p:FM27Dir=...)
+    Installieren: dotnet build -c Release -p:Installieren=true  (kopiert nach BepInEx\plugins\SpielLogger)
+    Referenzen kommen aus dem Spielordner (BepInEx\core, BepInEx\interop) und werden nicht mitkopiert.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>SpielLogger</AssemblyName>
+    <RootNamespace>SpielLogger</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <FM27Dir Condition="'$(FM27Dir)' == '' and '$(FM27_DIR)' != ''">$(FM27_DIR)</FM27Dir>
+    <FM27Dir Condition="'$(FM27Dir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Football Manager 27</FM27Dir>
+    <BepCore>$(FM27Dir)\BepInEx\core</BepCore>
+    <BepInterop>$(FM27Dir)\BepInEx\interop</BepInterop>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(BepCore)\BepInEx.Core.dll" Private="false" />
+    <Reference Include="$(BepCore)\BepInEx.Unity.IL2CPP.dll" Private="false" />
+    <Reference Include="$(BepCore)\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="$(BepCore)\Il2CppInterop.Common.dll" Private="false" />
+    <Reference Include="$(BepInterop)\Il2Cppmscorlib.dll" Private="false" />
+    <Reference Include="$(BepInterop)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(BepInterop)\UnityEngine.UIElementsModule.dll" Private="false" />
+    <Reference Include="$(BepInterop)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="$(BepInterop)\Unity.InputSystem.dll" Private="false" />
+    <Reference Include="$(BepInterop)\Unity.Mathematics.dll" Private="false" />
+    <Reference Include="$(BepInterop)\FM.Match.dll" Private="false" />
+    <Reference Include="$(BepInterop)\SI.Match.dll" Private="false" />
+    <Reference Include="$(BepInterop)\SI.MatchTypes.dll" Private="false" />
+    <Reference Include="$(BepInterop)\SI.Core.dll" Private="false" />
+    <Reference Include="$(BepInterop)\SI.Bindable.dll" Private="false" />
+    <Reference Include="$(BepInterop)\SI.Marshalling.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="Installieren" AfterTargets="Build" Condition="'$(Installieren)' == 'true'">
+    <!-- Läuft FM27, ist die DLL gesperrt, lässt sich aber umbenennen: neue Version greift beim nächsten Start -->
+    <PropertyGroup>
+      <Ziel>$(FM27Dir)\BepInEx\plugins\SpielLogger\SpielLogger.dll</Ziel>
+    </PropertyGroup>
+    <Delete Files="$(Ziel).alt" ContinueOnError="true" />
+    <Exec Command="move /Y &quot;$(Ziel)&quot; &quot;$(Ziel).alt&quot; &gt;NUL" Condition="Exists('$(Ziel)') and !Exists('$(Ziel).alt')" ContinueOnError="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(FM27Dir)\BepInEx\plugins\SpielLogger" />
+    <Message Importance="high" Text="Installiert nach $(FM27Dir)\BepInEx\plugins\SpielLogger" />
+  </Target>
+</Project>

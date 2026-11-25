@@ -1,6 +1,7 @@
 db/
 saves/*/data/raw/*
 !saves/*/data/raw/.gitkeep
+saves/*/data/analyse/
 .venv/
 __pycache__/
 .pytest_cache/

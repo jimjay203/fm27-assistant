@@ -1,0 +1,105 @@
+# Automatisch aus F9-Export 20261125_192150_328.json und SpielLogger-Mitschnitt 2027-11-07_eintracht-frankfurt.jsonl.gz
+datum: 2027-11-07
+gegner: Eintracht Frankfurt
+ort: H
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '3'
+  - '3'
+  ballbesitz:
+  - '42'
+  - '58'
+  schuesse:
+  - '16'
+  - '11'
+  schuesse_aufs_tor:
+  - '8'
+  - '5'
+  xg:
+  - 3,05
+  - 1,38
+  ppda:
+  - 15,49
+  - 8,24
+  grosschancen:
+  - '2'
+  - '1'
+  ecken:
+  - '7'
+  - '4'
+  prog_paesse:
+  - '46'
+  - '54'
+  passquote:
+  - '84'
+  - '88'
+  flankenquote:
+  - '20'
+  - '9'
+  fouls:
+  - '9'
+  - '11'
+  gelb:
+  - '2'
+  - '2'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '125'
+  - '126'
+  notenschnitt:
+  - 6,8
+  - 7,0
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+  rolle: TW
+- slot: RV
+  spieler: Keidel
+  uid: 2000069240
+  rolle: IFV
+- slot: IV r
+  spieler: Pfeiffer
+  uid: 91184447
+  rolle: IV
+  vorlagen: 1
+- slot: IV l
+  spieler: Córdoba
+  uid: 2000079847
+  rolle: IV
+- slot: LV
+  spieler: Oppie
+  uid: 91204749
+  rolle: FV
+- slot: DM r
+  spieler: Lynen
+  uid: 18096574
+  rolle: B2B
+- slot: DM l
+  spieler: Stage
+  uid: 27104982
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+  vorlagen: 1
+- slot: OM z
+  spieler: Chuki
+  uid: 2000139344
+  rolle: VSm
+  tore: 1
+- slot: OM l
+  spieler: Grüll
+  uid: 16195163
+  rolle: IAS
+  tore: 1
+- slot: ST
+  spieler: Manneh
+  uid: 2000195393
+  rolle: HRS
+  tore: 1

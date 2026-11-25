@@ -1,0 +1,33 @@
+# Ereignisse aus dem SpielLogger (Name ohne "Event") -> Kategorie. Reihenfolge zählt: der erste Treffer gewinnt.
+# Namen stammen aus CommentaryEventDefinitions (SI.MatchTypes.dll). Nicht getroffene Namen meldet spielimport.py
+# als "sonstiges" – dann hier ergänzen.
+kategorien:
+  tor: ['^GoalScored']
+  kommentar:
+    - '^(Great|GoodTeamGoal|Silent|Thrilling|Landmark|FirstEver|DummyCommentary|HighlightMarker|InstantReply)'
+    - '^(GoalOne|PlayerSecondGoal|ScrappyGoal|PromisingPosition|CloseOffsideCall|TimeAddedOn)'
+    - '^(RefereeCallsPlayerOver|RefereePlayedAdvantage|RefereeWavesPlayOn|TickingOff|MakingChange)'
+    - '^In(Left|Right|Central)(Attack|Midfield|Defence)'
+    - '^Player(TakesTimeWithSetPiece|TimeWasting)'
+    - '^(Wait$|MissedInterception|MissedHeader|FindsAGap)'
+  lauf: ['^PlayerLooksToLatchOnto']
+  zuruf: ['^TouchlineShout']
+  konter: ['^TeamOnCounter']
+  wechsel: ['Substitution', '^ChangeFormation']
+  karte: ['Card$']
+  elfmeter: ['LeadsToPenalty', '^(Take|Restart)Penalty']
+  foul: ['^Foul', '^HandBall']
+  abseits: ['Offside']
+  standard: ['^Take(ShortCorner|Corner|ThrowIn|FreeKick|GoalKick)', '^KickOff', '^StartMatch']
+  pfiff: ['^Restart']
+  block: ['^BlockShot']
+  parade: ['^Goalkeeper(TippedWide|Held|Punch)', '^GoalieCatchBall']
+  torwart: ['^Goalkeeper(ClearBall|ClearanceFromHeld|ThrowPass)', '^PickUpFreeBall']
+  schuss: ['^DefaultShot', '^Shot', '^Header(Over|HitsPost|Wide)']
+  flanke: ['^Cross']
+  dribbling: ['^(RunPastOpponent|CreateSpaceWithSkillMove|PlayBallAheadAndRunOnto)']
+  abfangen: ['Intercept']
+  zweikampf: ['Tackle', '^KeyChallenge', '^RobsUnderPressure']
+  luftduell: ['^WinsJumpforball', '^PlayersRaceForLongBall', '^LooseBall']
+  klaerung: ['^(ClearBall|ClearForThrow|HeadClear|HeadsBallBehind|WinsBallInAirAndClears|HeadIt)']
+  pass: ['^(AttemptPass|Pass|HeadedPass|HeaderPass|HeaderBackToKeeper|OneTwoPass|LongBall|PpmMoves)']
