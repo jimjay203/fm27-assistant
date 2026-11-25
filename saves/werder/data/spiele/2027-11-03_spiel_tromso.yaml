@@ -1,0 +1,42 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# EL. Tore: Manneh 13' (Arthur), Medina 22' (Arthur), Haugan Pedersen 29' (Tromsø; direkter Freistoß, Hein lässt prallen, Abstauber),
+# Stage 47' (Grüll), Topp 80' (Oppie), Erevbenagie 85' (Topp). Arthur zurück (Spieler des Spiels 9,22).
+# Rotation: Stark DM l (statt Lynen), Oppie LV, Gechter RV, Medina OM z. Topp als ST für Manneh angenommen (Plan D EL);
+# Erevbenagie für Grüll auf OM l eingewechselt (Angabe Jimmy).
+datum: 2027-11-03
+gegner: Tromsø
+ort: H
+wettbewerb: Europa League
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [5, 1]
+  ballbesitz: [52, 48]
+  schuesse: [15, 9]
+  schuesse_aufs_tor: [9, 6]
+  xg: [3.57, 0.56]
+  ppda: [12.56, 19.91]
+  grosschancen: [4, 0]
+  ecken: [7, 3]
+  prog_paesse: [74, 26]
+  passquote: [89, 87]
+  flankenquote: [13, 0]
+  fouls: [2, 9]
+  gelb: [1, 3]
+  rot: [0, 0]
+  laufleistung: [125, 121]
+  notenschnitt: [7.4, 6.5]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 7.3}
+  - {slot: RV, rolle: IFV, spieler: Gechter, note: 7.0}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 7.0}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 7.2}
+  - {slot: LV, rolle: FV, spieler: Oppie, note: 8.4, vorlagen: 1}
+  - {slot: DM l, rolle: DM, spieler: Stark, note: 7.0}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 7.4, tore: 1}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 9.2, vorlagen: 2}
+  - {slot: OM z, rolle: VSm, spieler: Medina, note: 6.9, tore: 1}
+  - {slot: OM l, rolle: IAS, spieler: Grüll, note: 7.6, vorlagen: 1}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 7.2, tore: 1}
+  - {slot: ST, rolle: HRS, spieler: Topp, einwechslung: true, tore: 1, vorlagen: 1}
+  - {slot: OM l, rolle: IAS, spieler: Erevbenagie, einwechslung: true, tore: 1}
