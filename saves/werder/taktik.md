@@ -532,7 +532,25 @@ Kompakter Mittelblock, schnelles direktes Umschalten über die schnellen Flügel
 - Beobachtung Spiel 1 (4:1 gegen Paderborn, 17.10.2026, Gegentor Vidović in der 17. Minute): Die Rollen ohne Ball waren wie in der Tabelle eingestellt (Jimmy bestätigt: Pieper Absichernder IV, Svanberg Flügelsichernder Sechser, Arthur Abwartender AV, Dinkçi Umschaltflügelspieler). Trotzdem rückte Pieper auf, Arthur und Svanberg wurden nach innen gezogen, und der Flügel (Obermair) war offen. Der Spieltext zu "Verhalten Defensivlinie: Ausgewogen" sagt, die Abwehr entscheide situationsabhängig, ob sie herausrückt; das passt zu dem Verhalten. Die Rolle ohne Ball hielt Pieper nicht in der Kette. Einzelbeobachtung (n=1), Deutung nicht getestet.
 - Geprüft (Jimmy bestätigt): Reis hat ohne Ball dieselbe Rolle wie zuvor Svanberg, Flügelsichernder Sechser.
 - Spiel 2 (Mainz A, 2:3, 24.10.2026): xG für/gegen 0,58/2,04; Schüsse 7/16. Gegentore: Amiri 53' direkter Freistoß, Gruber 71' Freistoßflanke ins Zentrum (Vorlage Amiri), Tietz 84' Abpraller nach Flanke von der Grundlinie. Amiris Freistoß lag ca. 28 m vor dem Tor, ca. 15 m seitlich der Mitte (unsere linke Seite); Friedl hatte gefoult (Jimmy). Mauer im Screenshot: Friedl und Füllkrug.
-- VERALTET (Vermerk 09.10.2027): Alle Standard-Besetzungen unten (defensiv und offensiv) sind Stand 2026/27. Friedl ist verkauft; weitere damals genannte Spieler sind evtl. nicht mehr im Kader (laut Zeile "Nicht mehr im Kader (01.07.2027)" oben u. a. Füllkrug, Hack, Dinkçi, Weiser). Neuer Screenshot der Standards (defensiv/offensiv, Ecken links/rechts, Freistöße) nötig. Verlauf bleibt stehen.
+- VERALTET (Vermerk 09.10.2027; für defensive Ecken aufgehoben am 30.10.2027, siehe nächster Punkt): Die übrigen Standard-Besetzungen unten (defensive Freistöße/Schussbereich/Außen/Tief, offensive Standards) sind Stand 2026/27. Friedl ist verkauft; weitere damals genannte Spieler sind evtl. nicht mehr im Kader (laut Zeile "Nicht mehr im Kader (01.07.2027)" oben u. a. Füllkrug, Hack, Dinkçi, Weiser). Neuer Screenshot der Standards (offensiv, Freistöße) nötig. Verlauf bleibt stehen.
+- Defensive Ecken, Stand 30.10.2027 (Entscheidung Jimmy 30.10.2027; ersetzt die Stände 05.12.2026 und 01.11.2026 unten). Größen: db/fm27.sqlite player_info.groesse, Snapshot 250 vom 04.09.2027. Werte = Kopfballtechnik/Sprunghöhe/Kraft.
+  | Gruppe / Anweisung | Spieler |
+  |---|---|
+  | Kopfballstarke Verteidiger: Manndeckung (stärkster Kopfballer) | Pfeiffer (197 cm, 15/17/16; Konzentration 11) |
+  | Kopfballstarke Verteidiger: Manndeckung (zweitstärkster) | Córdoba (189, 14/15/16) |
+  | Raumdeckung Fünfmeterraum (Zentrum) | Stage (187, 15/15/14) |
+  | Raumdeckung Fünfmeterraum (Kurzer Pfosten) | Lynen (185, 11/12/14; Stellungsspiel 15, Antizipation 16) |
+  | Raumdeckung Fünfmeterraum (Langer Pfosten) | Ndiaye (182, 12/13/12) |
+  | Kurzen Pfosten decken | Grüll (184, 11/11/13) |
+  | Kettenhund: Zurückziehen | Keidel (178, 6/8/11) |
+  | Strafraumrand / zweiter Ball | Chuki (176), Guliashvili (175) – im Ecken-Setup höchstens zwei Plätze "Strafraumrand" möglich (laut Jimmy, log.md 2026-10-27 Standards) |
+  | Konterspieler: Vorne bleiben | Manneh (179; Antritt/Schnelligkeit 15/15) |
+  | TW | Hein (193) |
+  Rotation: Pfeiffer/Córdoba → Pieper (192), Gechter (191), Stark (190) (je 14/15/14), Andrade (187, 14/14/14); Stage → Svanberg (185, 12/12) oder IV-Backup; Ndiaye → Oppie (184, 11/12); Topp (192, 13/15/15) bei Einwechslung Manndeckung statt Konterspieler.
+  Nur Vorschlag, nicht beschlossen: Alvero (202, 13/18/16; DM, 0 Minuten 2027/28, Ergänzungsspieler) als späte Einwechslung bei knapper Führung und vielen Gegner-Ecken, Manndecker gegen den stärksten Kopfballer.
+  Prioritätenliste: "Kopfballstarke Verteidiger" muss vor "Blockspieler" stehen (Korrektur Jimmy 27.10.2026).
+  Kennzeichnung: "Konterspieler bindet Gegner" und "Antizipation am kurzen Pfosten wichtiger als Sprunghöhe" = aus FM-Vorversionen, für FM27 ungeprüft.
+  Anlass: 0:1 Gruber 3' Mainz A 30.10.2027 (Kopfball nach Ecke; Szene nicht ausgewertet, ob Zuteilung oder Ausführung). Messkriterium: Gegentore nach Ecken/zweiten Bällen je BL-Spiel; Prüfung nach 5 BL-Spielen ab 30.10.2027 (log.md 2027-10-30).
 - Defensive Standards (Stand 27.10.2026, vor DFB-Pokal bei LSK Hansa). Ursache der früheren Verteilung vermutlich die Prioritätenliste: Blockspieler stand vor Kopfballstarke Verteidiger, deshalb waren Pieper, Friedl und Füllkrug in der Mauer, während Grüll, Reis und Dinkçi (Kopfballtechnik/Sprunghöhe 11/11, 8/9, 11/13) die Kopfballduelle deckten. Jimmy hat die Prioritätenliste korrigiert (Ursache nicht belegt, n=2 Standardtore).
   Neues Setup, Defensive, Variante 1:
   - Schussbereich: Kopfballstarke Verteidiger (Manndeckung) Pieper, Füllkrug, Lynen; Kettenhunde (Zurückziehen) Arthur, Hack; Mauer Friedl, Ndiaye, Grüll, bei Bedarf Dinkçi, Reis.
