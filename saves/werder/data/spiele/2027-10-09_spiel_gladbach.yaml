@@ -1,0 +1,40 @@
+# Spielbericht-Screenshot + Szenen 0:1 (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# Drittes BL-Spiel mit Tempo Geringer (Ende Tempo-Test). Tore: Kleindienst 2' (Scally, Flanke von rechts
+# ohne Druck), Manneh 38', Kaars 75' (Chuki). Ab ~2' in-game "Gegnerische Flanken: Flanken verhindern"
+# auch in der BL (Jimmy). Kaars eingewechselt (Spieler des Spiels 7,63), Slot/Minute unbekannt.
+datum: 2027-10-09
+gegner: Mönchengladbach
+ort: H
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [2, 1]
+  ballbesitz: [53, 47]
+  schuesse: [4, 5]
+  schuesse_aufs_tor: [4, 2]
+  xg: [0.46, 0.32]
+  ppda: [16.61, 14.56]
+  grosschancen: [1, 0]
+  ecken: [2, 3]
+  prog_paesse: [39, 35]
+  passquote: [88, 87]
+  flankenquote: [4, 6]
+  fouls: [7, 9]
+  gelb: [1, 2]
+  rot: [0, 0]
+  laufleistung: [120, 124]
+  notenschnitt: [6.8, 6.6]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 6.5}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.6}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 6.6}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 6.8}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.5}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.8}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.8}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 6.5}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 7.2, vorlagen: 1}
+  - {slot: OM l, rolle: IAS, spieler: Grüll, note: 6.4}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 7.1, tore: 1}
+  - {slot: ST, rolle: HRS, spieler: Kaars, einwechslung: true, note: 7.6, tore: 1}
