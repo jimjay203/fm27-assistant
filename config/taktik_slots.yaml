@@ -9,7 +9,7 @@
 # RV/LV: Rolle mit Ball aus der Gruppe fv (Flügelverteidiger-Rollen), ohne Ball aus av (Pressender AV); rollen.py
 # bewertet jede Rolle in ihrer eigenen Gruppe.
 
-quelle: "taktik.md, Rollentabelle Standard ab Vorbereitung 2027/28 (Entscheidung Jimmy 03.07.2027)"
+quelle: "taktik.md, Rollentabelle Standard ab Vorbereitung 2027/28 (Entscheidung Jimmy 03.07.2027), Besetzung Stand 30.10.2027"
 
 slots:
   TW:
@@ -48,20 +48,20 @@ slots:
   "OM r":
     mit: "Flügelspieler"
     ohne: "Mitarbeitender Flügelspieler"
-    stamm: [Arthur, Guliashvili, Chuki]
-    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); kein Transfer OM r nötig. Seit 17.07.2027: Erevbenagie verliehen (bis 29.06.2028), Mbangula nicht mehr im Kader; Chuki nur als Plan E (mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler), Rollen-Score hier mit Standardrollen gerechnet. Seit 04.09.2027 Backups Guliashvili, dann Chuki (Plan E). Guliashvili erster Backup trotz Rollen-Score Vorsaison 32 (Daten vermutlich aus anderer Position), Neubewertung nach 5 BL-Spielen mit echten Einsätzen."
+    stamm: [Arthur, Guliashvili, Chuki, Agu]
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Außenstürmer / Umschaltflügelspieler). Seit 06.07.2027 Arthur (vorher RV); kein Transfer OM r nötig. Seit 17.07.2027: Mbangula nicht mehr im Kader; Chuki nur als Plan E (mit Ball Äußerer Spielmacher, ohne Ball Inverser Umschaltflügelspieler), Rollen-Score hier mit Standardrollen gerechnet. Seit 04.09.2027 Backups Guliashvili, dann Chuki (Plan E). Guliashvili erster Backup trotz Rollen-Score Vorsaison 32 (Daten vermutlich aus anderer Position), Neubewertung nach 5 BL-Spielen mit echten Einsätzen. Arthur verletzt seit 16.10.2027 (Dauer offen), Guliashvili vertritt; fällt auch er aus: Plan E. Agu am 20.10.2027 als zusätzliche offensive Wechseloption getestet, keine beschlossene Reihenfolge."
   "OM z":
     mit: "Vorgeschobener Spielmacher"
     ohne: "Mitarbeitender Zehner"
     stamm: [Chuki, Medina, Svanberg]
-    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer. Seit 17.07.2027 Medina Rotation hinter Chuki (nicht DM); Medina verletzt seit 23.08.2027."
+    hinweis: "Seit 03.07.2027: mit Ball Vorgeschobener Spielmacher statt Zweiter Stürmer. Seit 17.07.2027 Medina Rotation hinter Chuki (nicht DM); Medina wieder im Einsatz (Start OM z in Meppen 27.10.2027; Verletzung vom 23.08.2027 überholt, Genesungsdatum nicht erfasst)."
   "OM l":
     mit: "Inverser Außenstürmer"
     ohne: "Mitarbeitender Flügelspieler"
     stamm: [Grüll, Guliashvili, Erevbenagie]
-    hinweis: "Grüll verletzt seit 14.08.2027. Seit 04.09.2027 Backups Guliashvili, Erevbenagie (Manneh jetzt Stamm-ST). Guliashvili erster Backup trotz Rollen-Score Vorsaison 28 (Daten vermutlich aus anderer Position), Neubewertung nach 5 BL-Spielen mit echten Einsätzen."
+    hinweis: "Grüll in den 6 Spielen 09.10.–30.10.2027 wieder auf OM l (Verletzung vom 14.08.2027 überholt, Genesungsdatum nicht erfasst). Seit 04.09.2027 Backups Guliashvili, Erevbenagie (Manneh jetzt Stamm-ST). Solange Arthur fehlt und Guliashvili OM r spielt, ist Erevbenagie erster Backup OM l (Entscheidung Jimmy, Datenstand 31.10.2027). Guliashvili erster Backup trotz Rollen-Score Vorsaison 28 (Daten vermutlich aus anderer Position), Neubewertung nach 5 BL-Spielen mit echten Einsätzen."
   ST:
     mit: "Halbraumstürmer"
     ohne: "Mittelstürmer"
     stamm: [Manneh, Kaars, Topp]
-    hinweis: "Seit 03.07.2027 (bis 2026/27 Zielspieler / Zentraler Umschaltstürmer). Seit 04.09.2027 Manneh Stamm, Kaars Backup/Joker; Itten nicht mehr im Kader. Topp nur Plan D (mit Ball Zielspieler, Joker ~30 Min.); Rollen-Score hier mit Standardrollen gerechnet."
+    hinweis: "Seit 03.07.2027 (bis 2026/27 Zielspieler / Zentraler Umschaltstürmer). Seit 04.09.2027 Manneh Stamm, Kaars Backup/Joker; Itten nicht mehr im Kader. Topp nur Plan D (mit Ball Zielspieler, Joker ~30 Min.); Rollen-Score hier mit Standardrollen gerechnet. Kaars nicht für die Europa League registriert (Stand 20.10.2027): dort Topp hinter Manneh."
