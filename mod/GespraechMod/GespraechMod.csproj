@@ -34,6 +34,7 @@
     <Reference Include="$(BepInterop)\UnityEngine.TextRenderingModule.dll" Private="false" />
     <Reference Include="$(BepInterop)\Unity.InputSystem.dll" Private="false" />
     <Reference Include="$(BepInterop)\FM.UI.dll" Private="false" />
+    <Reference Include="$(BepInterop)\FM.Match.dll" Private="false" />
     <Reference Include="$(BepInterop)\FM.GamePlugin.dll" Private="false" />
     <Reference Include="$(BepInterop)\SI.Core.dll" Private="false" />
     <Reference Include="$(BepInterop)\SI.Interop.dll" Private="false" />

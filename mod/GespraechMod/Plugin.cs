@@ -4,7 +4,7 @@
 // Verhalten, Training/Entwicklung. Ein Klick öffnet unsichtbar das Kontextmenü der Zeile und löst den Eintrag aus;
 // das Spiel legt den Spieler selbst über die Zeile fest (ZeilenMenue.cs). Nicht angebotene Gespräche (Abklingzeit des
 // Spiels) werden per Hintergrundprüfung grau (ZeilenKnoepfe.cs). Die Spalte erscheint nur in Tabellen mit Spielern
-// des eigenen Vereins (Menü hat Ordner "Interaktion").
+// des eigenen Vereins. Erkennung sprachunabhängig über die ActionIDs des Spiels (Erkennung.cs).
 //
 // Bedienung: nach dem Start einmal einen Spieler rechtsklicken (macht das Menüsystem bekannt);
 //            F5 = Spalte ein/aus, F4 = Stellung (nach Spieler / ganz vorne / ganz hinten).
@@ -36,7 +36,7 @@ namespace GespraechMod
     {
         public const string GUID = "fm27assistant.gespraech";
         public const string NAME = "Gespraech";
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.3.0";
 
         internal static ManualLogSource L;
         internal static ConfigEntry<bool> Enabled;
@@ -48,6 +48,10 @@ namespace GespraechMod
         internal static ConfigEntry<float> KnopfGroesse;
         internal static ConfigEntry<bool> VerfuegbarkeitPruefen;
         internal static ConfigEntry<bool> MenueUnterdruecken;
+        internal static ConfigEntry<bool> ImSpielAusblenden;
+        internal static ConfigEntry<string> NurTabellen;
+        internal static ConfigEntry<string> Gelernt;
+        internal static ConfigEntry<string> LeistungStichworte;
 
         public override void Load()
         {
@@ -59,6 +63,13 @@ namespace GespraechMod
             VerfuegbarkeitPruefen = Config.Bind("Allgemein", "VerfuegbarkeitPruefen", true,
                 "Nicht angebotene Gespräche grau anzeigen (liest je Zeile unsichtbar das Menü).");
             MenueUnterdruecken = Config.Bind("Allgemein", "MenueUnterdruecken", true, "Menü beim eigenen Öffnen nicht anzeigen.");
+            ImSpielAusblenden = Config.Bind("Allgemein", "ImSpielAusblenden", true, "Spalte während eines Spiels ausblenden.");
+            NurTabellen = Config.Bind("Allgemein", "NurTabellen", "playertable",
+                "Nur Tabellen mit diesen Elementnamen bekommen die Spalte (Komma-getrennt; leer = alle). Namen stehen im BepInEx-Log.");
+            Gelernt = Config.Bind("Sprache", "Gelernt", "",
+                "Vom Mod gelernte Menütexte für Form/Leistung im letzten Spiel (Text=Typ, | getrennt). Leeren = neu lernen.");
+            LeistungStichworte = Config.Bind("Sprache", "LeistungStichworte", "Leistung|letzten Spiel|last match|last game",
+                "Stichworte für 'Leistung im letzten Spiel', solange nichts gelernt ist (| getrennt).");
             SpaltenStellung = Config.Bind("Darstellung", "SpaltenStellung", 0, "0 = nach Spieler, 1 = ganz vorne, 2 = ganz hinten.");
             SpaltenBreite = Config.Bind("Darstellung", "SpaltenBreite", 150f, "Breite der Gesprächs-Spalte in px.");
             KnopfGroesse = Config.Bind("Darstellung", "KnopfGroesse", 16f, "Kantenlänge der Buttons in px.");

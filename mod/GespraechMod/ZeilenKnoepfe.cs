@@ -11,8 +11,8 @@
 // nicht, kommt die Leiste wie in v0.8 hinter das Namensfeld. Taste SpalteKey blendet die Spalte ein/aus.
 //
 // Nur eigener Verein: eine Tabelle (StreamedTable) bleibt ohne Spalte, bis die erste geprüfte Zeile ein Menü mit
-// dem Ordner "Interaktion" hat (gibt es nur bei eigenen Spielern). Fehlt er, gilt die Tabelle als fremd (Scouting,
-// Spielerdatenbank usw.): Leisten werden entfernt, dort wird nicht mehr geprüft.
+// Aktionen hat, die das Spiel nur eigenen Spielern anbietet (Training, Kader, Lob/Kritik; Erkennung.cs). Sonst gilt
+// die Tabelle als fremd (Scouting, Spielerdatenbank usw.): Leisten werden entfernt, dort wird nicht mehr geprüft.
 
 using System;
 using System.Collections.Generic;
@@ -28,12 +28,11 @@ namespace GespraechMod
         internal const string VORLAGE = "player-name-button-template";
         private const float TTL = 120f;
 
-        private static readonly (string kurz, string text)[] Typen =
+        // Kürzel, Gesprächstyp (Erkennung.cs); Tooltip = Menütext der Spielsprache
+        private static readonly (string kurz, string typ)[] Typen =
         {
-            ("F", "Form loben"), ("L", "Leistung im letzten Spiel loben"),
-            ("V", "Verhalten loben"), ("T", "Training/Entwicklung loben"),
-            ("F", "Form kritisieren"), ("L", "Leistung im letzten Spiel kritisieren"),
-            ("V", "Verhalten kritisieren"), ("T", "Training/Entwicklung kritisieren"),
+            ("F", "lob_form"), ("L", "lob_leistung"), ("V", "lob_verhalten"), ("T", "lob_training"),
+            ("F", "kritik_form"), ("L", "kritik_leistung"), ("V", "kritik_verhalten"), ("T", "kritik_training"),
         };
 
         private static readonly Color Gruen = new(0.16f, 0.55f, 0.27f, 1f);
@@ -75,16 +74,32 @@ namespace GespraechMod
 
         private static int TabellenStand(IntPtr t) => s_tabellen.TryGetValue(t, out var v) ? v : 0;
 
-        private static IntPtr TabelleVon(VisualElement e)
+        private static IntPtr TabelleVon(VisualElement e) => TabellenElement(e)?.Pointer ?? e?.Pointer ?? IntPtr.Zero;
+
+        private static VisualElement TabellenElement(VisualElement e)
         {
             for (var x = e; x != null; x = x.parent)
-                if (Info.Typ(x) == "SI.Bindable.StreamedTable") return x.Pointer;
-            return e?.Pointer ?? IntPtr.Zero;
+                if (Info.Typ(x) == "SI.Bindable.StreamedTable") return x;
+            return null;
+        }
+
+        // Whitelist (Config NurTabellen): nur Tabellen mit diesen Elementnamen bekommen die Spalte.
+        // Nicht passende Tabellen gelten sofort als fremd. Jede neue Tabelle wird einmal mit Namen geloggt.
+        private static bool TabelleErlaubt(VisualElement zeile, IntPtr tab)
+        {
+            var t = TabellenElement(zeile);
+            string name = t?.name ?? "";
+            var liste = (Plugin.NurTabellen.Value ?? "").Split(new[] { ',', '|' }, StringSplitOptions.RemoveEmptyEntries);
+            bool ok = liste.Length == 0;
+            foreach (var n in liste) if (n.Trim() == name) ok = true;
+            if (s_geloggt.Add("tabelle:" + tab))
+                Plugin.L.LogInfo($"[Gespraech] Tabelle '{name}' {(ok ? "erlaubt" : "nicht in NurTabellen")}: {ZeilenMenue.Kette(t ?? zeile, 10)}");
+            return ok;
         }
 
         private static void Sichtbarkeit(Leiste l)
         {
-            bool an = Plugin.Knoepfe.Value && TabellenStand(l.Tabelle) == EIGEN;
+            bool an = Plugin.Knoepfe.Value && !s_imSpiel && TabellenStand(l.Tabelle) == EIGEN;
             try { l.Element.style.display = new StyleEnum<DisplayStyle>(an ? DisplayStyle.Flex : DisplayStyle.None); } catch { }
         }
 
@@ -201,16 +216,46 @@ namespace GespraechMod
         internal static void Umschalten()
         {
             Plugin.Knoepfe.Value = !Plugin.Knoepfe.Value;
-            var d = new StyleEnum<DisplayStyle>(Plugin.Knoepfe.Value ? DisplayStyle.Flex : DisplayStyle.None);
+            AlleSichtbarkeiten();
+            Plugin.L.LogInfo($"[Gespraech] Spalte {(Plugin.Knoepfe.Value ? "an" : "aus")}");
+        }
+
+        private static void AlleSichtbarkeiten()
+        {
+            var d = new StyleEnum<DisplayStyle>(Plugin.Knoepfe.Value && !s_imSpiel ? DisplayStyle.Flex : DisplayStyle.None);
             foreach (var l in s_leisten.Values) Sichtbarkeit(l);
             foreach (var k in s_koepfe.Values)
                 try { k.Element.style.display = d; } catch { }
-            Plugin.L.LogInfo($"[Gespraech] Spalte {(Plugin.Knoepfe.Value ? "an" : "aus")}");
+        }
+
+        // Während eines Spiels (aktives FM.Match.Match-Objekt, wie bei DugoutQuiet) Spalte aus, keine Prüfungen
+        private static bool s_imSpiel;
+        private static float s_naechsterSpielCheck;
+
+        private static void SpielPruefen()
+        {
+            if (Time.unscaledTime < s_naechsterSpielCheck) return;
+            s_naechsterSpielCheck = Time.unscaledTime + 1f;
+            bool spiel = false;
+            if (Plugin.ImSpielAusblenden.Value)
+                try
+                {
+                    var o = UnityEngine.Object.FindObjectOfType(Il2CppType.Of<FM.Match.Match>());
+                    spiel = o != null && o.TryCast<Behaviour>()?.isActiveAndEnabled == true;
+                }
+                catch { }
+            if (spiel == s_imSpiel) return;
+            s_imSpiel = spiel;
+            if (spiel) ZeilenMenue.PruefungAbbrechen();
+            AlleSichtbarkeiten();
+            Plugin.L.LogInfo($"[Gespraech] {(spiel ? "Spiel läuft: Spalte aus" : "Kein Spiel: Spalte wieder an")}");
         }
 
         internal static void Update()
         {
             if (!Plugin.Knoepfe.Value) return;
+            SpielPruefen();
+            if (s_imSpiel) return;
             if (Time.unscaledTime >= s_naechsteSuche)
             {
                 s_naechsteSuche = Time.unscaledTime + 1f;
@@ -245,6 +290,7 @@ namespace GespraechMod
                     if (ziel == null || float.IsNaN(v.layout.height)) continue;
                     var tab = TabelleVon(ziel);
                     if (TabellenStand(tab) == FREMD) continue;
+                    if (TabellenStand(tab) == 0 && !TabelleErlaubt(ziel, tab)) { s_tabellen[tab] = FREMD; continue; }
                     VisualElement vorhanden = null;
                     for (int i = 0; i < ziel.childCount; i++)
                         if (ziel[i].name == LEISTE) { vorhanden = ziel[i]; break; }
@@ -366,16 +412,16 @@ namespace GespraechMod
                     luecke.style.width = new StyleLength(5f);
                     el.Add(luecke);
                 }
-                var b = Knopf(Typen[i].kurz, Typen[i].text, i < 4 ? Gruen : Rot);
+                var b = Knopf(Typen[i].kurz, Typen[i].typ, i < 4 ? Gruen : Rot);
                 l.Knoepfe[i] = b;
                 el.Add(b);
             }
             return l;
         }
 
-        private static Button Knopf(string kurz, string text, Color farbe)
+        private static Button Knopf(string kurz, string typ, Color farbe)
         {
-            var b = new Button { text = kurz, tooltip = text };
+            var b = new Button { text = kurz, tooltip = Erkennung.Text(typ) };
             var s = b.style;
             float g = Plugin.KnopfGroesse.Value;
             s.width = new StyleLength(g);
@@ -388,7 +434,7 @@ namespace GespraechMod
             s.color = new StyleColor(Color.white);
             s.backgroundColor = new StyleColor(farbe);
             s.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
-            System.Action klick = () => Geklickt(b, text);
+            System.Action klick = () => Geklickt(b, typ);
             b.add_clicked(klick);
             return b;
         }
@@ -411,7 +457,7 @@ namespace GespraechMod
                 if (sp == null) continue;
                 s_stand.TryGetValue(sp, out var st);
                 if (st?.Angebote != null && TabellenStand(l.Tabelle) == 0 && !einstufen.ContainsKey(l.Tabelle))
-                    einstufen[l.Tabelle] = st.Angebote.Contains(ZeilenMenue.MARKER_EIGEN);
+                    einstufen[l.Tabelle] = st.Angebote.Contains(Erkennung.MARKER_EIGEN);
                 if (sp == l.Spieler && st != null && st.Angebote != null && l.Knoepfe[0].userData != null) continue;
                 if (sp != l.Spieler) l.RuheBis = 0f;  // recycelte Zeile, neuer Spieler: sofort prüfbar
                 l.Spieler = sp;
@@ -426,20 +472,20 @@ namespace GespraechMod
                 try
                 {
                     l.Element.style.visibility = new StyleEnum<Visibility>(
-                        angebote.Contains(ZeilenMenue.MARKER_EIGEN) ? Visibility.Visible : Visibility.Hidden);
+                        angebote.Contains(Erkennung.MARKER_EIGEN) ? Visibility.Visible : Visibility.Hidden);
                 }
                 catch { }
             for (int i = 0; i < Typen.Length; i++)
             {
                 var b = l.Knoepfe[i];
-                bool an = angebote == null || angebote.Contains(Typen[i].text);
+                bool an = angebote == null || angebote.Contains(Typen[i].typ);
                 try
                 {
                     b.style.backgroundColor = new StyleColor(an ? (i < 4 ? Gruen : Rot) : Grau);
                     b.style.opacity = new StyleFloat(angebote == null ? 0.45f : 1f);
                     b.style.color = new StyleColor(an ? Color.white : GrauText);
                     b.SetEnabled(an);
-                    b.tooltip = Typen[i].text + (angebote == null ? " (wird geprüft)" : an ? "" : " (gerade nicht angeboten)");
+                    b.tooltip = Erkennung.Text(Typen[i].typ) + (angebote == null ? " (wird geprüft)" : an ? "" : " (gerade nicht angeboten)");
                     b.userData = angebote == null ? null : b;  // Marker: Stand angezeigt
                 }
                 catch { }
@@ -469,9 +515,9 @@ namespace GespraechMod
                 if (ZeilenMenue.Pruefen(feld, (ok, angebote) =>
                     {
                         if (++s_prueflog <= 15)
-                            Plugin.L.LogInfo($"[Gespraech] Prüfung '{sp}': {(angebote == null ? "kein Ergebnis" : $"{angebote.Count} Einträge, eigen={angebote.Contains(ZeilenMenue.MARKER_EIGEN)}")}");
+                            Plugin.L.LogInfo($"[Gespraech] Prüfung '{sp}': {(angebote == null ? "kein Ergebnis" : $"{angebote.Count} Einträge, eigen={angebote.Contains(Erkennung.MARKER_EIGEN)}")}");
                         if (angebote == null) return;  // abgebrochen (echter Rechtsklick): alten Stand behalten
-                        Einstufen(tab, angebote.Contains(ZeilenMenue.MARKER_EIGEN));
+                        Einstufen(tab, angebote.Contains(Erkennung.MARKER_EIGEN));
                         if (TabellenStand(tab) == FREMD) return;
                         s_stand[sp] = new Stand { Angebote = angebote, Zeit = Time.unscaledTime };
                         foreach (var x in s_leisten.Values) if (x.Spieler == sp) Anzeigen(x, s_stand[sp].Angebote);
@@ -480,26 +526,20 @@ namespace GespraechMod
             }
         }
 
-        private static void Geklickt(Button b, string text)
+        private static void Geklickt(Button b, string typ)
         {
             try
             {
                 var feld = ZeilenMenue.NamensFeld(b);
                 if (feld == null) { Plugin.L.LogWarning("[Gespraech] Button: kein Namensfeld in der Zeile."); return; }
                 var sp = ZeilenMenue.ZeilenName(feld);
-                Plugin.L.LogInfo($"[Gespraech] Button '{text}' für '{sp}'");
-                ZeilenMenue.Ausloesen(feld, text, (ok, angebote) =>
+                Plugin.L.LogInfo($"[Gespraech] Button {typ} für '{sp}'");
+                ZeilenMenue.Ausloesen(feld, typ, (ok, angebote) =>
                 {
                     if (!ok && angebote == null) return;  // abgebrochen: nichts ändern
-                    HashSet<string> neu;
-                    if (ok)
-                    {
-                        // geführtes Gespräch sperrt das Spiel: sofort grau, Rest bleibt; Neuprüfung in ~5 s
-                        neu = s_stand.TryGetValue(sp, out var alt) && alt.Angebote != null
-                            ? new HashSet<string>(alt.Angebote) : null;
-                        neu?.Remove(text);
-                    }
-                    else neu = angebote;
+                    // geführtes Gespräch sperrt das Spiel: sofort grau, Rest wie eben gelesen; Neuprüfung in ~5 s
+                    var neu = angebote == null ? null : new HashSet<string>(angebote);
+                    if (ok) neu?.Remove(typ);
                     if (neu != null) s_stand[sp] = new Stand { Angebote = neu, Zeit = Time.unscaledTime - TTL + 5f };
                     else s_stand.Remove(sp);
                     foreach (var x in s_leisten.Values)

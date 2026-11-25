@@ -1,5 +1,5 @@
 // Kontextmenü einer Spielerzeile selbst öffnen (wie ein Rechtsklick) und auswerten:
-//  - Ausloesen(feld, text, fertig): Eintrag `text` auslösen (Gespräch öffnet mit dem Zeilenspieler)
+//  - Ausloesen(feld, typ, fertig): Gespräch `typ` (z. B. lob_form, siehe Erkennung.cs) auslösen
 //  - Pruefen(feld, fertig): nur lesen, welche Einträge das Spiel anbietet (Abklingzeit des Spiels)
 // Das Spiel legt den Spieler selbst über die Zeile fest (Spike D, 25.11.2026). Spike C – Spieler in den Daten der
 // Closure tauschen – öffnete das Gespräch mit dem Vorlagenspieler.
@@ -23,12 +23,10 @@ namespace GespraechMod
     {
         internal const string NAMENSFELD = "primary-text";
         private const int STABIL_FRAMES = 6;
-        internal const string ORDNER_INTERAKTION = "Interaktion";  // nur bei Spielern des eigenen Vereins
-        internal const string MARKER_EIGEN = "#eigen";
 
         internal static MenuContext Muster;      // letzter echter Kontext (von OpenPatch)
         private static MenuContext s_eigener;
-        private static string s_text;            // null = nur prüfen
+        private static string s_typ;             // Gesprächstyp; null = nur prüfen
         private static float s_bis;
         private static bool s_aktiv;
         private static int s_letzteAnzahl, s_stabil;
@@ -86,22 +84,22 @@ namespace GespraechMod
             catch { return "?"; }
         }
 
-        internal static bool Ausloesen(VisualElement feld, string text, Action<bool, HashSet<string>> fertig) =>
-            Start(feld, text, fertig);
+        internal static bool Ausloesen(VisualElement feld, string typ, Action<bool, HashSet<string>> fertig) =>
+            Start(feld, typ, fertig);
 
         internal static bool Pruefen(VisualElement feld, Action<bool, HashSet<string>> fertig) =>
             Start(feld, null, fertig);
 
-        private static bool Start(VisualElement namensfeld, string text, Action<bool, HashSet<string>> fertig)
+        private static bool Start(VisualElement namensfeld, string typ, Action<bool, HashSet<string>> fertig)
         {
             if (s_aktiv)
             {
-                if (text == null || s_text != null) return false;  // Prüfung wartet; Auslösen läuft schon
+                if (typ == null || s_typ != null) return false;  // Prüfung wartet; Auslösen läuft schon
                 PruefungAbbrechen();                                // Klick hat Vorrang vor einer Prüfung
             }
             if (Info.Subsystem == null)
             {
-                if (text != null)
+                if (typ != null)
                     Plugin.L.LogWarning("[Gespraech] Erst einmal einen echten Rechtsklick machen (Menü-System noch unbekannt).");
                 return false;
             }
@@ -115,13 +113,13 @@ namespace GespraechMod
                 ctx.CascadeDirection = Muster.CascadeDirection;
             }
             s_eigener = ctx;
-            s_text = text;
+            s_typ = typ;
             s_fertig = fertig;
             s_bis = Time.unscaledTime + 3f;
             s_letzteAnzahl = -1;
             s_stabil = 0;
             s_aktiv = true;
-            if (text != null) Plugin.L.LogInfo($"[Gespraech] Öffne Menü für '{ZeilenName(namensfeld)}', suche '{text}'");
+            if (typ != null) Plugin.L.LogInfo($"[Gespraech] Öffne Menü für '{ZeilenName(namensfeld)}', suche {typ}");
             Info.Subsystem.OpenContextMenu(ctx);
             return true;
         }
@@ -138,7 +136,7 @@ namespace GespraechMod
         // Laufende Hintergrundprüfung abbrechen und ihr Menü schließen (Klick oder rechte Maustaste hat Vorrang)
         internal static void PruefungAbbrechen()
         {
-            if (!s_aktiv || s_text != null) return;
+            if (!s_aktiv || s_typ != null) return;
             s_eigener = null;
             Schliessen();
             Ende(false, null);
@@ -164,48 +162,32 @@ namespace GespraechMod
             if (!s_aktiv) return;
             var es = s_eigener?.Description?.m_entries;
             int n = es?.Count ?? 0;
-            if (s_text != null && es != null)
-                for (int i = 0; i < n; i++)
-                {
-                    var e = es[i];
-                    if (e == null) continue;
-                    string name = null;
-                    try { name = e._Name_k__BackingField; } catch { }
-                    if (name != s_text) continue;
-                    var h = e._HandleInteraction_k__BackingField;
-                    if (h == null) continue;
-                    Plugin.L.LogInfo($"[Gespraech] '{s_text}' gefunden, löse aus");
-                    Schliessen();
-                    h.Invoke();
-                    PauseBis = Time.unscaledTime + 3f;
-                    Ende(true, null);
-                    return;
-                }
             if (n == s_letzteAnzahl && n > 1) s_stabil++; else s_stabil = 0;
             s_letzteAnzahl = n;
             // leeres Menü (nur Wurzel) nach 0,5 s aufgeben, sonst warten bis stabil oder Timeout
             bool leer = n <= 1 && Time.unscaledTime > s_bis - 2.5f;
             if (!leer && s_stabil < STABIL_FRAMES && Time.unscaledTime <= s_bis) return;
-            var angebote = new HashSet<string>();
-            for (int i = 0; i < n; i++)
-                try
-                {
-                    var e = es[i];
-                    if (e?._HandleInteraction_k__BackingField != null) angebote.Add(e._Name_k__BackingField);
-                    else if (e?._Name_k__BackingField == ORDNER_INTERAKTION) angebote.Add(MARKER_EIGEN);
-                }
-                catch { }
-            if (angebote.Count == 0)
+            var r = Erkennung.Lesen(es);
+            if (r.MitHandler == 0)
             {
                 // kein einziger auslösbarer Eintrag: Menü gestört/leer, nicht "nichts angeboten"
-                if (s_text != null) Plugin.L.LogInfo($"[Gespraech] '{s_text}': Menü leer ({n} Einträge), bitte erneut klicken.");
+                if (s_typ != null) Plugin.L.LogInfo($"[Gespraech] {s_typ}: Menü leer ({n} Einträge), bitte erneut klicken.");
                 Schliessen();
                 Ende(false, null);
                 return;
             }
-            if (s_text != null) Plugin.L.LogInfo($"[Gespraech] '{s_text}' wird nicht angeboten ({n} Einträge).");
+            if (s_typ != null && r.Handler.TryGetValue(s_typ, out var h))
+            {
+                Plugin.L.LogInfo($"[Gespraech] {s_typ} ('{Erkennung.Text(s_typ)}') gefunden, löse aus");
+                Schliessen();
+                h.Invoke();
+                PauseBis = Time.unscaledTime + 3f;
+                Ende(true, r.Angebote());
+                return;
+            }
+            if (s_typ != null) Plugin.L.LogInfo($"[Gespraech] {s_typ} wird nicht angeboten ({n} Einträge).");
             Schliessen();
-            Ende(false, angebote);
+            Ende(false, r.Angebote());
         }
 
         internal static string Struktur(VisualElement e, int max)
