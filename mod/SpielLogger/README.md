@@ -18,7 +18,7 @@ Entfernen: Ordner `BepInEx\plugins\SpielLogger` löschen.
 | 1 | Zähler: Anzahl Ereignisse, Zeitscheibe |
 | 2 | + Spielerliste, Ereignisfelder |
 | 3 | + Positionen (bis 30 Hz, `PositionenHz`) |
-| 4 (Standard) | + Ball je Zeitscheibe (Periodenwechsel, Spielende, F8) |
+| 4 (Standard) | + Ball je Zeitscheibe, fortlaufend in kleinen Portionen |
 
 ## Bedienung
 
@@ -27,6 +27,9 @@ Entfernen: Ordner `BepInEx\plugins\SpielLogger` löschen.
 | Halbzeit | F8 (Stand schreiben) |
 | Abpfiff | F8 |
 | Ergebnis-, Statistik-, Taktik- oder andere Ansicht festhalten | F9 → `BepInEx\SpielLogger\bildschirm\*.json` |
+
+Ruckelt etwas: Die Zeile `leistung` im Mitschnitt nennt die längste Dauer je Aufgabe in Millisekunden, Werte über
+50 ms stehen auch im BepInEx-Log. F7 bis Stufe 0 schaltet den Mitschnitt aus.
 
 ## Auswertung
 

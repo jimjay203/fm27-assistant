@@ -5,7 +5,7 @@
 //
 // Stufen (Config "Stufe", im Spiel mit F7 weiterschalten): jede Stufe enthält die vorigen.
 //   1 = nur Zähler (Ereignisliste, Zeitscheibe)   2 = Ereignisfelder und Spielerliste
-//   3 = Positionen von Spielern und Ball          4 = Ballspur jeder Zeitscheibe (Periodenwechsel, Spielende, F8)
+//   3 = Positionen von Spielern und Ball          4 = Ballspur jeder Zeitscheibe (fortlaufend)
 // F9 = sichtbare Bildschirmtexte exportieren (Bildschirm.cs), unabhängig von der Stufe.
 // Config: BepInEx\config\fm27assistant.spiellogger.cfg   Ausgabe: BepInEx\SpielLogger\*.jsonl
 
@@ -25,7 +25,7 @@ namespace SpielLogger
     {
         public const string GUID = "fm27assistant.spiellogger";
         public const string NAME = "SpielLogger";
-        public const string VERSION = "0.2.0";
+        public const string VERSION = "0.3.0";
 
         internal static ManualLogSource L;
         internal static ConfigEntry<int> Stufe;

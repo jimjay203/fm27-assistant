@@ -1,8 +1,12 @@
 // Mitschnitt eines Spiels: eine JSONL-Datei, Feld "t" = Zeilentyp
-// (kopf, setup, spieler, zaehler, ereignis, frame, ball_spur, bildschirm, fehler, ende).
+// (kopf, setup, spieler, zaehler, ereignis, frame, ball_spur, bildschirm, leistung, fehler, ende).
+//
+// Nichts darf das Spiel ruckeln lassen: je Bild nur wenig Arbeit. Das Nachschreiben vieler Ballpositionen am Stück
+// hat in Version 0.2 beim letzten Highlight deutlich geruckelt.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -18,11 +22,17 @@ namespace SpielLogger
         private static StreamWriter s_datei;
         private static float s_naechsteSuche, s_naechsteListe, s_naechsterFrame;
         private static int s_letzterZaehler = -1, s_letzteTs = int.MinValue;
-        private static bool s_spielerDa, s_fertigDa;
-        private static string s_periode;
-        // Ballspur: bis wohin gesehen (Wiedergaben springen zurück), geschrieben und angefordert
-        private static int s_maxTs, s_ballBis = -1, s_ballZiel = -1;
-        private const int BallBlock = 1000;  // Zeitscheiben je Bild, damit nichts ruckelt
+        private static bool s_spielerDa;
+        // Ballspur: bis wohin gesehen (Wiedergaben springen zurück) und geschrieben
+        private static int s_maxTs, s_ballBis = -1;
+        private static readonly List<float[]> s_ballPuffer = new();
+        private const double BallBudgetMs = 2.0;  // Zeit je Bild für die Ballspur
+        private const int BallZeile = 200;        // so viele Punkte je Zeile
+        // Ereignisse: ab hier neu lesen (Gespieltes ändert sich nicht mehr)
+        private static int s_ersterOffen;
+        private const int Rueckschau = 400;       // Zeitscheiben (100 s) sicherheitshalber erneut prüfen
+        // Längste Dauer je Aufgabe in Millisekunden (Zeile "leistung")
+        private static readonly Dictionary<string, double> s_dauer = new();
         private static readonly HashSet<string> s_ereignisse = new();
         private static readonly Dictionary<string, int> s_fehler = new();
         private static readonly JsonSerializerOptions Json = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
@@ -112,7 +122,8 @@ namespace SpielLogger
                 if (stufe >= 2)
                 {
                     if (!s_spielerDa) try { Spieler(setup); } catch (Exception e) { Fehler("spieler", e); }
-                    try { Ereignisse(match); } catch (Exception e) { Fehler("ereignisse", e); }
+                    try { Messen("ereignisse", () => Ereignisse(match, rueckblick)); }
+                    catch (Exception e) { Fehler("ereignisse", e); }
                 }
                 s_datei?.Flush();
             }
@@ -120,25 +131,36 @@ namespace SpielLogger
             if (stufe >= 3 && jetzt >= s_naechsterFrame)
             {
                 s_naechsterFrame = jetzt + 1f / Mathf.Clamp(Plugin.PositionenHz.Value, 0.2f, 30f);
-                try { Frame(match); } catch (Exception e) { Fehler("frame", e); }
+                try { Messen("frame", () => Frame(match)); } catch (Exception e) { Fehler("frame", e); }
             }
 
             if (stufe >= 4)
             {
-                // Ballspur anfordern: Periodenwechsel, Spielende oder Taste
-                try
-                {
-                    var periode = match.MatchPeriod.ToString();
-                    bool wechsel = s_periode != null && periode != s_periode;
-                    s_periode = periode;
-                    bool fertig = !s_fertigDa && s_ctrl.IsFinished;
-                    s_fertigDa |= fertig;
-                    if (wechsel || fertig || rueckblick) s_ballZiel = s_maxTs;
-                    Ballspur();
-                }
-                catch (Exception e) { Fehler("ballspur", e); s_ballZiel = s_ballBis; }
+                // Ballspur läuft fortlaufend in kleinen Portionen mit; F8 schreibt den Puffer sofort weg
+                try { Messen("ballspur", () => Ballspur(rueckblick)); }
+                catch (Exception e) { Fehler("ballspur", e); s_ballBis = s_maxTs; }
+            }
+            if (rueckblick)
+            {
+                Leistung();
+                s_datei?.Flush();
+                Plugin.L.LogInfo($"Stand geschrieben bis Zeitscheibe {s_maxTs}, Ballspur bis {s_ballBis}");
             }
         }
+
+        private static void Messen(string aufgabe, Action tun)
+        {
+            var uhr = Stopwatch.StartNew();
+            tun();
+            double ms = uhr.Elapsed.TotalMilliseconds;
+            s_dauer.TryGetValue(aufgabe, out double bisher);
+            if (ms <= bisher) return;
+            s_dauer[aufgabe] = ms;
+            if (ms > 50) Plugin.L.LogWarning($"{aufgabe} brauchte {ms:0} ms");
+        }
+
+        private static void Leistung() =>
+            Zeile(new { t = "leistung", max_ms = s_dauer, ball_rueckstand = s_maxTs - s_ballBis });
 
         private static void Oeffnen(MatchSetup setup, int stufe)
         {
@@ -201,15 +223,20 @@ namespace SpielLogger
         }
 
         // Neue oder geänderte Einträge anhängen, auch verschobene: je Index gilt beim Auswerten der letzte Stand
-        private static void Ereignisse(Match match)
+        private static void Ereignisse(Match match, bool alles)
         {
             var liste = match.m_commentaryEvents;
             if (liste == null) return;
             int n = liste.Count;
-            for (int i = 0; i < n; i++)
+            // Nur den offenen Teil lesen: die ganze Liste wächst auf rund 1900 Einträge und kostet spürbar Zeit
+            int ab = alles || s_ersterOffen > n ? 0 : s_ersterOffen;
+            int offen = -1;
+            for (int i = ab; i < n; i++)
             {
                 var e = liste[i];
-                int ts = e.TimeSlice, dauer = e.Duration, data1 = e.Data1;
+                int ts = e.TimeSlice;
+                if (offen < 0 && ts >= s_maxTs - Rueckschau) offen = i;
+                int dauer = e.Duration, data1 = e.Data1;
                 var id = e.CommentaryEventID;
                 var ids = e.PlayerUniqueIDs;
                 var spieler = new int[ids?.Length ?? 0];
@@ -226,6 +253,7 @@ namespace SpielLogger
                     wichtig = e.CommentaryImportance.ToString(), vorfall = e.IncidentImportance.ToString(), text,
                 });
             }
+            s_ersterOffen = offen < 0 ? n : offen;
         }
 
         private static void Frame(Match match)
@@ -258,40 +286,45 @@ namespace SpielLogger
             });
         }
 
-        // Ballposition jeder bereits gesehenen Zeitscheibe, in Blöcken über mehrere Bilder
-        private static void Ballspur()
+        // Ballposition jeder gesehenen Zeitscheibe, je Bild nur so viele, wie ins Zeitbudget passen
+        private static void Ballspur(bool sofort)
         {
-            if (s_ballZiel <= s_ballBis) return;
             var quelle = s_ctrl.PlaybackInterface;
             if (quelle == null) return;
-            int von = s_ballBis + 1, bis = Math.Min(s_ballZiel, von + BallBlock - 1);
-            var punkte = new List<float[]>(bis - von + 1);
-            for (int ts = von; ts <= bis; ts++)
+            var uhr = Stopwatch.StartNew();
+            while (s_ballBis < s_maxTs && uhr.Elapsed.TotalMilliseconds < BallBudgetMs)
             {
-                var p = quelle.GetBallPosition(ts);
-                punkte.Add(new[] { R(p.x), R(p.y), R(p.z) });
+                var p = quelle.GetBallPosition(s_ballBis + 1);
+                s_ballPuffer.Add(new[] { R(p.x), R(p.y), R(p.z) });
+                s_ballBis++;
             }
-            Zeile(new { t = "ball_spur", von, punkte });
-            s_ballBis = bis;
-            if (bis < s_ballZiel) return;
-            s_datei?.Flush();
-            Plugin.L.LogInfo($"Ballspur bis Zeitscheibe {bis} geschrieben");
+            if (s_ballPuffer.Count >= BallZeile || sofort) BallZeileSchreiben();
+        }
+
+        private static void BallZeileSchreiben()
+        {
+            if (s_ballPuffer.Count == 0) return;
+            Zeile(new { t = "ball_spur", von = s_ballBis - s_ballPuffer.Count + 1, punkte = s_ballPuffer });
+            s_ballPuffer.Clear();
         }
 
         internal static void Schliessen(string grund)
         {
             if (s_datei != null)
             {
+                BallZeileSchreiben();
+                Leistung();
                 Zeile(new { t = "ende", grund });
                 try { s_datei.Dispose(); } catch (Exception e) { Plugin.L.LogWarning($"Schließen: {e.Message}"); }
                 s_datei = null;
                 Plugin.L.LogInfo($"Mitschnitt beendet ({grund})");
             }
             s_ctrl = null;
-            s_spielerDa = s_fertigDa = false;
-            s_periode = null;
-            s_maxTs = 0;
-            s_ballBis = s_ballZiel = -1;
+            s_spielerDa = false;
+            s_maxTs = s_ersterOffen = 0;
+            s_ballBis = -1;
+            s_ballPuffer.Clear();
+            s_dauer.Clear();
             s_letzterZaehler = -1;
             s_letzteTs = int.MinValue;
             s_ereignisse.Clear();

@@ -22,7 +22,7 @@ Vorsaison-Gewicht w = max(0, 1 − Min. neu/1200), config/saison.yaml); Minuten 
 
 | Thema | Skripte / Daten | Wissen |
 |---|---|---|
-| Taktik | `team.py` (Team-KPIs, Vorher/Nachher), `spiel_erfassen.py` (Spielbericht-Werte aus Screenshots → YAML in saves/<save>/data/spiele/ → DB), `spiele.py --zeige NAME` (Einsätze: Position, Rolle, Minuten, Note, xG), `rollen.py --alle` (Rollen-Score der Slots), `planer.py`/Web-App (beste Elf) | wissen/rollen.md, rollen-kpis.md, FM-Arena-Links in wissen/README.md |
+| Taktik | `spielanalyse.py` (Tore, Szenen, Team, Spieler, Halbzeit aus dem Mitschnitt, mit Grafiken), `spielimport.py` (Mitschnitt → DB, Spielbericht aus F9), `team.py` (Team-KPIs, Vorher/Nachher), `spiel_erfassen.py` (nur ohne Mitschnitt: Screenshot-Werte → YAML → DB), `spiele.py --zeige NAME` (Einsätze: Position, Rolle, Minuten, Note, xG), `rollen.py --alle` (Rollen-Score der Slots), `planer.py`/Web-App (beste Elf) | wissen/rollen.md, rollen-kpis.md, FM-Arena-Links in wissen/README.md |
 | Entwicklung | `rollen.py --detail NAME`, `benchmark.py --profil … --detail NAME`, `sellkeep.py`, `spiele.py --zeige NAME`, Snapshot-Vergleich (analyst), Attribute live (eigene Spieler exakt) | rollen-kpis.md, attribut-gewichte.md |
 | Verpflichtung | `rollen.py --slot … --max-alter`, `value.py --rolle … --sort fv [--nur-moneyball]` (Kosten, Value-Score, xG-Delta, Fair Value), `benchmark.py` (Gegenprobe), Liga-Stufe (config/ligen.yaml), Budget + Kaufoptionen (kontext.md) | benchmarks-fm24/26.md |
 
@@ -30,6 +30,21 @@ Rangfolge der Bewertungen: Rollen-Fit = `rollen.py` (FM27-Anker, Rollenpaar mit/
 `benchmark.py` = Gegenprobe gegen absolute Maßstäbe (aus FM24, für FM27 ungeprüft); `value.py` (Rollen aus
 config/rollen.yaml) nur für Kosten, Value-Score, xG-Delta, Fair Value. Fremde Attribute sind Scouting-Spannen (lo–hi).
 Jede Antwort zu diesen Themen endet mit einer Zeile „Quellen: … · Fehlt/veraltet: …“.
+
+## Spiele (SpielLogger)
+Jimmy muss weder Tore beschreiben noch Spielberichte abfotografieren. Das BepInEx-Plugin `mod/SpielLogger`
+(nur lesend) schreibt jedes Spiel mit.
+
+| Jimmy sagt | Vorher im Spiel | Ablauf |
+|---|---|---|
+| „Halbzeit“ | F8 | `spielanalyse.py halbzeit` – nur Gespieltes, kurz, erst Fragen |
+| „Spiel ist durch“ | F8, auf dem Ergebnisbildschirm F9 | `spielimport.py`, dann `spielanalyse.py tore` / `szenen` / `team`; Entscheidungen in log.md |
+| andere Ansicht festhalten (Taktik, Gegner, Statistik) | F9 | JSON in `BepInEx\SpielLogger\bildschirm\` lesen (`spielbericht.py` für Ergebnisbildschirme) |
+
+Lernmodus: erst Szene zeigen und fragen, dann eigene Lesart mit Zahlen. Grafiken unter
+`saves/<save>/data/analyse/` verlinken. Ereigniszählungen sind eigene Ableitungen; bei Abweichungen gilt der
+Spielbericht. Ereignisliste im Spiel ist vorausberechnet: nie `--alles` während eines laufenden Spiels.
+Unbekannte Ereignisnamen in `config/spiel_ereignisse.yaml` ergänzen.
 
 ## Agents
 - taktik: Taktik-Sparring, Spielanalyse, Gegnervorbereitung

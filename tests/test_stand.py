@@ -1,6 +1,7 @@
 """Datenstand: Snapshots je Typ, nicht importierte Dateien, Taktik-Drift, kontext-TODOs, offene Log-Einträge."""
 
 import os
+import sqlite3
 
 import common
 import stand
@@ -64,3 +65,15 @@ def test_kontext_und_log(tmp_path):
         encoding="utf-8",
     )
     assert [o["datum"] for o in stand.log_offen(log)] == ["2027-01-01"]
+
+
+def test_mitschnitte_offen(tmp_path):
+    conn = sqlite3.connect(":memory:")
+    gross = "x" * stand.LOG_MINDEST
+    for name, inhalt in (("20260101_a_1.jsonl", gross), ("20260102_b_0.jsonl", "kurz"), ("20260103_c_0.jsonl", gross)):
+        (tmp_path / name).write_text(inhalt)
+    assert stand.mitschnitte_offen(conn, "werder", tmp_path) == ["20260101_a_1.jsonl", "20260103_c_0.jsonl"]
+    conn.execute("create table spiel_logs(save text, quelle text)")
+    conn.execute("insert into spiel_logs values('werder', '20260101_a_1.jsonl')")
+    assert stand.mitschnitte_offen(conn, "werder", tmp_path) == ["20260103_c_0.jsonl"]
+    assert stand.mitschnitte_offen(conn, "werder", tmp_path / "fehlt") == []

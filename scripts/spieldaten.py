@@ -223,7 +223,9 @@ def neuester(ordner: Path = LOG_ORDNER) -> Path:
     if not dateien:
         raise FileNotFoundError(f"Kein Mitschnitt in {ordner}")
     spiel_id = dateien[-1].stem.rsplit("_", 1)[-1]
-    gleiche = [d for d in dateien if d.stem.endswith(spiel_id)]
+    if spiel_id == "0":  # keine Kennung: jede Datei ist ein eigenes Spiel
+        return dateien[-1]
+    gleiche = [d for d in dateien if d.stem.rsplit("_", 1)[-1] == spiel_id]
     return max(gleiche, key=lambda d: d.stat().st_size)
 
 
@@ -249,6 +251,8 @@ def datum_aus_setup(setup: dict) -> str | None:
         jahr = int(setup["info"]["competitionYear"])
         tag = int(setup["wetter"]["day"])
     except (KeyError, TypeError, ValueError):
+        return None
+    if jahr <= 0 or tag <= 0:  # im laufenden Spiel liefert das Setup teils nur Nullen
         return None
     if tag < 182:
         jahr += 1

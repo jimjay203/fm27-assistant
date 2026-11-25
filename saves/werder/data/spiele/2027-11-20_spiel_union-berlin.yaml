@@ -1,0 +1,101 @@
+# Automatisch aus F9-Export 20261125_202119_966.json und SpielLogger-Mitschnitt 2027-11-20_union-berlin.jsonl.gz
+datum: 2027-11-20
+gegner: Union Berlin
+ort: A
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '1'
+  - '0'
+  ballbesitz:
+  - '53'
+  - '47'
+  schuesse:
+  - '10'
+  - '11'
+  schuesse_aufs_tor:
+  - '6'
+  - '6'
+  xg:
+  - 1,07
+  - 0,70
+  ppda:
+  - 14,26
+  - 9,10
+  grosschancen:
+  - '1'
+  - '0'
+  ecken:
+  - '5'
+  - '10'
+  prog_paesse:
+  - '44'
+  - '55'
+  passquote:
+  - '86'
+  - '85'
+  flankenquote:
+  - '10'
+  - '7'
+  fouls:
+  - '5'
+  - '10'
+  gelb:
+  - '1'
+  - '0'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '126'
+  - '132'
+  notenschnitt:
+  - 7,0
+  - 6,6
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+  rolle: TW
+- slot: RV
+  spieler: Keidel
+  uid: 2000069240
+  rolle: IFV
+- slot: IV r
+  spieler: Pieper
+  uid: 91173279
+  rolle: IV
+- slot: IV l
+  spieler: Córdoba
+  uid: 2000079847
+  rolle: IV
+- slot: LV
+  spieler: N'Diaye
+  uid: 12083698
+  rolle: FV
+- slot: DM r
+  spieler: Stage
+  uid: 27104982
+  rolle: B2B
+- slot: DM l
+  spieler: Lynen
+  uid: 18096574
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+- slot: OM z
+  spieler: Medina
+  uid: 14241925
+  rolle: VSm
+- slot: OM l
+  spieler: Grüll
+  uid: 16195163
+  rolle: IAS
+  tore: 1
+- slot: ST
+  spieler: Manneh
+  uid: 2000195393
+  rolle: HRS

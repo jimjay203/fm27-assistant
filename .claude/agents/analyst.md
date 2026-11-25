@@ -22,6 +22,8 @@ Befehle (immer `uv run python scripts/…`, Save via `--save`):
 - Live: `live.py` (Import); `--quelle auto|live|db` bei rollen.py und benchmark.py (auto = live, wenn der Reader
   läuft); planer.py ebenso. Alle Skripte rechnen mit Saisonbasis (Vorsaison + laufende Saison, config/saison.yaml),
   kein Wrapper auf alte Snapshots mehr.
+- Spiele: `spielimport.py` (Mitschnitt -> DB + Spielbericht), `spielanalyse.py tore|szenen|team|spieler|halbzeit`;
+  Tabellen `spiel_logs`, `spiel_ereignisse`, `spiel_spieler_kpis` (eigene Zählungen).
 - Rollen-Fit: `rollen.py --slot "<Slot>" | --alle | --detail NAME` (Slots: config/taktik_slots.yaml).
 - Gegenprobe absolut: `benchmark.py --profil <id aus config/profile.yaml> [--detail NAME]`.
 - Kosten/Value/xG-Delta/Fair Value: `value.py --rolle <rollen.yaml> --sort fv [--nur-moneyball]`.

@@ -3,7 +3,8 @@
 Schreibt nichts. Zeigt je Quelle das letzte In-Game-Datum und den Abstand zum neuesten Stand im Save, ob der
 FMMT-27-Reader (live) erreichbar ist, nicht importierte Rohdateien, ob config/taktik_slots.yaml älter als
 taktik.md ist, Teil-Dateien des letzten Such-Snapshots (Zeilen je Teil, Warnung am Exporter-Limit 10.000), offene TODO-Felder in kontext.md, Einträge in log.md ohne Ergebnis und die Saisonbasis der
-Per-90-Werte (Snapshots der laufenden Saison und der Vorsaison, Gewicht w; config/saison.yaml).
+Per-90-Werte (Snapshots der laufenden Saison und der Vorsaison, Gewicht w; config/saison.yaml) sowie noch nicht
+importierte SpielLogger-Mitschnitte.
 
 Aufruf:  uv run python scripts/stand.py --save werder [--ohne-live]
 """
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -22,10 +24,13 @@ import fmmt  # noqa: E402
 import live  # noqa: E402
 import per90
 import spiele  # noqa: E402
+import spiellog
 
 IMPORT_EXT = {".csv", ".html", ".htm"}
 VERALTET_TAGE = 30  # Quelle liegt so weit hinter dem neuesten Stand -> Hinweis
 LIMIT_WARN = 9_999  # FM27-Exporter liefert max. 10.000 Zeilen je Datei (wie import.py)
+LOG_ORDNER = spiellog.FM27 / "BepInEx" / "SpielLogger"
+LOG_MINDEST = 1_000_000  # Bytes: kleinere Mitschnitte sind Tests oder kurze Wiederholungen
 
 
 def _datum(s: str | None) -> dt.date | None:
@@ -71,6 +76,20 @@ def nicht_importiert(conn, save: str, raw_dir: Path) -> list[str]:
         "select source_file from snapshots where save=? union select f.source_file from snapshot_files f "
         "join snapshots s on s.id = f.snapshot_id where s.save=?", (save, save))}  # fmt: skip
     return sorted(p.name for p in raw_dir.iterdir() if p.suffix.lower() in IMPORT_EXT and p.name not in bekannt)
+
+
+def mitschnitte_offen(conn, save: str, ordner: Path) -> list[str]:
+    """Mitschnitte ganzer Spiele, die neuer sind als der letzte importierte (Dateiname = Aufnahmezeit)."""
+    if not ordner.is_dir():
+        return []
+    try:
+        fertig = [r[0] for r in conn.execute("select quelle from spiel_logs where save=?", (save,))]
+    except sqlite3.OperationalError:  # noch nie importiert
+        fertig = []
+    letzter = max(fertig, default="")
+    return sorted(
+        p.name for p in ordner.glob("*.jsonl") if p.name > letzter and p.stat().st_size >= LOG_MINDEST
+    )
 
 
 def such_teile(conn, save: str) -> dict | None:
@@ -175,7 +194,8 @@ def _kurz(s: str, n: int = 70) -> str:
 
 def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft: bool, raw: list[str],
              drift: str | None, todos: list[str], offen: list[dict],
-             saison: dict | None = None, teile: dict | None = None) -> None:  # fmt: skip
+             saison: dict | None = None, teile: dict | None = None,
+             mitschnitte: list[str] | None = None) -> None:  # fmt: skip
     neuestes = max((d for q in quellen if (d := _datum(q["letztes"]))), default=None)
     print(f"Datenstand Save '{save}' (neuestes In-Game-Datum in der DB: {neuestes or '-'})\n")
     print(f"{'Quelle':<16}{'Anzahl':>8}{'letztes':>12}{'Tage zurück':>13}{'Zeilen':>9}")
@@ -218,6 +238,11 @@ def ausgeben(save: str, quellen: list[dict], reader: dict | None, live_geprueft:
         )
     if raw:
         hinweise.append(f"nicht importiert ({len(raw)}): {', '.join(raw)} -> scripts/import.py")
+    if mitschnitte:
+        hinweise.append(
+            f"Mitschnitte nicht importiert ({len(mitschnitte)}): {', '.join(mitschnitte)} "
+            "-> scripts/spielimport.py --datei"
+        )
     if drift:
         hinweise.append(drift)
     if todos:
@@ -248,7 +273,7 @@ def main(argv=None) -> None:
         save, quellen, reader, not a.ohne_live, nicht_importiert(conn, save, sdir / "data" / "raw"),
         taktik_drift(sdir / "taktik.md", cfg_dir / "taktik_slots.yaml"),
         kontext_todos(sdir / "kontext.md"), log_offen(sdir / "log.md"), saisonbasis(conn, save, a.config_dir),
-        such_teile(conn, save),
+        such_teile(conn, save), mitschnitte_offen(conn, save, LOG_ORDNER),
     )  # fmt: skip
 
 
