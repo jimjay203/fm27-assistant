@@ -1,0 +1,39 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# BL. Tore: Gruber 3' (Amiri; Kopfball nach Ecke), Grüll 23' (Guliashvili), Becker 89' (Ouzenadji; Konter,
+# frühe Flanke, Becker zu schnell für schlecht positionierten Pfeiffer; Becker eingewechselt), Manneh 90+1'
+# (Vorlage nicht angezeigt). Spieler des Spiels Manneh 7,65.
+datum: 2027-10-30
+gegner: Mainz
+ort: A
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [2, 2]
+  ballbesitz: [58, 42]
+  schuesse: [8, 16]
+  schuesse_aufs_tor: [5, 6]
+  xg: [0.72, 1.67]
+  ppda: [14.18, 17.70]
+  grosschancen: [1, 0]
+  ecken: [3, 9]
+  prog_paesse: [46, 45]
+  passquote: [87, 83]
+  flankenquote: [15, 10]
+  fouls: [6, 12]
+  gelb: [2, 3]
+  rot: [0, 0]
+  laufleistung: [118, 118]
+  notenschnitt: [6.9, 6.6]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 7.2}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.5}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 6.8}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 7.5}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.5}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.6}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.6}
+  - {slot: OM r, rolle: FL, spieler: Guliashvili, note: 7.3, vorlagen: 1}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 6.3}
+  - {slot: OM l, rolle: IAS, spieler: Grüll, note: 7.0, tore: 1}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 7.6, tore: 1}
