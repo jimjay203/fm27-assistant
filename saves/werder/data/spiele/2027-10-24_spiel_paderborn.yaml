@@ -1,0 +1,40 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# BL-Spiel 2 des xG-Kriteriums (Tempo Geringer, ab 09.10.2027). Tore: Chuki 65' (Guliashvili),
+# Kaars 90' (Guliashvili). Guliashvili OM r für den verletzten Arthur, Spieler des Spiels 8,12.
+# Kaars eingewechselt, Note/Minute nicht im Screenshot.
+datum: 2027-10-24
+gegner: Paderborn
+ort: H
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [2, 0]
+  ballbesitz: [51, 49]
+  schuesse: [9, 9]
+  schuesse_aufs_tor: [6, 5]
+  xg: [0.94, 0.59]
+  ppda: [12.79, 16.62]
+  grosschancen: [0, 0]
+  ecken: [6, 7]
+  prog_paesse: [48, 46]
+  passquote: [88, 86]
+  flankenquote: [9, 17]
+  fouls: [3, 13]
+  gelb: [0, 2]
+  rot: [0, 0]
+  laufleistung: [128, 130]
+  notenschnitt: [7.2, 6.5]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 7.5}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.6}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 7.5}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 7.2}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.3}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 7.2}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 7.2}
+  - {slot: OM r, rolle: FL, spieler: Guliashvili, note: 8.1, vorlagen: 2}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 7.3, tore: 1}
+  - {slot: OM l, rolle: IAS, spieler: Grüll, note: 6.3}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 6.8}
+  - {slot: ST, rolle: HRS, spieler: Kaars, einwechslung: true, tore: 1}
