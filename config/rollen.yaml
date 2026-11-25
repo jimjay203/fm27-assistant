@@ -100,7 +100,8 @@ rollen:
       par_pct: 1
       xsv_pct: 1
       xgp_p90: 1
-    attribute_prior: {Beweglichkeit: 5, Reflexe: 5, Antritt: 3, Hohe Bälle: 3, Stellungsspiel: 2, Strafraumkontrolle: 2}
+    # GK: FM-Arena-Test FM27 statt fm-scoring (wissen/tw-attribute-fm27.md, 25.11.2026 real)
+    attribute_prior: {Beweglichkeit: 5, Reflexe: 4.5, Hohe Bälle: 2, Konzentration: 1.5, Halten: 0.5, Antritt: 0.5, Strafraumkontrolle: 0.5, Antizipation: 0.5}
 
 # --- Sell/Keep (scripts/sellkeep.py): Kaskade nach FMMT-27, alle Schwellen Setzungen, ungeprüft ---
 sell_keep:
@@ -123,5 +124,6 @@ ability:
     WB/6: {Antritt: 5, Schnelligkeit: 5, Ausdauer: 4, Antizipation: 3, Dribbling: 3, Einsatzfreude: 3, Passen: 2, Stellungsspiel: 2, Teamwork: 2, Nervenstärke: 1, Entscheidungen: 1, Ballannahme: 1, Kraft: 1, Tackling: 1}
     "10": {Antritt: 5, Dribbling: 5, Schnelligkeit: 5, Antizipation: 3, Nervenstärke: 2, Ohne Ball: 2, Passen: 2, Ausdauer: 2, Einsatzfreude: 2, Entscheidungen: 1, Abschluss: 1, Ballannahme: 1, Kraft: 1, Teamwork: 1}
     "9": {Antritt: 5, Sprunghöhe: 5, Schnelligkeit: 5, Antizipation: 3, Dribbling: 3, Abschluss: 3, Nervenstärke: 2, Ohne Ball: 2, Ausdauer: 2, Einsatzfreude: 2, Entscheidungen: 1, Ballannahme: 1, Kopfballtechnik: 1, Kraft: 1, Teamwork: 1}
-    GK: {Beweglichkeit: 5, Reflexe: 5, Antritt: 3, Hohe Bälle: 3, Stellungsspiel: 2, Strafraumkontrolle: 2, Antizipation: 1, Kommunikation: 1, Nervenstärke: 1, Konzentration: 1, Entscheidungen: 1, Eins gegen Eins: 1, Halten: 0.5, Abschlag: 0.5, Abwurf: 0.5}
+    # GK: FM-Arena-Test FM27 statt fm-scoring (wissen/tw-attribute-fm27.md, 25.11.2026 real)
+    GK: {Beweglichkeit: 5, Reflexe: 4.5, Hohe Bälle: 2, Konzentration: 1.5, Halten: 0.5, Antritt: 0.5, Strafraumkontrolle: 0.5, Antizipation: 0.5}
   alter_benchmark: {15: 10.3, 16: 10.9, 17: 11.5, 18: 12.2, 19: 12.6, 20: 12.9, 21: 13.2, 22: 13.4, 23: 13.7, 24: 13.8}

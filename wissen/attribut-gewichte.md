@@ -23,6 +23,11 @@
 | 9 | Antritt 5, Sprunghöhe 5, Schnelligkeit 5, Antizipation 3, Dribbling 3, Abschluss 3, Nervenstärke 2, Ohne Ball 2, Ausdauer 2, Einsatzfreude 2, Entscheidungen 1, Ballannahme 1, Kopfballtechnik 1, Kraft 1, Teamwork 1 |
 | GK | Beweglichkeit 5, Reflexe 5, Antritt 3, Hohe Bälle 3, Stellungsspiel 2, Strafraumkontrolle 2, Antizipation 1, Kommunikation 1, Nervenstärke 1, Konzentration 1, Entscheidungen 1, Eins gegen Eins 1, Halten 0,5, Abschlag 0,5, Abwurf 0,5 |
 
+**Abweichung GK (25.11.2026 real, Entscheidung Jimmy):** In `config/rollen.yaml` (`ability.archetypen.GK`,
+`gruppe_gk.attribute_prior`) stehen nicht die fm-scoring-Werte oben. Dort stehen Gewichte nach dem FM27-Test von
+FM-Arena: Beweglichkeit 5, Reflexe 4,5, Hohe Bälle 2, Konzentration 1,5, Halten/Antritt/Strafraumkontrolle/
+Antizipation je 0,5. Herleitung und Vergleich: [tw-attribute-fm27.md](tw-attribute-fm27.md).
+
 Übersetzung EN → DE wie in `config/live_spalten.yaml`. Unsicher: *Aerial Reach → Hohe Bälle*.
 
 ## Positions-Zuordnung (FMMT-eigene Setzung, kein FM-Wissen)
