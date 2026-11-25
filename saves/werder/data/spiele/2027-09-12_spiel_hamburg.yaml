@@ -1,0 +1,38 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# Zweites BL-Spiel mit Tempo Geringer. Tore: Manneh 16' (Guliashvili), Pherai 19' (El Ouahdi),
+# Stage 32' (Ndiaye), Chuki 36' (Manneh). Guliashvili OM l statt Grüll.
+datum: 2027-09-12
+gegner: Hamburg
+ort: A
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [3, 1]
+  ballbesitz: [41, 59]
+  schuesse: [6, 8]
+  schuesse_aufs_tor: [4, 3]
+  xg: [0.97, 1.06]
+  ppda: [23.28, 11.47]
+  grosschancen: [1, 1]
+  ecken: [5, 7]
+  prog_paesse: [47, 59]
+  passquote: [88, 90]
+  flankenquote: [5, 9]
+  fouls: [5, 11]
+  gelb: [0, 2]
+  rot: [0, 0]
+  laufleistung: [125, 130]
+  notenschnitt: [7.1, 6.6]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 6.6}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 7.0}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 7.0}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 6.9}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 7.0, vorlagen: 1}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.4}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 7.6, tore: 1}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 7.0}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 7.3, tore: 1}
+  - {slot: OM l, rolle: IAS, spieler: Guliashvili, note: 7.3, vorlagen: 1}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 8.0, tore: 1, vorlagen: 1}

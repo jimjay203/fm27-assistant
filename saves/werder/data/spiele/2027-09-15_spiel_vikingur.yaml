@@ -1,0 +1,38 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# Zweites EL-Spiel, erstes mit "Flanken verhindern" (EL-Test seit 08.09.2027). Rotation: Gechter RV,
+# Amatucci DM, Guliashvili OM r, Erevbenagie OM l. Tor: Manneh 7' (Guliashvili).
+datum: 2027-09-15
+gegner: Vikingur
+ort: A
+wettbewerb: UEFA Europa League
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [1, 0]
+  ballbesitz: [58, 42]
+  schuesse: [14, 6]
+  schuesse_aufs_tor: [8, 1]
+  xg: [1.43, 0.20]
+  ppda: [10.27, 13.70]
+  grosschancen: [1, 0]
+  ecken: [10, 4]
+  prog_paesse: [47, 33]
+  passquote: [89, 84]
+  flankenquote: [6, 25]
+  fouls: [6, 10]
+  gelb: [2, 2]
+  rot: [0, 0]
+  laufleistung: [127, 123]
+  notenschnitt: [7.2, 6.6]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 7.2}
+  - {slot: RV, rolle: IFV, spieler: Gechter, note: 7.4}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 7.6}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 7.3}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 7.2}
+  - {slot: DM l, rolle: DM, spieler: Amatucci, note: 6.6}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.8}
+  - {slot: OM r, rolle: FL, spieler: Guliashvili, note: 7.0, vorlagen: 1}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 6.9}
+  - {slot: OM l, rolle: IAS, spieler: Erevbenagie, note: 6.7}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 8.0, tore: 1}

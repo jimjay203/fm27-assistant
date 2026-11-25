@@ -1,0 +1,37 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# Drittes BL-Spiel mit Tempo Geringer (Ende Tempo-Test). Tor: Guirassy 62' (Luís Henrique).
+datum: 2027-09-19
+gegner: Borussia Dortmund
+ort: A
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [0, 1]
+  ballbesitz: [51, 49]
+  schuesse: [3, 17]
+  schuesse_aufs_tor: [2, 7]
+  xg: [0.68, 2.21]
+  ppda: [16.15, 12.55]
+  grosschancen: [1, 2]
+  ecken: [5, 14]
+  prog_paesse: [30, 51]
+  passquote: [84, 86]
+  flankenquote: [5, 19]
+  fouls: [5, 6]
+  gelb: [0, 1]
+  rot: [0, 0]
+  laufleistung: [126, 126]
+  notenschnitt: [6.6, 7.2]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 6.8}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.8}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 6.7}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 6.6}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.4}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.6}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.5}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 6.4}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 6.3}
+  - {slot: OM l, rolle: IAS, spieler: Guliashvili, note: 6.9}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 6.3}
