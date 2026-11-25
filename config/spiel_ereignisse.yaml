@@ -16,6 +16,8 @@ kategorien:
     - '^(TwoGoals|VarDecision|VarResult|ReplacingInjured|FansLeaving|PlayerLooksMotivated|RefereePlaysAdvantage)'
     - '^(CleanThrough|TeamHadBetterOfHalf)'
     - '^(CounterAttackGoal|ClinchingGoal|PulledOneBack|PlayerLooksFiredUp|PlayerHurtInChallenge)'
+    - '^(TeamDominateHalf|SpottedKeeperOffHisLine|GoodCounterAttackGoal|TeamMarchOn)'
+    - '^(BadPassInOwnArea|DismalMatch)'
   lauf: ['^PlayerLooksToLatchOnto']
   zuruf: ['^TouchlineShout']
   konter: ['^TeamOnCounter']
@@ -27,7 +29,7 @@ kategorien:
   standard: ['^ThrowReturnPossession', '^Take(ShortCorner|Corner|ThrowIn|FreeKick|GoalKick)', '^KickOff', '^StartMatch']
   pfiff: ['^Restart']
   block: ['^BlockShot']
-  parade: ['^GoodSave', '^GoalkeeperBlock', '^GoalkeeperTippedOver', '^Goalkeeper(TippedWide|Held|Punch)', '^GoalieCatchBall']
+  parade: ['^GoodSave', '^GoalkeeperBlock', '^GoalkeeperParry', '^GoalkeeperTippedOver', '^Goalkeeper(TippedWide|Held|Punch)', '^GoalieCatchBall']
   torwart: ['^Goalkeeper(ClearBall|ClearanceFromHeld|ThrowPass)', '^PickUpFreeBall']
   schuss: ['^DefaultShot', '^Shot', '^Header(Over|HitsPost|HitsBar|Wide)']
   flanke: ['^Cross']

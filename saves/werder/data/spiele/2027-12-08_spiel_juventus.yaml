@@ -1,0 +1,99 @@
+# Automatisch aus F9-Export 20261126_005626_248.json und SpielLogger-Mitschnitt 2027-12-08_juventus.jsonl.gz
+datum: 2027-12-08
+gegner: Juventus
+ort: H
+wettbewerb: UEFA Europa League
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '0'
+  - '0'
+  ballbesitz:
+  - '40'
+  - '60'
+  schuesse:
+  - '3'
+  - '11'
+  schuesse_aufs_tor:
+  - '2'
+  - '2'
+  xg:
+  - 0,34
+  - 0,74
+  ppda:
+  - 19,29
+  - 10,76
+  grosschancen:
+  - '0'
+  - '0'
+  ecken:
+  - '3'
+  - '5'
+  prog_paesse:
+  - '38'
+  - '56'
+  passquote:
+  - '84'
+  - '90'
+  flankenquote:
+  - '6'
+  - '5'
+  fouls:
+  - '4'
+  - '9'
+  gelb:
+  - '1'
+  - '1'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '123'
+  - '122'
+  notenschnitt:
+  - 6,7
+  - 6,9
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+- slot: RV
+  spieler: Gechter
+  uid: 2000071246
+  rolle: IFV
+- slot: IV r
+  spieler: Pfeiffer
+  uid: 91184447
+  rolle: IV
+- slot: IV l
+  spieler: Andrade
+  uid: 80030203
+  rolle: IV
+- slot: LV
+  spieler: N'Diaye
+  uid: 12083698
+  rolle: FV
+- slot: DM r
+  spieler: Stage
+  uid: 27104982
+  rolle: B2B
+- slot: DM l
+  spieler: Lynen
+  uid: 18096574
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+- slot: OM z
+  spieler: Chuki
+  uid: 2000139344
+  rolle: VSm
+- slot: OM l
+  spieler: Grüll
+  uid: 16195163
+  rolle: IAS
+- slot: ST
+  spieler: Guliashvili
+  uid: 59138345
+  rolle: HRS

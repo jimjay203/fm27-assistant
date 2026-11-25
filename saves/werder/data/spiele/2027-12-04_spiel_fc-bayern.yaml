@@ -1,0 +1,100 @@
+# Automatisch aus F9-Export 20261126_002304_290.json und SpielLogger-Mitschnitt 2027-12-04_fc-bayern.jsonl.gz
+datum: 2027-12-04
+gegner: FC Bayern
+ort: A
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '0'
+  - '3'
+  ballbesitz:
+  - '25'
+  - '75'
+  schuesse:
+  - '6'
+  - '20'
+  schuesse_aufs_tor:
+  - '2'
+  - '11'
+  xg:
+  - 0,72
+  - 2,47
+  ppda:
+  - 21,80
+  - 8,60
+  grosschancen:
+  - '0'
+  - '2'
+  ecken:
+  - '3'
+  - '6'
+  prog_paesse:
+  - '30'
+  - '63'
+  passquote:
+  - '77'
+  - '92'
+  flankenquote:
+  - '16'
+  - '15'
+  fouls:
+  - '15'
+  - '7'
+  gelb:
+  - '3'
+  - '2'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '127'
+  - '129'
+  notenschnitt:
+  - 6,4
+  - 7,4
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+  rolle: TW
+- slot: RV
+  spieler: Keidel
+  uid: 2000069240
+  rolle: IFV
+- slot: IV r
+  spieler: Pfeiffer
+  uid: 91184447
+  rolle: IV
+- slot: IV l
+  spieler: Córdoba
+  uid: 2000079847
+  rolle: IV
+- slot: LV
+  spieler: N'Diaye
+  uid: 12083698
+  rolle: FV
+- slot: DM r
+  spieler: Stage
+  uid: 27104982
+  rolle: B2B
+- slot: DM l
+  spieler: Lynen
+  uid: 18096574
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+- slot: OM z
+  spieler: Chuki
+  uid: 2000139344
+  rolle: VSm
+- slot: OM l
+  spieler: Grüll
+  uid: 16195163
+  rolle: IAS
+- slot: ST
+  spieler: Kaars
+  uid: 37063647
+  rolle: HRS

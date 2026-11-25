@@ -118,9 +118,15 @@ class Spiel:
         return pos[0] * r, pos[2] * r
 
     def ball_bei(self, ts: int, toleranz: int = 4) -> list[float] | None:
+        """Ball zur Zeitscheibe ts: gemessen, zwischen zwei nahen Messungen interpoliert oder die nächste."""
         if ts in self.ball:
             return self.ball[ts]
         k = bisect.bisect_left(self._ball_ts, ts)
+        if 0 < k < len(self._ball_ts):
+            a, b = self._ball_ts[k - 1], self._ball_ts[k]
+            if b - a <= 2 * toleranz:
+                anteil = (ts - a) / (b - a)
+                return [x + (y - x) * anteil for x, y in zip(self.ball[a], self.ball[b], strict=True)]
         kandidaten = [self._ball_ts[j] for j in (k - 1, k) if 0 <= j < len(self._ball_ts)]
         if not kandidaten:
             return None

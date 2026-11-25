@@ -1,8 +1,9 @@
 // Mitschnitt eines Spiels: eine JSONL-Datei, Feld "t" = Zeilentyp
 // (kopf, setup, spieler, zaehler, ereignis, frame, ball_spur, bildschirm, leistung, fehler, ende).
 //
-// Nichts darf das Spiel ruckeln lassen: je Bild nur wenig Arbeit. Das Nachschreiben vieler Ballpositionen am Stück
-// hat in Version 0.2 beim letzten Highlight deutlich geruckelt.
+// Nichts darf das Spiel ruckeln lassen. Einzelne rückwirkende Ballabfragen (GetBallPosition) dauern bis über
+// 100 ms – egal wie klein die Portionen sind. Automatisch während des Spiels hat das immer geruckelt (0.2–0.5).
+// Deshalb nur noch auf Wunsch: nach F8, solange die Spielzeit stillsteht (Halbzeit, Abpfiff).
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,17 @@ namespace SpielLogger
         // Ballspur: bis wohin gesehen (Wiedergaben springen zurück) und geschrieben
         private static int s_maxTs, s_ballBis = -1;
         private static readonly List<float[]> s_ballPuffer = new();
-        private const double BallBudgetMs = 2.0;  // Zeit je Bild für die Ballspur
+        private const double BallBudgetMs = 15.0;     // Zeit je Bild für die Ballspur
+        private static bool s_ballGewuenscht;         // durch F8, endet bei Rückstand 0 oder wenn das Spiel läuft
+        private static string s_modus = "";
+        private static readonly Dictionary<string, int> s_rucklerModus = new();
+        private const float Stillstand = 2f;      // Sekunden ohne neue Zeitscheibe (Halbzeit, Pause, Abpfiff)
+        private static int s_jetztTs = int.MinValue;
+        private static float s_stehtSeit;
+        // Ruckler: Bilder über 100 ms und wie viel davon eigene Arbeit war
+        private static double s_arbeit;           // eigene Millisekunden im letzten Bild
+        private static int s_ruckler, s_rucklerEigen;
+        private static readonly Dictionary<string, int> s_haenger = new();  // Aufgabe: wie oft über 20 ms
         private const int BallZeile = 200;        // so viele Punkte je Zeile
         // Ereignisse: ab hier neu lesen (Gespieltes ändert sich nicht mehr)
         private static int s_ersterOffen;
@@ -112,7 +123,27 @@ namespace SpielLogger
             var setup = s_ctrl.Setup;
             if (match == null || setup == null) return;
             if (s_datei == null) Oeffnen(setup, stufe);
-            try { s_maxTs = Math.Max(s_maxTs, match.CurrentTimeSlice); } catch (Exception e) { Fehler("zeit", e); }
+            else if (Time.unscaledDeltaTime > 0.1f)
+            {
+                s_ruckler++;
+                if (s_arbeit > 20) s_rucklerEigen++;
+                s_rucklerModus.TryGetValue(s_modus, out int r);
+                s_rucklerModus[s_modus] = r + 1;
+            }
+            s_arbeit = 0;
+            try
+            {
+                int ts = match.CurrentTimeSlice;
+                s_maxTs = Math.Max(s_maxTs, ts);
+                if (ts != s_jetztTs)
+                {
+                    if (jetzt - s_stehtSeit >= Stillstand) s_ballGewuenscht = false;  // Spiel läuft wieder
+                    s_jetztTs = ts;
+                    s_stehtSeit = jetzt;
+                }
+                s_modus = match.CurrentMatchPlaybackMode.ToString();
+            }
+            catch (Exception e) { Fehler("zeit", e); }
             if (rueckblick) s_naechsteListe = 0;  // Taste: Zähler und Ereignisse sofort schreiben
 
             if (jetzt >= s_naechsteListe)
@@ -136,8 +167,13 @@ namespace SpielLogger
 
             if (stufe >= 4)
             {
-                // Ballspur läuft fortlaufend in kleinen Portionen mit; F8 schreibt den Puffer sofort weg
-                try { Messen("ballspur", () => Ballspur(rueckblick)); }
+                if (rueckblick) s_ballGewuenscht = true;
+                bool steht = jetzt - s_stehtSeit >= Stillstand && !s_modus.StartsWith("Replay") && s_modus != "Highlight";
+                try
+                {
+                    if (s_ballGewuenscht && steht) Messen("ballspur", () => Ballspur(rueckblick));
+                    else if (rueckblick) BallZeileSchreiben();
+                }
                 catch (Exception e) { Fehler("ballspur", e); s_ballBis = s_maxTs; }
             }
             if (rueckblick)
@@ -153,14 +189,25 @@ namespace SpielLogger
             var uhr = Stopwatch.StartNew();
             tun();
             double ms = uhr.Elapsed.TotalMilliseconds;
+            s_arbeit += ms;
+            if (ms > 20 && aufgabe != "ballspur")
+            {
+                s_haenger.TryGetValue(aufgabe, out int h);
+                s_haenger[aufgabe] = h + 1;
+            }
             s_dauer.TryGetValue(aufgabe, out double bisher);
             if (ms <= bisher) return;
             s_dauer[aufgabe] = ms;
-            if (ms > 50) Plugin.L.LogWarning($"{aufgabe} brauchte {ms:0} ms");
+            if (ms > 50 && aufgabe != "ballspur") Plugin.L.LogWarning($"{aufgabe} brauchte {ms:0} ms");
         }
 
         private static void Leistung() =>
-            Zeile(new { t = "leistung", max_ms = s_dauer, ball_rueckstand = s_maxTs - s_ballBis });
+            Zeile(new
+            {
+                t = "leistung", max_ms = s_dauer, ueber_20ms = s_haenger, ruckler = s_ruckler,
+                ruckler_eigen = s_rucklerEigen, ruckler_modus = s_rucklerModus,
+                ball_rueckstand = s_maxTs - s_ballBis,
+            });
 
         private static void Oeffnen(MatchSetup setup, int stufe)
         {
@@ -298,6 +345,12 @@ namespace SpielLogger
                 s_ballPuffer.Add(new[] { R(p.x), R(p.y), R(p.z) });
                 s_ballBis++;
             }
+            if (s_ballBis >= s_maxTs && s_ballGewuenscht)
+            {
+                s_ballGewuenscht = false;
+                sofort = true;
+                Plugin.L.LogInfo($"Ballspur vollständig bis Zeitscheibe {s_ballBis}");
+            }
             if (s_ballPuffer.Count >= BallZeile || sofort) BallZeileSchreiben();
         }
 
@@ -324,6 +377,13 @@ namespace SpielLogger
             s_maxTs = s_ersterOffen = 0;
             s_ballBis = -1;
             s_ballPuffer.Clear();
+            s_jetztTs = int.MinValue;
+            s_arbeit = 0;
+            s_ruckler = s_rucklerEigen = 0;
+            s_haenger.Clear();
+            s_rucklerModus.Clear();
+            s_ballGewuenscht = false;
+            s_modus = "";
             s_dauer.Clear();
             s_letzterZaehler = -1;
             s_letzteTs = int.MinValue;

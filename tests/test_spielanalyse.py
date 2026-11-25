@@ -137,3 +137,9 @@ def test_shots_team_and_player_views(mitschnitt, tmp_path):
     assert "1:0" in spielkennzahlen.halbzeit_text(spiel, 0, None)
     pfade = spielanalyse.grafiken(spiel, szene, "Test", tmp_path / "tor_1", 0)
     assert [p.name for p in pfade] == ["tor_1_1.png", "tor_1_2.png"] and all(p.exists() for p in pfade)
+
+
+def test_ball_is_interpolated_between_close_samples(mitschnitt):
+    spiel = spieldaten.laden(mitschnitt)
+    assert spiel.ball_bei(6) == [0, 0, -17.5]
+    assert spiel.ball_bei(100) is None
