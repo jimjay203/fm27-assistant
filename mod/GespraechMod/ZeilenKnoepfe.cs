@@ -124,7 +124,6 @@ namespace GespraechMod
             internal float Zeit;
         }
 
-        internal static IPanel Panel;
         private static float s_naechsteSuche;
         private static readonly Dictionary<IntPtr, Leiste> s_leisten = new();
         private static readonly Dictionary<string, Stand> s_stand = new();
@@ -226,7 +225,6 @@ namespace GespraechMod
             var vorlagen = new List<VisualElement>();
             foreach (var w in Wurzeln())
             {
-                Panel ??= w.panel;
                 Sammeln(w, vorlagen);
             }
             // tote Leisten (Element nicht mehr im Baum) vergessen
@@ -240,7 +238,7 @@ namespace GespraechMod
             {
                 try
                 {
-                    var (zelle, zeile) = Plugin.AlsSpalte.Value ? ZelleUndZeile(v) : (null, null);
+                    var (zelle, zeile) = ZelleUndZeile(v);
                     if (zeile == null) continue;  // nur echte Tabellenzeilen (keine Leiste hinter Namen in anderen Widgets)
                     VisualElement ziel = zeile;
                     VisualElement nach = zelle ?? v;

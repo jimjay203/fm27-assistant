@@ -15,7 +15,6 @@ using System.Text;
 using HarmonyLib;
 using SI.UI;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace GespraechMod
@@ -85,23 +84,6 @@ namespace GespraechMod
                 return sb.ToString();
             }
             catch { return "?"; }
-        }
-
-        internal static VisualElement UnterMaus()
-        {
-            var panel = Muster?.Target?.panel ?? ZeilenKnoepfe.Panel;
-            if (panel == null) return null;
-            var maus = Mouse.current?.position.ReadValue() ?? Vector2.zero;
-            var punkt = RuntimePanelUtils.ScreenToPanel(panel, new Vector2(maus.x, Screen.height - maus.y));
-            return panel.Pick(punkt);
-        }
-
-        // Taste über einer Zeile
-        internal static void StartMaus(string text)
-        {
-            var ziel = NamensFeld(UnterMaus());
-            if (ziel == null) { Plugin.L.LogWarning("[Gespraech] Taste: kein Namensfeld unter der Maus."); return; }
-            Ausloesen(ziel, text, null);
         }
 
         internal static bool Ausloesen(VisualElement feld, string text, Action<bool, HashSet<string>> fertig) =>
@@ -194,9 +176,7 @@ namespace GespraechMod
                     if (h == null) continue;
                     Plugin.L.LogInfo($"[Gespraech] '{s_text}' gefunden, löse aus");
                     Schliessen();
-                    Info.Wiederholung = true;
-                    try { h.Invoke(); }
-                    finally { Info.Wiederholung = false; }
+                    h.Invoke();
                     PauseBis = Time.unscaledTime + 3f;
                     Ende(true, null);
                     return;
@@ -227,9 +207,6 @@ namespace GespraechMod
             Schliessen();
             Ende(false, angebote);
         }
-
-        // Diagnose (Taste DumpKey): Struktur unter der Maus
-        internal static void Dump() => Plugin.L.LogInfo("[Gespraech] Dump unter Maus:" + Struktur(UnterMaus(), 16));
 
         internal static string Struktur(VisualElement e, int max)
         {
