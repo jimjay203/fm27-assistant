@@ -1,0 +1,39 @@
+# Spielbericht-Screenshot + Szenen 1:1 (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# Erstes BL-Spiel mit "Flanken verhindern" ab Anpfiff (Standard seit 09.10.2027). Tore: Manneh 5' (Chuki),
+# Matanović 68' (Beste; Beste an unserer linken Grundlinie gestellt, Zweikampf/Grätsche verloren, flache
+# Hereingabe an den kurzen Pfosten). Pieper IV r (zurück nach Verletzung).
+datum: 2027-10-16
+gegner: Freiburg
+ort: A
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [1, 1]
+  ballbesitz: [45, 55]
+  schuesse: [6, 13]
+  schuesse_aufs_tor: [3, 7]
+  xg: [0.53, 2.08]
+  ppda: [20.11, 19.50]
+  grosschancen: [0, 3]
+  ecken: [5, 8]
+  prog_paesse: [38, 60]
+  passquote: [88, 89]
+  flankenquote: [4, 18]
+  fouls: [9, 7]
+  gelb: [4, 0]
+  rot: [0, 0]
+  laufleistung: [129, 130]
+  notenschnitt: [6.8, 6.9]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 6.7}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.5}
+  - {slot: IV r, rolle: IV, spieler: Pieper, note: 6.6}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 7.1}
+  - {slot: LV, rolle: FV, spieler: Ndiaye, note: 6.6}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.6}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.8}
+  - {slot: OM r, rolle: FL, spieler: Arthur, note: 6.6}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 7.0, vorlagen: 1}
+  - {slot: OM l, rolle: IAS, spieler: Grüll, note: 6.5}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 7.0, tore: 1}
