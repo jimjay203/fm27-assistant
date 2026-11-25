@@ -19,13 +19,17 @@ moral:
   # Live (FMMT-Fork, 20-100): darunter gilt die Moral als niedrig (Bänder laut Fork: >= ~66 Begeistert,
   # 33-64 Zufrieden, ~20-26 Eher zufrieden; tiefere Werte werden abgeschnitten)
   live_niedrig_unter: 33
-  # Export-Feld "Zufriedenheit": diese Texte gelten als niedrig
-  niedrig_texte: [Leicht unzufrieden, Unzufrieden, Sehr unzufrieden, Äußerst unzufrieden, Frustriert]
+  # Texte, die als niedrig gelten: Export-Feld "Zufriedenheit" und Moral-Spalte im Spiel
+  # (Moral-Stufen laut Screenshot 25.11.2026: Begeistert, Sehr glücklich, Glücklich, Beunruhigt, Sehr verstimmt)
+  niedrig_texte: [Leicht unzufrieden, Unzufrieden, Sehr unzufrieden, Äußerst unzufrieden, Frustriert,
+                  Beunruhigt, Verstimmt, Sehr verstimmt]
 
-# Typ -> Anzeige und Klickpfad im Spiel (Rechtsklick auf den Spieler). Pfade für Kritik aus dem Menü
-# "Warnung aussprechen" sind noch nicht per Screenshot bestätigt.
+# Typ -> Anzeige und Klickpfad im Spiel (Rechtsklick auf den Spieler; Menütexte per Screenshot bestätigt 25.11.2026).
+# Spielcode (Mitschnitt GespraechMod 25.11.2026): "Form …" und "Leistung im letzten Spiel …" sind beide ActionID
+# Praise-/WarnPlayerPerformance (Spielform, nicht Training); dritter Eintrag je nach Spieler "Training/Entwicklung …"
+# (…TrainingDevelopment) oder "Verhalten …" (…Conduct).
 typen:
   lob_leistung: {art: lob, text: Leistung im letzten Spiel loben, pfad: Interaktion › Loben › Leistung im letzten Spiel loben}
   lob_form: {art: lob, text: Form loben, pfad: Interaktion › Loben › Form loben}
-  kritik_leistung: {art: kritik, text: "Warnung: Leistung im letzten Spiel", pfad: Interaktion › Warnung aussprechen › (Leistung, ungeprüft)}
-  kritik_form: {art: kritik, text: "Warnung: Form", pfad: Interaktion › Warnung aussprechen › (Form, ungeprüft)}
+  kritik_leistung: {art: kritik, text: Leistung im letzten Spiel kritisieren, pfad: Interaktion › Warnung aussprechen › Leistung im letzten Spiel kritisieren}
+  kritik_form: {art: kritik, text: Form kritisieren, pfad: Interaktion › Warnung aussprechen › Form kritisieren}
