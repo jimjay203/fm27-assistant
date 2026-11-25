@@ -13,6 +13,7 @@ kategorien:
     - '^(PlayerPutsBallOutOfPlayForInjury|PlayerNeedsOnFieldTreatment|PlayerInjured|PlayerTakesHisTime)'
     - '^(PlayerError|SoloGoalMissed|FreeKickChanceCentral|HalfTime)'
     - '^(StumbleOverAfterSkillMove|PlayerTakesTimeWith|GoalkeeperGoesForward|Team(Hanging|Having)|FullTime)'
+    - '^(TwoGoals|VarDecision|VarResult|ReplacingInjured|FansLeaving|PlayerLooksMotivated|RefereePlaysAdvantage)'
   lauf: ['^PlayerLooksToLatchOnto']
   zuruf: ['^TouchlineShout']
   konter: ['^TeamOnCounter']
@@ -26,11 +27,11 @@ kategorien:
   block: ['^BlockShot']
   parade: ['^GoodSave', '^GoalkeeperTippedOver', '^Goalkeeper(TippedWide|Held|Punch)', '^GoalieCatchBall']
   torwart: ['^Goalkeeper(ClearBall|ClearanceFromHeld|ThrowPass)', '^PickUpFreeBall']
-  schuss: ['^DefaultShot', '^Shot', '^Header(Over|HitsPost|Wide)']
+  schuss: ['^DefaultShot', '^Shot', '^Header(Over|HitsPost|HitsBar|Wide)']
   flanke: ['^Cross']
   dribbling: ['^(RunPastOpponent|CreateSpaceWithSkillMove|PlayBallAheadAndRunOnto)']
   abfangen: ['Intercept']
   zweikampf: ['Tackle', '^KeyChallenge', '^Robs']
   luftduell: ['^WinsJumpforball', '^PlayersRaceForLongBall', '^LooseBall']
   klaerung: ['^(ClearBall|ClearForThrow|HeadClear|HeadsBallBehind|WinsBallInAirAndClears|HeadIt)']
-  pass: ['^(LaysBallOff|AttemptPass|Pass|HeadedPass|HeaderPass|HeaderBackToKeeper|OneTwoPass|LongBall|PpmMoves)']
+  pass: ['^(SquarePass|LaysBallOff|AttemptPass|Pass|HeadedPass|HeaderPass|HeaderBackToKeeper|OneTwoPass|LongBall|PpmMoves)']
