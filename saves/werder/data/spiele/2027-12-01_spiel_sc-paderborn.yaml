@@ -1,0 +1,100 @@
+# Automatisch aus F9-Export 20261125_234305_879.json und SpielLogger-Mitschnitt 2027-12-01_sc-paderborn.jsonl.gz
+datum: 2027-12-01
+gegner: SC Paderborn
+ort: A
+wettbewerb: DFB-Pokal
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '1'
+  - '2'
+  ballbesitz:
+  - '52'
+  - '48'
+  schuesse:
+  - '4'
+  - '11'
+  schuesse_aufs_tor:
+  - '3'
+  - '8'
+  xg:
+  - 0,66
+  - 1,05
+  ppda:
+  - 14,06
+  - 16,03
+  grosschancen:
+  - '1'
+  - '0'
+  ecken:
+  - '4'
+  - '9'
+  prog_paesse:
+  - '56'
+  - '47'
+  passquote:
+  - '86'
+  - '89'
+  flankenquote:
+  - '11'
+  - '9'
+  fouls:
+  - '7'
+  - '8'
+  gelb:
+  - '1'
+  - '0'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '125'
+  - '128'
+  notenschnitt:
+  - 6,6
+  - 7,0
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+  rolle: TW
+- slot: RV
+  spieler: Keidel
+  uid: 2000069240
+  rolle: IFV
+- slot: IV r
+  spieler: Pieper
+  uid: 91173279
+  rolle: IV
+- slot: IV l
+  spieler: Córdoba
+  uid: 2000079847
+  rolle: IV
+- slot: LV
+  spieler: N'Diaye
+  uid: 12083698
+  rolle: FV
+- slot: DM r
+  spieler: Amatucci
+  uid: 2000025303
+  rolle: B2B
+- slot: DM l
+  spieler: Stark
+  uid: 91109615
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+- slot: OM z
+  spieler: Chuki
+  uid: 2000139344
+  rolle: VSm
+- slot: OM l
+  spieler: Grüll
+  uid: 16195163
+  rolle: IAS
+- slot: ST
+  spieler: Kaars
+  uid: 37063647
+  rolle: HRS
