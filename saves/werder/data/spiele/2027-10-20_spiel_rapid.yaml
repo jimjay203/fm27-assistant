@@ -1,0 +1,39 @@
+# Spielbericht-Screenshot (Jimmy). Format: Kopf von scripts/spiel_erfassen.py
+# 3. EL-Spiel, 2. mit "Flanken verhindern". Arthur verletzt; Agu als OM r getestet (Jimmy). Kaars nicht für die EL
+# registriert. Tore: Jozepovič 21' (Gulliksen; Abpraller nach geblocktem Schuss von halblinks, Angabe Jimmy),
+# Eigentor Ahoussou 84'.
+datum: 2027-10-20
+gegner: SK Rapid
+ort: H
+wettbewerb: UEFA Europa League
+taktik_slot: Standard 2027/28
+saison: 2027/28
+werte:            # [wir, Gegner]
+  tore: [1, 1]
+  ballbesitz: [53, 47]
+  schuesse: [10, 11]
+  schuesse_aufs_tor: [5, 6]
+  xg: [1.38, 1.02]
+  ppda: [14.77, 13.06]
+  grosschancen: [2, 2]
+  ecken: [5, 7]
+  prog_paesse: [50, 64]
+  passquote: [86, 85]
+  flankenquote: [16, 12]
+  fouls: [9, 7]
+  gelb: [2, 1]
+  rot: [0, 0]
+  laufleistung: [124, 121]
+  notenschnitt: [6.7, 6.8]
+aufstellung:
+  - {slot: TW, rolle: TW, spieler: Hein, note: 7.0}
+  - {slot: RV, rolle: IFV, spieler: Keidel, note: 6.6}
+  - {slot: IV r, rolle: IV, spieler: Pfeiffer, note: 6.5}
+  - {slot: IV l, rolle: IV, spieler: Córdoba, note: 6.8}
+  - {slot: LV, rolle: FV, spieler: Oppie, note: 6.8}
+  - {slot: DM l, rolle: DM, spieler: Lynen, note: 6.7}
+  - {slot: DM r, rolle: B2B, spieler: Stage, note: 6.9}
+  - {slot: OM r, rolle: FL, spieler: Agu, note: 6.5}
+  - {slot: OM z, rolle: VSm, spieler: Chuki, note: 7.1}
+  - {slot: OM l, rolle: IAS, spieler: Grüll, note: 6.7}
+  - {slot: ST, rolle: HRS, spieler: Manneh, note: 5.9}
