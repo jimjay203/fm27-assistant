@@ -4,7 +4,7 @@
 | Slot | Formation |
 |---|---|
 | Standard | 4-2-3-1 (neuer Standard ab Vorbereitung 2027/28, Entscheidung Jimmy 03.07.2027; siehe Rollentabelle und Team-Instruktionen) |
-| Heim | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter. Option (nicht beschlossen): Mentalität Kontrolliert-offensiv gegen Schwächere |
+| Heim | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter. Mentalität Kontrolliert-offensiv nicht pauschal, sondern bei Bedarf im Spiel (Entscheidung Jimmy 09.10.2027; siehe Mentalität und Spickzettel "Im Spiel") |
 | Auswärts | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter |
 
 Form (bis 2026/27; für die Rollen ab 2027/28 im UI neu ablesen): Mit Ball 4-2-3-1. Ohne Ball zeigt das UI 4-3-2-1 (Lynen, Hack, Svanberg/Reis in einer Reihe; davor Grüll und Dinkçi; vorne Füllkrug). Korrigiert nach UI-Screenshot, Slot 3 "4-2-3-1 Standard", 24.10.2026.
@@ -21,7 +21,7 @@ Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 
 | IV r | Pfeiffer (Gechter, Stark; Pieper verletzt) | Innenverteidiger | Absichernder Innenverteidiger |
 | IV l | Córdoba (Linksfuß; Andrade 1. Backup seit 04.09.2027, dann Ndiaye) | Innenverteidiger | Absichernder Innenverteidiger (statt Stoppender: laut Jimmy riss der Stoppende IV ständig Lücken; subjektive Beobachtung, nicht gemessen) |
 | LV | Ndiaye (Oppie 1. Backup seit 04.09.2027, dann Agu; Deman nicht mehr im Kader) | Flügelverteidiger | Pressender Außenverteidiger |
-| DM l | Lynen (Keidel, Stark; Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark. Einwechsel-/Spielkontroll-Option seit 04.09.2027: Amatucci für Lynen, mit Ball Tiefer Spielmacher, siehe "Besetzung 04.09.2027") | Defensiver Mittelfeldspieler | Abschirmender Sechser |
+| DM l | Lynen (Stamm; Backups: 1. Amatucci, dann Keidel/Stark. Amatucci seit 09.10.2027 erste Wechseloption für Lynen allgemein, mit Ball Tiefer Spielmacher (Entscheidung Jimmy; vorher seit 04.09.2027 nur Spielkontroll-Option bei Gegner tief/in Unterzahl). Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
 | OM r | Arthur (Chuki nur als Plan E, Grüll) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; kein Transfer OM r nötig. Stand 17.07.2027: Erevbenagie verliehen bis 29.06.2028, Mbangula nicht mehr im Kader-Export 17.07.2027; Backup OM r damit Chuki (Plan E, Medina auf die Zehn) oder Grüll. Stand 04.09.2027 (Entscheidung Jimmy): Backups Guliashvili (neu, OM (RL)/ST), dann Chuki (Plan E)) |
 | OM z | Chuki (Medina, Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner (Medina seit 17.07.2027 Rotation/Backup hinter Chuki, Entscheidung Jimmy; nicht als Option auf der Sechs. Medina verletzt seit 23.08.2027, Knöchel) |
@@ -41,7 +41,7 @@ Rollen unverändert. Quelle Kader: DB Snapshot 250 (04.09.2027).
 | OM z | Chuki | Medina (verletzt seit 23.08.2027, Knöchel), Svanberg | |
 | LV | Ndiaye | Oppie (neu, 1. Backup), Agu | Deman nicht mehr im Kader |
 | IV l | Córdoba | Andrade (neu, 1. Backup), Ndiaye | |
-| DM | Lynen / Stage | wie Rollentabelle; DM l zusätzlich Amatucci als Einwechsel-/Spielkontroll-Option (nicht Stamm) | Amatucci (neu, bisher 49 Min.) bisher nur Einwechselspieler für Lynen, dann mit Ball Tiefer Spielmacher statt Defensiver Mittelfeldspieler; ohne Ball Rolle von Jimmy nicht genannt (im Spiel ablesen). Eingesetzt in Phasen mit viel eigenem Ballbesitz: Leipzig nach deren Roter Karte (73'), Köln ab 60'. Einsatz: Amatucci für Lynen, wenn wir den Ball haben / Gegner in Unterzahl / tiefer Block (Entscheidung Jimmy 04.09.2027). Nicht mehr auf DM r (Stage-Slot) gelistet |
+| DM | Lynen / Stage | wie Rollentabelle; DM l zusätzlich Amatucci als Einwechsel-/Spielkontroll-Option (nicht Stamm). ÜBERHOLT 09.10.2027 (Entscheidung Jimmy): Amatucci ist erste Wechseloption für Lynen allgemein, siehe Rollentabelle DM l | Amatucci (neu, bisher 49 Min.) bisher nur Einwechselspieler für Lynen, dann mit Ball Tiefer Spielmacher statt Defensiver Mittelfeldspieler; ohne Ball Rolle von Jimmy nicht genannt (im Spiel ablesen). Eingesetzt in Phasen mit viel eigenem Ballbesitz: Leipzig nach deren Roter Karte (73'), Köln ab 60'. Einsatz: Amatucci für Lynen, wenn wir den Ball haben / Gegner in Unterzahl / tiefer Block (Entscheidung Jimmy 04.09.2027). Nicht mehr auf DM r (Stage-Slot) gelistet |
 
 Abgänge: Itten, Musah, Deman, Adeh, Quetant. Zurück (keine Leihe mehr): Topp, Erevbenagie.
 
@@ -64,7 +64,7 @@ Stand: Entscheidung Jimmy 03.07.2027, neuer Standard ab Saisonvorbereitung 2027/
 | Einstellung | Wert | Bemerkung |
 |---|---|---|
 | Mentalität | Ausgewogen | UI-Stufen (Screenshot 03.07.2027): Sehr defensiv, Defensiv, Vorsichtig, Ausgewogen, Kontrolliert-offensiv, Offensiv, Sehr offensiv. Korrektur: Der bisher hier geführte Wert "Kontrolliert" (Stand 24.10.2026) war falsch bzw. überholt; eine Stufe "Kontrolliert" gibt es im FM27-UI nicht |
-| Option (nicht beschlossen) | Kontrolliert-offensiv | Heimspiele gegen Schwächere |
+| Bei Bedarf im Spiel | Kontrolliert-offensiv | Beschlossen 09.10.2027 (Entscheidung Jimmy): nicht pauschal, sondern als In-Game-Schalter bei Bedarf (Entscheidung Jimmy im Spiel; feste Auslöser nicht festgelegt). Ersetzt die frühere Option "Heimspiele gegen Schwächere" |
 
 ### Mit Ball
 | Einstellung | Wert ab 2027/28 | Bis 2026/27 (UI 03.07.2027) |
@@ -167,13 +167,14 @@ Auslöser (eigene Setzungen, nicht aus Daten – die DB hat keine Ballkontakte/P
 | Gegnerischer Sechser nimmt Chuki zentral auf (wie B, aber feste Umstellung; nur mit Medina im Kader/auf der Bank) | E (Alternative zu B) |
 | Arthur fällt auf OM r aus (Verletzung, Sperre) | E |
 
-Spielkontroll-Option (kein Ausweichplan der Offensive, Entscheidung Jimmy 04.09.2027; Spickzettel "Im Spiel"):
+Spielkontroll-Optionen (kein Ausweichplan der Offensive; Spickzettel "Im Spiel"; Entscheidungen Jimmy 04.09.2027, angepasst 09.10.2027):
 
-| Im Spiel | Wechsel |
+| Im Spiel | Wechsel / Schalter |
 |---|---|
-| Gegner tief/in Unterzahl, wir dominieren | Amatucci für Lynen (Tiefer Spielmacher) |
+| Wechsel auf DM l (allgemein; früherer Anlass Gegner tief/in Unterzahl gilt weiter, ist aber keine Bedingung mehr) | Amatucci für Lynen (mit Ball Tiefer Spielmacher) – erste Wechseloption für Lynen seit 09.10.2027 |
+| Bei Bedarf (Entscheidung Jimmy) | Mentalität Kontrolliert-offensiv (nicht pauschal, keine festen Auslöser; seit 09.10.2027) |
 
-Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik); Plan E: Eintrag 2027-07-17 (Taktik); Plan D mit Topp und Amatucci-Option: Eintrag 2027-09-04 (Kader/Taktik). Spickzettel nachgezogen, Stand 09.10.2027 (Topp/Plan D, Amatucci, Tempo Geringer mit xG-Kriterium, Flanken verhindern).
+Messkriterium: siehe log.md, Eintrag 2027-07-07 (Taktik); Plan E: Eintrag 2027-07-17 (Taktik); Plan D mit Topp und Amatucci-Option: Eintrag 2027-09-04 (Kader/Taktik). Spickzettel nachgezogen, Stand 09.10.2027 (Topp/Plan D, Amatucci erste Wechseloption DM l, Mentalität Kontrolliert-offensiv bei Bedarf, Tempo Geringer mit xG-Kriterium, Flanken verhindern).
 
 ### Abgeschlossener Test: Arthur Pressender Außenverteidiger (Beschluss Jimmy, 21.11.2026)
 - Änderung: Arthur ohne Ball: Pressender Außenverteidiger statt Abwartender Außenverteidiger (Rolle mit Ball bleibt Außenverteidiger). Von Jimmy bestätigt; Umgesetzt und seit dem 21.11.2026 fest im Standard.
@@ -434,7 +435,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Punkt | Inhalt | Begründung / Beleg |
 |---|---|---|
 | Ballbesitz | Ballbesitz mit etwas Pressing, realistisch moderat (Richtwert ca. 50 %) | Basis 2026/27: Ø 45,0 % Ballbesitz in 10 BL-Spielen (17.10.2026-09.01.2027, DB team_matches; spätere Spiele fehlen in der DB). Analyse 01.-03.07.: Ballsicherheit des Kaders unter BL-Median, Engpass ist der Aufbau aus der Tiefe; Pressing im Mittelfeld stark (Stage, Reis, Svanberg 88.-97. Perzentil). Deshalb moderat, nicht Dominanz |
-| Mentalität | Ausgewogen (Kontrolliert-offensiv nur Option, Heim gegen Schwächere) | Entscheidung Jimmy 03.07.2027 |
+| Mentalität | Ausgewogen; Kontrolliert-offensiv bei Bedarf im Spiel, nicht pauschal (seit 09.10.2027; vorher Option "Heim gegen Schwächere") | Entscheidung Jimmy 03.07.2027, angepasst 09.10.2027 |
 | Bewegung | Gegenläufige Bewegungen und schnelle Flankenwechsel: links Überladung (Grüll innen, Ndiaye außen), rechts Breite (Flügelspieler Arthur) + Keidel innen neben Lynen (seit 06.07.2027; vorher Arthur als RV); Seitenwechsel auf den freien rechten Flügel; Chuki kommt kurz, Kaars in die Schnittstelle, Stage spät in den Strafraum | Absicht Jimmy; keine eigene UI-Anweisung für Seitenwechsel, umgesetzt über Rollen + Angriffsbreite Breiter, Passspiel Kürzer, Flache Flanken. Seitenwechsel nicht messbar (kein Feld in DB) |
 | Defensivlinie | Höher, gegen Angreifer mit Tempo >= 17 Standard | log.md 2027-07-01 |
 | Formation | 4-2-3-1 mit Doppelsechs | |
@@ -461,7 +462,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Evidenz gegen die Wahl | Keidel vor Gechter entgegen Rollen-Score (Jimmy). Rollen-Score Vorsaison RV Inverser FV / Pressender AV (nur lesender Wrapper, Snapshots 244/245): Keidel mit 5 (Aufbau 9, Passsicherheit 1) / ohne 60 (Pressing 73), Daten Elversberg BL 2862 Min., Rolle dort unbekannt; Gechter mit 66 (Aufbau 50, Passsicherheit 89) / ohne 50, Daten Hertha 2. BL 3150 Min.; Arthur 41/49 |
 | Begründung Jimmy | Keidel erfüllt den Kernfilter klar (Antritt 13, Aggressivität 15, Ausdauer 15, Einsatz 15, Teamwork 16); Passen/Technik 12. Arthur auf OM R im Spiel "passabel", laut Jimmy bald "gut" |
 | Risiko | Der Inverse FV rückt mit Ball neben Lynen in den Aufbau, genau dort hat Keidel den schwächsten Score (Passsicherheit 1). Vergleichsdaten aus verschiedenen Ligen (Keidel BL, Gechter 2. BL) und unbekannten Rollen |
-| Doppelrolle | Keidel bleibt in der DM-l-Zeile als Backup für Lynen (log.md 2027-07-06, Kader); als Stamm-RV dort praktisch nur, wenn RV anders besetzt ist. Erster Ersatz DM l im Normalfall: Stark |
+| Doppelrolle | Keidel bleibt in der DM-l-Zeile als Backup für Lynen (log.md 2027-07-06, Kader); als Stamm-RV dort praktisch nur, wenn RV anders besetzt ist. Erster Ersatz DM l seit 09.10.2027: Amatucci (Entscheidung Jimmy), danach Keidel/Stark wie hier beschrieben (bis 09.10.2027 im Normalfall Stark) |
 | Schalter | Beobachtungs-Schalter: Aufbau rechts stockt -> Gechter auf RV; Tempo-Flügel -> Keidel behalten. Schwelle (Jimmy, 06.07.2027): Ø über 3 Spiele Passquote (Team) < 83,5 % und progressive Pässe (Team) < 33,5 (je P25 der 13 Pflichtspiele 2026/27, team_match_stats 17.10.2026-09.01.2027; wie Spickzettel 2027/28) |
 | Folge Kader | Kein Transfer OM r nötig; Mbangula-Erlös frei |
 | Messkriterium | log.md 2027-07-06 (Taktik/Kader) |
@@ -470,8 +471,7 @@ Stand 03.07.2027 (Entscheidung Jimmy): Rollen und Teamanweisungen sind als neuer
 | Punkt | Stand / Option |
 |---|---|
 | OM r | Erledigt 06.07.2027: Arthur auf OM r (Entscheidung Jimmy), kein Transfer nötig. Siehe "Besetzung RV/OM r" |
-| Doppelsechs mit Neuzugang | Amatucci (Wunschziel) als Tiefer Spielmacher neben Lynen; abhängig vom Transfer. Stand 04.09.2027: Amatucci im Kader (Snapshot 250, 49 Min.). Beschlossen 04.09.2027 (Jimmy): Einwechsel-/Spielkontroll-Option auf DM l für Lynen (mit Ball Tiefer Spielmacher; ohne Ball nicht genannt), nicht Stamm. Startplatz weiter offen |
-| Mentalität Heim | Kontrolliert-offensiv gegen Schwächere (Option) |
+| Doppelsechs mit Neuzugang | ENTSCHIEDEN 09.10.2027 (Jimmy): Amatucci ist erste Wechseloption für Lynen auf DM l (allgemein, mit Ball Tiefer Spielmacher; ohne Ball nicht genannt); Lynen bleibt Stamm. Verlauf: Wunschziel als Tiefer Spielmacher neben Lynen; Stand 04.09.2027 im Kader (Snapshot 250, 49 Min.), damals nur Einwechsel-/Spielkontroll-Option |
 | Rollen-Score | rollen.py hat für 2027/28 noch keine Minuten eigener Spieler (n=0 in allen Slots, Stand 03.07.2027); Fit der neuen Rollenpaare für Kaars, Ndiaye (Flügelverteidiger) nicht mit eigenen Minuten berechnet; RV/OM r siehe "Besetzung RV/OM r" (Vorsaison, Snapshots 244/245). KPI-Zuverlässigkeit gering für Inverser Flügelverteidiger und Halbraumstürmer |
 | Form ohne Ball | Im UI neu ablesen (alte Angabe 4-3-2-1 galt für Flügelsichernden Sechser und Hack) |
 
@@ -530,12 +530,13 @@ Kompakter Mittelblock, schnelles direktes Umschalten über die schnellen Flügel
 - Beobachtung Spiel 1 (4:1 gegen Paderborn, 17.10.2026, Gegentor Vidović in der 17. Minute): Die Rollen ohne Ball waren wie in der Tabelle eingestellt (Jimmy bestätigt: Pieper Absichernder IV, Svanberg Flügelsichernder Sechser, Arthur Abwartender AV, Dinkçi Umschaltflügelspieler). Trotzdem rückte Pieper auf, Arthur und Svanberg wurden nach innen gezogen, und der Flügel (Obermair) war offen. Der Spieltext zu "Verhalten Defensivlinie: Ausgewogen" sagt, die Abwehr entscheide situationsabhängig, ob sie herausrückt; das passt zu dem Verhalten. Die Rolle ohne Ball hielt Pieper nicht in der Kette. Einzelbeobachtung (n=1), Deutung nicht getestet.
 - Geprüft (Jimmy bestätigt): Reis hat ohne Ball dieselbe Rolle wie zuvor Svanberg, Flügelsichernder Sechser.
 - Spiel 2 (Mainz A, 2:3, 24.10.2026): xG für/gegen 0,58/2,04; Schüsse 7/16. Gegentore: Amiri 53' direkter Freistoß, Gruber 71' Freistoßflanke ins Zentrum (Vorlage Amiri), Tietz 84' Abpraller nach Flanke von der Grundlinie. Amiris Freistoß lag ca. 28 m vor dem Tor, ca. 15 m seitlich der Mitte (unsere linke Seite); Friedl hatte gefoult (Jimmy). Mauer im Screenshot: Friedl und Füllkrug.
+- VERALTET (Vermerk 09.10.2027): Alle Standard-Besetzungen unten (defensiv und offensiv) sind Stand 2026/27. Friedl ist verkauft; weitere damals genannte Spieler sind evtl. nicht mehr im Kader (laut Zeile "Nicht mehr im Kader (01.07.2027)" oben u. a. Füllkrug, Hack, Dinkçi, Weiser). Neuer Screenshot der Standards (defensiv/offensiv, Ecken links/rechts, Freistöße) nötig. Verlauf bleibt stehen.
 - Defensive Standards (Stand 27.10.2026, vor DFB-Pokal bei LSK Hansa). Ursache der früheren Verteilung vermutlich die Prioritätenliste: Blockspieler stand vor Kopfballstarke Verteidiger, deshalb waren Pieper, Friedl und Füllkrug in der Mauer, während Grüll, Reis und Dinkçi (Kopfballtechnik/Sprunghöhe 11/11, 8/9, 11/13) die Kopfballduelle deckten. Jimmy hat die Prioritätenliste korrigiert (Ursache nicht belegt, n=2 Standardtore).
   Neues Setup, Defensive, Variante 1:
   - Schussbereich: Kopfballstarke Verteidiger (Manndeckung) Pieper, Füllkrug, Lynen; Kettenhunde (Zurückziehen) Arthur, Hack; Mauer Friedl, Ndiaye, Grüll, bei Bedarf Dinkçi, Reis.
   - Außen: Kopfballstarke Verteidiger (Zurückziehen) Pieper, Füllkrug, Lynen, Friedl, Ndiaye; Kettenhunde (Zurückziehen) Arthur, Hack; Mauer Grüll, bei Bedarf Dinkçi, Reis.
   - Tief: Kopfballstarke Verteidiger Pieper, Füllkrug, Lynen, Friedl (Zurückziehen), Ndiaye (Manndeckung); Kettenhunde Arthur, Reis (Manndeckung); Konterspieler Hack (Vorne bleiben, zentral); Mauer Grüll, bei Bedarf Dinkçi.
-  Offene Empfehlung (nicht beschlossen): im Schussbereich Friedl (Kopfballtechnik/Sprunghöhe 13/14) statt Lynen (11/12) als Kopfballstarken Verteidiger, Lynen in die Mauer.
+  ERLEDIGT 09.10.2027 (Friedl verkauft, nicht umgesetzt). Frühere offene Empfehlung (nicht beschlossen): im Schussbereich Friedl (Kopfballtechnik/Sprunghöhe 13/14) statt Lynen (11/12) als Kopfballstarken Verteidiger, Lynen in die Mauer.
   Quelle: Screenshots Standards, Pokalvorbereitung 27.10.2026. Prüfung: Gegentore aus Standards pro Spiel nach 3 Bundesliga-Spielen (siehe log.md, Eintrag 2026-10-27, Bereich Standards).
 - Defensive Ecken, Variante 1, Ansicht Links, Stand 05.12.2026 (Screenshot, von Jimmy bestätigt; Änderungsdatum laut Jimmy vor Stuttgart (07.11.), nicht belegt, nichts festgelegt):
   | Gruppe | Spieler und Anweisung |
@@ -548,6 +549,7 @@ Kompakter Mittelblock, schnelles direktes Umschalten über die schnellen Flügel
 - Offensive Standards: Gesehen und dokumentiert ist nur die Ecken-Variante 1, Ansicht Links. Es fehlen die rechte Seite bei Ecken und die offensiven Freistöße (Export/Screenshot nötig).
 
 ### Offensive Standards: Ecken, Variante 1, Ansicht Links (Screenshot 29.11.2026, von Jimmy bestätigt)
+VERALTET (Vermerk 09.10.2027): Besetzung Stand 2026/27; Friedl verkauft, Füllkrug, Weiser, Hack nicht mehr im Kader. Neuer Screenshot nötig.
 | Gruppe | Spieler und Anweisung |
 |---|---|
 | Schütze | Grüll |

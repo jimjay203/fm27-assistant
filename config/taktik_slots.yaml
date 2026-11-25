@@ -38,8 +38,8 @@ slots:
   "DM Lynen":
     mit: "Defensiver Mittelfeldspieler"
     ohne: "Abschirmender Sechser"
-    stamm: [Lynen, Keidel, Stark, Amatucci]
-    hinweis: "Keidel seit 06.07.2027 Stamm-RV (Doppelrolle); im Normalfall Stark erster Ersatz. Amatucci seit 04.09.2027 Einwechsel-/Spielkontroll-Option für Lynen (Gegner tief/in Unterzahl, wir dominieren), nicht Stamm: mit Ball Tiefer Spielmacher statt Defensiver Mittelfeldspieler, ohne Ball nicht genannt; Rollen-Score hier mit Standardrollen gerechnet."
+    stamm: [Lynen, Amatucci, Keidel, Stark]
+    hinweis: "Amatucci seit 09.10.2027 erste Wechseloption für Lynen (Entscheidung Jimmy; vorher nur Spielkontroll-Option seit 04.09.2027), nicht Stamm: mit Ball Tiefer Spielmacher statt Defensiver Mittelfeldspieler, ohne Ball nicht genannt; Rollen-Score hier mit Standardrollen gerechnet. Keidel seit 06.07.2027 Stamm-RV (Doppelrolle); danach Stark."
   "DM Svanberg":
     mit: "Box-to-Box-Spieler"
     ohne: "Pressender Sechser"
