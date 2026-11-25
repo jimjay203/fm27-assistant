@@ -172,3 +172,12 @@ def test_key_attribute_in_plan_suche_und_profil():
     ka = c.get("/api/spieler/k399", params=q).json()["key_attribute"]
     assert ka["schwelle"] == 12 and ka["spieler"]["key_unsicher"] == 1
     assert ka["spieler"]["exakt"] is False and ka["vergleich"]["key_fehlt"] == 1
+
+
+def test_gespraeche_ohne_db(client):
+    assert client.get("/api/meta").json()["gespraeche_live"] is False
+    r = client.get("/api/gespraeche")
+    assert r.status_code == 400 and "Datenbank" in r.json()["detail"]
+    body = {"uid": "../x", "typ": "lob_form", "datum": "2027-10-15"}
+    r = client.post("/api/gespraeche/erledigt", json=body)
+    assert r.status_code == 422

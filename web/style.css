@@ -364,3 +364,11 @@ details.spiele summary { cursor: pointer; color: var(--muted); }
 .key-name { font-weight: 700; }
 .key-name::after { content: "K"; font-size: .62rem; font-weight: 700; color: var(--muted); margin-left: .2rem; vertical-align: super; }
 .a-wert.unter { outline: 2px solid var(--warn); outline-offset: -1px; }
+
+/* Gespräche */
+.gespraeche-box { display: grid; gap: 1rem; width: min(90rem, 100%); }
+.gespraeche-box h3 { margin: .25rem 0 .5rem; font-size: 1rem; }
+.g-art { display: inline-block; padding: .05rem .45rem; border-radius: .65rem; font-size: .8rem; font-weight: 700; color: #fff; }
+.g-art.g-lob { background: var(--gut); }
+.g-art.g-kritik { background: var(--schlecht); }
+.g-warn { color: var(--warn); font-weight: 600; }

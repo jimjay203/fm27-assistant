@@ -1,0 +1,31 @@
+# Vorschläge für Spielergespräche (scripts/gespraeche.py, Kaderplaner-Tab "Gespräche").
+# Schwellen sind eigene Setzungen, nicht aus FM27 abgeleitet. Wie stark Lob/Kritik im Spiel wirkt und
+# wie lange ein Gespräch nachwirkt, ist unbekannt (Daumenregeln aus FM24, für FM27 ungeprüft).
+
+abklingzeit_tage: 14          # nach einem erledigten Gespräch: Spieler so lange nicht erneut vorschlagen
+
+letztes_spiel:                # nur Spieler, die im letzten erfassten Teamspiel eingesetzt waren
+  lob_ab: 7.5                 # Note >= -> "Leistung im letzten Spiel loben"
+  kritik_bis: 6.0             # Note <= -> "Warnung: Leistung im letzten Spiel"
+  kritik_min_minuten: 45      # Kritik nur bei so vielen Minuten; Minuten unbekannt: nur Startelf
+
+form:                         # letzte N Teamspiele, in denen der Spieler eingesetzt war
+  spiele: 5
+  min_einsaetze: 3
+  lob_ab: 7.2                 # Notenschnitt >= -> "Form loben"
+  kritik_bis: 6.4             # Notenschnitt <= -> "Warnung: Form"
+
+moral:
+  # Live (FMMT-Fork, 20-100): darunter gilt die Moral als niedrig (Bänder laut Fork: >= ~66 Begeistert,
+  # 33-64 Zufrieden, ~20-26 Eher zufrieden; tiefere Werte werden abgeschnitten)
+  live_niedrig_unter: 33
+  # Export-Feld "Zufriedenheit": diese Texte gelten als niedrig
+  niedrig_texte: [Leicht unzufrieden, Unzufrieden, Sehr unzufrieden, Äußerst unzufrieden, Frustriert]
+
+# Typ -> Anzeige und Klickpfad im Spiel (Rechtsklick auf den Spieler). Pfade für Kritik aus dem Menü
+# "Warnung aussprechen" sind noch nicht per Screenshot bestätigt.
+typen:
+  lob_leistung: {art: lob, text: Leistung im letzten Spiel loben, pfad: Interaktion › Loben › Leistung im letzten Spiel loben}
+  lob_form: {art: lob, text: Form loben, pfad: Interaktion › Loben › Form loben}
+  kritik_leistung: {art: kritik, text: "Warnung: Leistung im letzten Spiel", pfad: Interaktion › Warnung aussprechen › (Leistung, ungeprüft)}
+  kritik_form: {art: kritik, text: "Warnung: Form", pfad: Interaktion › Warnung aussprechen › (Form, ungeprüft)}

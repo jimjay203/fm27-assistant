@@ -1227,6 +1227,111 @@ function sucheZeichnen(r, slot) {
   }
 }
 
+// ------------------------------------------------------------------ Gespräche (scripts/gespraeche.py)
+
+let gespraecheNr = 0;
+
+function gespraecheOeffnen() {
+  $("#g_live_box").hidden = !META?.gespraeche_live;
+  $("#gespraeche").hidden = false;
+  gespraecheHolen();
+}
+
+function gespraecheSchliessen() {
+  gespraecheNr++;
+  $("#gespraeche").hidden = true;
+}
+
+async function gespraecheHolen() {
+  const nr = ++gespraecheNr;
+  const live = $("#g_live").checked && !$("#g_live_box").hidden;
+  const heute = $("#g_heute").value;
+  const q = new URLSearchParams();
+  if (live) q.set("live", "true");
+  if (heute) q.set("heute", heute);
+  $("#g_info").textContent = live ? "lädt live …" : "lädt …";
+  try {
+    const r = await api(`/api/gespraeche?${q}`);
+    if (nr !== gespraecheNr) return;
+    gespraecheZeichnen(r);
+  } catch (e) {
+    if (nr !== gespraecheNr) return;
+    $("#g_info").textContent = "";
+    $("#gespraeche_ergebnis").innerHTML = `<p class="leer">${esc(e.message)}</p>`;
+  }
+}
+
+const datumDe = (d) => (d ? d.split("-").reverse().join(".") : "–");
+
+function moralZelle(z) {
+  const t = z.moral == null ? "–" : String(z.moral);
+  return z.moral_niedrig ? `<span class="g-warn">${esc(t)}</span>` : esc(t);
+}
+
+function gespraecheZeichnen(r) {
+  if (!$("#g_heute").value) $("#g_heute").value = r.heute;
+  const ls = r.letztes_spiel || {};
+  const mq = r.moral_quelle || {};
+  $("#g_info").textContent =
+    `Letztes erfasstes Spiel ${datumDe(ls.datum)}${ls.gegner ? " vs. " + ls.gegner : ""} · ` +
+    `Moral: ${mq.quelle === "live" ? "live" : "Kader-Export"} ${datumDe(mq.datum)} · Abklingzeit ${r.abklingzeit_tage} Tage`;
+  const ziel = $("#gespraeche_ergebnis");
+  ziel.innerHTML = "";
+  const art = (z) => `<span class="g-art g-${esc(z.art)}">${z.art === "lob" ? "Lob" : "Kritik"}</span>`;
+  const spalten = [
+    { k: "name", l: "Spieler", f: (z) => `<span class="mit-gesicht">${gesicht(z.uid, z.name, 24)}${esc(z.name)}</span>` },
+    { k: "typ", l: "Vorschlag", f: (z) => `${art(z)} <b>${esc(z.text)}</b>` +
+      (z.weitere?.length ? `<div class="hinweis">auch: ${z.weitere.map((w) => esc(w.text)).join(", ")}</div>` : "") },
+    { k: "grund", l: "Grund", f: (z) => esc(z.grund) + (z.hinweis ? `<div class="g-warn">${esc(z.hinweis)}</div>` : "") },
+    { k: "moral", l: "Moral", f: moralZelle },
+    { k: "pfad", l: "Im Spiel", f: (z) => `<span class="hinweis">${esc(z.pfad || "")}</span>` },
+  ];
+  const offen = [...spalten, { k: "aktion", l: "", f: (z) =>
+    `<button class="g-erledigt" data-uid="${esc(z.uid)}" data-typ="${esc(z.typ)}" data-name="${esc(z.name)}">erledigt</button>` }];
+  const titel = (t) => { const h = document.createElement("h3"); h.textContent = t; return h; };
+  ziel.append(titel(`Vorschläge (${r.vorschlaege.length})`));
+  if (r.vorschlaege.length) ziel.append(tabelle(offen, r.vorschlaege, { beiKlick: () => {} }));
+  else ziel.insertAdjacentHTML("beforeend", `<p class="leer">Gerade kein Anlass für Lob oder Kritik.</p>`);
+  if (r.gesperrt.length) {
+    ziel.append(titel(`Kürzlich gesprochen (${r.gesperrt.length})`));
+    ziel.append(tabelle([...spalten.slice(0, 3), { k: "gesperrt_bis", l: "Zuletzt / gesperrt bis", f: (z) =>
+      `${esc(z.zuletzt?.typ || "")} am ${datumDe(z.zuletzt?.datum)} · bis ${datumDe(z.gesperrt_bis)}` }], r.gesperrt, {}));
+  }
+  const e = r.einsaetze || {};
+  ziel.insertAdjacentHTML("beforeend", `<p class="hinweis">Ohne Anlass: ${r.ohne} Spieler. Grundlage: ${e.spiele ?? 0} erfasste Einsätze ` +
+    `(${e.spieler ?? 0} Spieler). Fehlen Spiele nach ${datumDe(ls.datum)}, zuerst Spiele erfassen. ` +
+    `Schwellen: config/gespraeche.yaml. Wirkung im Spiel nicht belegt (Daumenregeln aus FM24, für FM27 ungeprüft).</p>`);
+  ziel.querySelectorAll(".g-erledigt").forEach((b) => b.addEventListener("click", async (ev) => {
+    ev.stopPropagation();
+    const datum = $("#g_heute").value;
+    if (!datum) { meldung("Bitte zuerst das In-Game-Datum setzen.", true); return; }
+    b.disabled = true;
+    try {
+      await api("/api/gespraeche/erledigt", { uid: b.dataset.uid, typ: b.dataset.typ, datum, name: b.dataset.name });
+      gespraecheHolen();
+    } catch (err) {
+      b.disabled = false;
+      meldung(err.message, true);
+    }
+  }));
+}
+
+function gespraecheVerdrahten() {
+  $("#gespraeche_auf").addEventListener("click", gespraecheOeffnen);
+  $("#gespraeche_zu").addEventListener("click", gespraecheSchliessen);
+  $("#gespraeche").addEventListener("click", (e) => { if (e.target.id === "gespraeche") gespraecheSchliessen(); });
+  $("#g_neu").addEventListener("click", gespraecheHolen);
+  $("#g_live").addEventListener("change", gespraecheHolen);
+  $("#g_heute").addEventListener("change", gespraecheHolen);
+  document.addEventListener("keydown", (e) => {
+    const tippt = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "");
+    if (e.key === "g" && !tippt && $("#gespraeche").hidden && $("#suche").hidden && $("#profil").hidden) {
+      e.preventDefault();
+      gespraecheOeffnen();
+    }
+  });
+}
+
 function sucheVerdrahten() {
   $("#suche_auf").addEventListener("click", sucheOeffnen);
   $("#suche_zu").addEventListener("click", sucheSchliessen);
@@ -1295,6 +1400,7 @@ function themeSetzen(t) {
 function init() {
   infoVerdrahten();
   sucheVerdrahten();
+  gespraecheVerdrahten();
   themeSetzen(THEMES[zustand.theme] ? zustand.theme : "auto");
   $("#theme").addEventListener("click", () => {
     const folge = Object.keys(THEMES);
@@ -1348,6 +1454,7 @@ function init() {
     if (e.key !== "Escape") return;
     if (!$("#profil").hidden) profilSchliessen();
     else if (!$("#suche").hidden) sucheSchliessen();
+    else if (!$("#gespraeche").hidden) gespraecheSchliessen();
   });
   metaHolen().catch((e) => meldung(e.message, true));
 }

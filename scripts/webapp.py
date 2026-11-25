@@ -35,6 +35,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
 import fmmt
+import gespraeche
 import live
 import planer
 import spiele
@@ -100,6 +101,13 @@ class ReloadIn(BaseModel):
     anker_min_n: int | None = None
 
 
+class GespraechIn(BaseModel):
+    uid: str = Field(pattern=r"^\d+$")
+    typ: str
+    datum: str  # In-Game-Datum JJJJ-MM-TT
+    name: str | None = None
+
+
 def _fehler(e: SystemExit, status: int = 400) -> HTTPException:
     text = getattr(e, "meldung", None) or (e.code if isinstance(e.code, str) else None)
     return HTTPException(status_code=status, detail=text or "Fehler")
@@ -107,12 +115,13 @@ def _fehler(e: SystemExit, status: int = 400) -> HTTPException:
 
 def create_app(
     laden: Callable[[dict], planer.Kontext], start: dict, faces: Path | None = None,
-    erfassen: Callable[[bool], dict] | None = None,
+    erfassen: Callable[[bool], dict] | None = None, live_url: str | None = None,
 ) -> FastAPI:  # fmt: skip
     """`laden(einstellungen) -> Kontext`; `start` = Einstellungen der ersten Ladung (quelle, pool_min_stufe, ...).
 
     `faces`: Ordner mit face_<uid>.png (None = keine Bilder, die Oberfläche zeigt Initialen).
-    `erfassen(schnell) -> Ergebnis`: Spiellisten aus FM27 lesen und speichern (scripts/spiele.py); None = aus."""
+    `erfassen(schnell) -> Ergebnis`: Spiellisten aus FM27 lesen und speichern (scripts/spiele.py); None = aus.
+    `live_url`: FMMT-27-Server für Kader und Moral live im Tab Gespräche (None = nur DB)."""
     app = FastAPI(title="FM27 Kaderplaner")
     state = {"ctx": laden(start), "einstellungen": dict(start)}
     lock = threading.Lock()
@@ -131,6 +140,7 @@ def create_app(
             "filter_standard": asdict(planer.Filter()),
             "einsaetze": einsatz_stand(ctx),
             "erfassen_moeglich": erfassen is not None,
+            "gespraeche_live": live_url is not None,
         }
 
     def einsatz_stand(ctx) -> dict | None:
@@ -157,6 +167,37 @@ def create_app(
         finally:
             erfass_lock.release()
         return {**res, "stand": einsatz_stand(state["ctx"])}
+
+    def _db_ctx():
+        ctx = state["ctx"]
+        if not ctx.db:
+            raise HTTPException(status_code=400, detail="Keine Datenbank angebunden.")
+        return ctx
+
+    @app.get("/api/gespraeche")
+    def gespraeche_liste(live: bool = False, heute: str | None = None):
+        ctx = _db_ctx()
+        if live and not live_url:
+            raise HTTPException(status_code=400, detail="Live ist nicht eingerichtet.")
+        if not heute and ctx.stand.get("quelle") == "live" and ctx.stand.get("datum"):
+            heute = str(ctx.stand["datum"])[:10]  # In-Game-Datum der Live-Ladung
+        conn = common.connect(ctx.db_path)
+        try:
+            return gespraeche.berechnen(conn, ctx.save, live_url if live else None, heute)
+        except SystemExit as e:
+            raise _fehler(e, 503 if live else 400) from None
+        finally:
+            conn.close()
+
+    @app.post("/api/gespraeche/erledigt")
+    def gespraeche_erledigt(body: GespraechIn):
+        ctx = _db_ctx()
+        try:
+            return gespraeche.erledigt_speichern(
+                ctx.save, body.uid, body.typ, body.datum, body.name
+            )
+        except SystemExit as e:
+            raise _fehler(e) from None
 
     @app.post("/api/plan")
     def plan(body: PlanIn):
@@ -280,13 +321,13 @@ def main(argv=None) -> None:
     if faces is None:
         print("Hinweis: kein Faces-Ordner gefunden, Spielerbilder werden durch Initialen ersetzt.")
     try:
-        app = create_app(laden, start, faces, erfassen)
+        app = create_app(laden, start, faces, erfassen, a.url)
     except SystemExit as e:
         if quelle != "live" or a.quelle == "live":
             raise
         print(f"Live-Daten nicht ladbar ({getattr(e, 'meldung', e)}), weiter mit der DB.")
         start["quelle"] = "db"
-        app = create_app(laden, start, faces, erfassen)
+        app = create_app(laden, start, faces, erfassen, a.url)
     print(f"Quelle: {start['quelle']}")
 
     import uvicorn

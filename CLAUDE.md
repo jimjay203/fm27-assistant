@@ -49,6 +49,9 @@ Jede Antwort zu diesen Themen endet mit einer Zeile „Quellen: … · Fehlt/ver
   `--kein-fmmt`); Quelle `auto`: live, wenn FM27 lesbar ist, sonst DB.
   Formationen in `config/formationen.yaml`, Logik in `scripts/planer.py` (Rollen-Score aus `scripts/rollen.py`).
   Spielerbilder: `face_<uid>.png` aus dem FM27-Faces-Ordner (`--faces`, sonst `FM27_FACES`, sonst Standardpfad).
+- Spielergespräche: `uv run python scripts/gespraeche.py --save werder [--live]` bzw. Kaderplaner-Button „Gespräche“
+  (Lob/Kritik-Vorschläge aus Noten und Moral, Schwellen in `config/gespraeche.yaml`, erledigte Gespräche in
+  `saves/<save>/data/gespraeche.yaml` mit Abklingzeit).
 - Save-Auswahl: `--save <name>`, sonst Umgebungsvariable `FM27_SAVE`, sonst Default `werder`.
 - Such-Export > 10.000 Spieler (Exporter-Limit): in Teile splitten (`YYYY-MM-DD_suche.csv`, `…_suche_2.csv`,
   `…_suche_<x>.csv`, gleiches Datum, gleicher Ordner); `import.py` führt sie zu einem Snapshot zusammen
