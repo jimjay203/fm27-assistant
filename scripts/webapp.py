@@ -34,6 +34,7 @@ from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
+import entwicklung
 import fmmt
 import gespraeche
 import live
@@ -223,6 +224,28 @@ def create_app(
             return spielerprofil.profil(state["ctx"], uid, mit, ohne, vergleich, gewichtung or None)
         except SystemExit as e:
             raise _fehler(e, 404 if "nicht in den geladenen Daten" in str(e) else 400) from None
+
+    @app.get("/api/entwicklung")
+    def entwicklung_liste(von: str | None = None, bis: str | None = None):
+        ctx = _db_ctx()
+        conn = common.connect(ctx.db_path)
+        try:
+            return entwicklung.uebersicht(ctx, conn, von or None, bis or None)
+        except SystemExit as e:
+            raise _fehler(e) from None
+        finally:
+            conn.close()
+
+    @app.get("/api/entwicklung/{uid}")
+    def entwicklung_spieler(uid: str, von: str | None = None, bis: str | None = None):
+        ctx = _db_ctx()
+        conn = common.connect(ctx.db_path)
+        try:
+            return entwicklung.spieler(ctx, conn, uid, von or None, bis or None)
+        except SystemExit as e:
+            raise _fehler(e, 404) from None
+        finally:
+            conn.close()
 
     @app.get("/api/face/{uid}")
     def face(uid: str):

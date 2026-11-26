@@ -1325,9 +1325,325 @@ function gespraecheVerdrahten() {
   $("#g_heute").addEventListener("change", gespraecheHolen);
   document.addEventListener("keydown", (e) => {
     const tippt = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "");
-    if (e.key === "g" && !tippt && $("#gespraeche").hidden && $("#suche").hidden && $("#profil").hidden) {
+    if (e.key === "g" && !tippt && $("#gespraeche").hidden && $("#entwicklung").hidden && $("#suche").hidden && $("#profil").hidden) {
       e.preventDefault();
       gespraecheOeffnen();
+    }
+  });
+}
+
+// ------------------------------------------------------------------ Entwicklung (scripts/entwicklung.py)
+
+let entwicklungNr = 0;
+let entwicklungDaten = null; // Übersicht
+let entwicklungUid = null; // Detail offen (uid) oder null
+let entwicklungDetail = null;
+const E_FILTER = { u23: false, veraendert: false, team: "" };
+
+function entwicklungOeffnen() {
+  $("#entwicklung").hidden = false;
+  if (!entwicklungDaten) entwicklungHolen();
+}
+
+function entwicklungSchliessen() {
+  entwicklungNr++;
+  $("#entwicklung").hidden = true;
+}
+
+function entwicklungZeitraum() {
+  const q = new URLSearchParams();
+  if ($("#e_von").value) q.set("von", $("#e_von").value);
+  if ($("#e_bis").value) q.set("bis", $("#e_bis").value);
+  return q;
+}
+
+async function entwicklungHolen() {
+  const nr = ++entwicklungNr;
+  $("#e_info").textContent = "lädt …";
+  try {
+    const r = await api(`/api/entwicklung?${entwicklungZeitraum()}`);
+    if (nr !== entwicklungNr) return;
+    entwicklungDaten = r;
+    entwicklungStichtage(r);
+    if (entwicklungUid) entwicklungSpieler(entwicklungUid);
+    else entwicklungListe();
+  } catch (e) {
+    if (nr !== entwicklungNr) return;
+    $("#e_info").textContent = "";
+    $("#entwicklung_ergebnis").innerHTML = `<p class="leer">${esc(e.message)}</p>`;
+  }
+}
+
+function entwicklungStichtage(r) {
+  const opt = (sel) => r.stichtage.map((t) =>
+    `<option value="${esc(t.datum)}"${t.datum === sel ? " selected" : ""}>${datumDe(t.datum)}${t.quelle === "live" ? " (live)" : ""}</option>`).join("");
+  $("#e_von").innerHTML = opt(r.von);
+  $("#e_bis").innerHTML = opt(r.bis);
+  const n = r.stichtage.length, live = r.stichtage.filter((t) => t.quelle === "live").length;
+  $("#e_info").textContent = `${n} Stichtage (${n - live} Kader-Exporte, ${live} live)`;
+  const teams = r.teams || [];
+  if (!teams.includes(E_FILTER.team)) E_FILTER.team = "";
+  $("#e_team").innerHTML = `<option value="">alle</option>` +
+    teams.map((t) => `<option value="${esc(t)}"${t === E_FILTER.team ? " selected" : ""}>${esc(t)}</option>`).join("");
+  $("#e_team").disabled = !teams.length;
+  $("#e_team").title = teams.length ? "Team laut FMMT-Reader (live)" : "Team gibt es nur mit Quelle live (die Exporte haben kein Team-Feld)";
+}
+
+function deltaHtml(v, titel = "") {
+  if (v == null) return "–";
+  const t = titel ? ` title="${esc(titel)}"` : "";
+  if (v > 0) return `<span class="e-plus"${t}>+${zahl(v)}</span>`;
+  if (v < 0) return `<span class="e-minus"${t}>−${zahl(-v)}</span>`;
+  return `<span class="e-null"${t}>±0</span>`;
+}
+
+const eChips = (liste) => liste.map((x) =>
+  `<span class="e-chip ${x.delta > 0 ? "plus" : "minus"}">${esc(x.attribut)} ${x.delta > 0 ? "+" : "−"}${zahl(Math.abs(x.delta))}</span>`).join(" ");
+
+function entwicklungListe() {
+  const r = entwicklungDaten;
+  if (!r) return;
+  entwicklungUid = null;
+  let zeilen = r.spieler;
+  if (E_FILTER.team) zeilen = zeilen.filter((z) => z.team === E_FILTER.team);
+  if (E_FILTER.u23) zeilen = zeilen.filter((z) => z.alter != null && z.alter <= 23);
+  if (E_FILTER.veraendert) zeilen = zeilen.filter((z) => z.plus.length || z.minus.length);
+  const zeitraum = (z) => (z.start && (z.start !== r.von || z.ende !== r.bis)
+    ? `<div class="hinweis">${datumDe(z.start)} → ${datumDe(z.ende)}</div>` : "");
+  const spalten = [
+    { k: "name", l: "Spieler", f: (z) => `<span class="mit-gesicht">${gesicht(z.uid, z.name, 24)}<span>${esc(z.name)}` +
+      (z.eigen === "leihe_aus" && !z.team ? ' <span class="e-chip">verliehen</span>' : "") + `${zeitraum(z)}</span></span>` },
+    { k: "alter", l: "Alter", num: true },
+    ...(r.teams?.length ? [{ k: "team", l: "Team", f: (z) => esc(z.team || "–"), titel: "Team laut FMMT-Reader (live)" }] : []),
+    { k: "slot", l: "Slot", f: (z) => esc(z.slot || "–"), titel: "Slot laut config/taktik_slots.yaml (stamm)" },
+    { k: "delta", l: "Δ gesamt", num: true, f: (z) => deltaHtml(z.delta), titel: "Summe der Veränderungen aller Attribute (Feldspieler ohne Torwart-Attribute)" },
+    { k: "delta_key", l: "Δ Key", num: true, f: (z) => deltaHtml(z.delta_key, z.n_key ? `${z.n_key} Key-Attribute des Slots` : ""),
+      titel: "Summe der Veränderungen der Key-Attribute der Slot-Rollen (config/rollen_attribute.yaml)" },
+    { k: "plus", l: "Zuwachs", f: (z) => eChips(z.plus), sort: (z) => z.plus.length ? z.plus[0].delta : null },
+    { k: "minus", l: "Rückgang", f: (z) => eChips(z.minus), sort: (z) => z.minus.length ? -z.minus[0].delta : null },
+    { k: "minuten", l: "Min.", num: true, f: (z) => zahl(z.minuten), titel: "Minuten im Zeitraum laut Kader-Exporten (Profis)" },
+    { k: "note", l: "Ø Note", num: true, f: (z) => zahl(z.note, 2), titel: "Ø Note im Zeitraum (SpielLogger)" },
+    { k: "spiele", l: "Spiele", num: true, titel: "Spiele mit Note im Zeitraum (SpielLogger)" },
+  ];
+  const ziel = $("#entwicklung_ergebnis");
+  ziel.innerHTML = "";
+  ziel.append(tabelle(spalten, zeilen, { sortierung: { k: "delta", ab: true }, beiKlick: (uid) => entwicklungSpieler(uid) }));
+  ziel.insertAdjacentHTML("beforeend", `<p class="hinweis">${zeilen.length} von ${r.spieler.length} eigenen Spielern. ` +
+    `Zuwachs aus Training und Spielen ist aus den Daten nicht trennbar; Stichtage = Kader-Exporte und Live-Stände ` +
+    `(beim Laden über FMMT mitgeschrieben). Klick auf einen Spieler zeigt den Verlauf.</p>`);
+}
+
+async function entwicklungSpieler(uid) {
+  const nr = ++entwicklungNr;
+  entwicklungUid = uid;
+  const ziel = $("#entwicklung_ergebnis");
+  if (!entwicklungDetail || entwicklungDetail.spieler.uid !== uid) ziel.innerHTML = '<p class="leer">lädt …</p>';
+  try {
+    const d = await api(`/api/entwicklung/${encodeURIComponent(uid)}?${entwicklungZeitraum()}`);
+    if (nr !== entwicklungNr) return;
+    entwicklungDetail = d;
+    ziel.innerHTML = entwicklungDetailHtml(d);
+    entwicklungDetailVerdrahten(d);
+  } catch (e) {
+    if (nr === entwicklungNr) ziel.innerHTML = `<p class="meldung fehler">${esc(e.message)}</p>`;
+  }
+}
+
+// Linienchart über die Zeit: serien = [{name, klasse: "s1"|"s2", punkte: [[datum, wert, info]], linie, marker}]
+function zeitChart(serien, { hoehe = 200, ganzzahl = false, yMin, yMax } = {}) {
+  const W = 640, H = hoehe, L = 40, R = 14, O = 12, U = 26;
+  const alle = serien.flatMap((s) => s.punkte);
+  if (!alle.length) return "";
+  const t = (d) => new Date(d + "T00:00:00").getTime();
+  let x0 = Math.min(...alle.map((p) => t(p[0]))), x1 = Math.max(...alle.map((p) => t(p[0])));
+  if (x0 === x1) { x0 -= 864e5 * 15; x1 += 864e5 * 15; }
+  let y0 = yMin ?? Math.min(...alle.map((p) => p[1])), y1 = yMax ?? Math.max(...alle.map((p) => p[1]));
+  if (y1 - y0 < (ganzzahl ? 2 : 0.5)) { const m = (y0 + y1) / 2, h = ganzzahl ? 1 : 0.25; y0 = m - h; y1 = m + h; }
+  const pad = (y1 - y0) * 0.08;
+  y0 -= pad; y1 += pad;
+  if (ganzzahl) { y0 = Math.floor(y0); y1 = Math.ceil(y1); }
+  const sx = (d) => L + (t(d) - x0) / (x1 - x0) * (W - L - R);
+  const sy = (v) => O + (1 - (v - y0) / (y1 - y0)) * (H - O - U);
+  const roh = (y1 - y0) / 4;
+  const stufe = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50].find((s) => s >= roh && (!ganzzahl || s >= 1)) || roh;
+  let g = "";
+  for (let v = Math.ceil(y0 / stufe) * stufe; v <= y1 + 1e-9; v += stufe) {
+    g += `<line class="gitter" x1="${L}" x2="${W - R}" y1="${sy(v).toFixed(1)}" y2="${sy(v).toFixed(1)}"/>` +
+      `<text x="${L - 6}" y="${(sy(v) + 4).toFixed(1)}" text-anchor="end">${zahl(v, stufe < 1 ? 1 : 0)}</text>`;
+  }
+  g += `<line class="achse" x1="${L}" x2="${W - R}" y1="${H - U}" y2="${H - U}"/>`;
+  const tage = [...new Set(alle.map((p) => p[0]))].sort();
+  const n = Math.min(6, tage.length);
+  const beschr = n <= 1 ? tage : Array.from({ length: n }, (_, i) => tage[Math.round(i * (tage.length - 1) / (n - 1))]);
+  [...new Set(beschr)].forEach((d, i, a) => {
+    const anker = a.length > 1 && i === 0 ? "start" : a.length > 1 && i === a.length - 1 ? "end" : "middle";
+    g += `<text x="${sx(d).toFixed(1)}" y="${H - 8}" text-anchor="${anker}">${datumDe(d).slice(0, 6) + d.slice(2, 4)}</text>`;
+  });
+  let marken = "", treffer = "";
+  serien.forEach((s, si) => {
+    const pts = s.punkte.map((p) => [sx(p[0]), sy(p[1])]);
+    if (s.linie !== false && pts.length > 1) {
+      const stufig = s.stufig ? pts.map((p, i) => (i ? `H${p[0].toFixed(1)}V${p[1].toFixed(1)}` : `M${p[0].toFixed(1)},${p[1].toFixed(1)}`)).join("")
+        : "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(",")).join("L");
+      marken += `<path class="e-linie ${s.klasse}" d="${stufig}"/>`;
+    }
+    if (s.marker !== false) {
+      marken += pts.map((p) => `<circle class="${s.klasse}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${s.r || 4}"/>`).join("");
+    }
+    treffer += pts.map((p, i) => `<circle class="treffer" data-s="${si}" data-i="${i}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="11"/>`).join("");
+  });
+  const legende = serien.length > 1
+    ? `<div class="legende-chart">${serien.map((s) => `<span><span class="punkt ${s.klasse}"></span>${esc(s.name)}</span>`).join("")}</div>` : "";
+  return legende + `<div class="chart-wrap e-chart"><div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(serien.map((s) => s.name).join(", "))} über die Zeit">` +
+    g + marken + treffer + `</svg></div><div class="tooltip" hidden></div></div>`;
+}
+
+function zeitChartVerdrahten(wrap, serien, tipText) {
+  if (!wrap) return;
+  const tip = wrap.querySelector(".tooltip");
+  wrap.querySelectorAll(".treffer").forEach((el) => {
+    el.addEventListener("mousemove", (ev) => {
+      const s = serien[Number(el.dataset.s)], p = s.punkte[Number(el.dataset.i)];
+      tip.innerHTML = tipText(s, p);
+      tip.hidden = false;
+      const box = wrap.getBoundingClientRect();
+      const x = ev.clientX - box.left, y = ev.clientY - box.top;
+      tip.style.left = `${Math.min(x + 14, box.width - tip.offsetWidth - 4)}px`;
+      tip.style.top = `${Math.max(0, y - tip.offsetHeight - 10)}px`;
+    });
+    el.addEventListener("mouseleave", () => { tip.hidden = true; });
+  });
+}
+
+function sparkline(verlauf) {
+  if (verlauf.length < 2) return "";
+  const W = 70, H = 18;
+  const t = (d) => new Date(d).getTime();
+  const x0 = t(verlauf[0][0]), x1 = t(verlauf[verlauf.length - 1][0]);
+  const v = verlauf.map((p) => p[1]);
+  const lo = Math.min(...v), hi = Math.max(...v);
+  if (lo === hi) return "";
+  const pts = verlauf.map((p) => `${(2 + (t(p[0]) - x0) / (x1 - x0 || 1) * (W - 4)).toFixed(1)},${(2 + (1 - (p[1] - lo) / (hi - lo)) * (H - 4)).toFixed(1)}`);
+  return `<svg class="e-spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.join(" ")}"/></svg>`;
+}
+
+function statFormat(v, art) {
+  if (v == null) return "–";
+  if (art === "quote") return zahl(v, 1) + " %";
+  if (art === "anzahl") return zahl(v);
+  return zahl(v, 2);
+}
+
+function entwicklungDetailHtml(d) {
+  const s = d.spieler;
+  const plan = PLAN && s.slot && PLAN.slots[s.slot];
+  const kopf = `<div class="e-kopf"><button id="e_zurueck" class="leise">← Übersicht</button>` +
+    `<span class="mit-gesicht">${gesicht(s.uid, s.name, 44)}<span><b class="e-name">${esc(s.name)}</b>` +
+    `<div class="hinweis">${esc(s.alter ?? "–")} J. · ${esc(s.position || "–")} · Slot ${esc(s.slot || "–")}` +
+    `${d.key.length ? " · Key-Attribute: " + d.key.map(esc).join(", ") : ""}</div></span></span>` +
+    (plan ? `<button id="e_profil" class="leise">Profil öffnen</button>` : "") + `</div>`;
+  const z = d.zeitraum;
+  const gruppen = d.attribute.map((g) => `<div class="e-gruppe"><h4>${esc(g.gruppe)}</h4>` + g.attribute.map((a, i) =>
+    `<button class="e-attr${a.delta ? " veraendert" : ""}" data-g="${esc(g.gruppe)}" data-i="${i}" title="Verlauf anzeigen">` +
+    `<span class="${a.key ? "key-name" : ""}">${esc(a.name)}</span>${sparkline(a.verlauf)}` +
+    `<span class="e-wert">${zahl(a.ende)}</span><span class="e-d">${a.delta ? deltaHtml(a.delta) : ""}</span></button>`).join("") + `</div>`).join("");
+  const attr = `<section class="karte"><h3>Attribute ${datumDe(z.start)} → ${datumDe(z.ende)}</h3>` +
+    `<div id="e_gross"></div><div class="e-raster">${gruppen || '<p class="leer">Keine Attribute in der DB.</p>'}</div>` +
+    `<p class="hinweis">Klick auf ein Attribut zeigt seinen Verlauf. K = Key-Attribut der Slot-Rollen. ` +
+    `Stichtage: ${d.stichtage.length} (${d.stichtage.filter((t) => t.quelle === "live").length} live).</p></section>`;
+
+  let stats = "";
+  if (d.perioden.length || d.saisonvergleich) {
+    const sv = d.saisonvergleich;
+    const kopfP = d.perioden.map((p) => `<th class="num" title="${datumDe(p.von)} – ${datumDe(p.bis)}, Saison ${esc(p.saison)}">` +
+      `${datumDe(p.von).slice(0, 6)}–${datumDe(p.bis).slice(0, 6)}<div class="hinweis">${zahl(p.minuten)} Min.</div></th>`).join("");
+    const kopfS = sv ? `<th class="num e-trenn" title="Kader-Export ${datumDe(sv.vs.datum)}">${esc(sv.vs.saison)}<div class="hinweis">${zahl(sv.vs.minuten)} Min.</div></th>` +
+      `<th class="num" title="Kader-Export ${datumDe(sv.neu.datum)}">${esc(sv.neu.saison)}<div class="hinweis">${zahl(sv.neu.minuten)} Min.</div></th>` : "";
+    let gruppe = null, zeilen = "";
+    for (const st of d.statistiken) {
+      if (st.gruppe !== gruppe) {
+        gruppe = st.gruppe;
+        zeilen += `<tr class="e-gruppenzeile"><td colspan="${1 + d.perioden.length + (sv ? 2 : 0)}">${esc(gruppe)}</td></tr>`;
+      }
+      const einheit = { p90: "pro 90", quote: "%", anzahl: "Anzahl im Zeitraum", rate: "gewichtet" }[st.art];
+      zeilen += `<tr><td title="${esc(einheit)}">${esc(st.label)}${st.art === "p90" ? ' <span class="hinweis">/90</span>' : ""}</td>` +
+        st.perioden.map((v) => `<td class="num">${statFormat(v, st.art)}</td>`).join("") +
+        (sv ? `<td class="num e-trenn">${statFormat(st.vs, st.art)}</td><td class="num">${statFormat(st.neu, st.art)}</td>` : "") + `</tr>`;
+    }
+    stats = `<section class="karte"><h3>Statistiken je Zeitraum${sv ? " und Saisonvergleich" : ""}</h3>` +
+      `<div class="tabelle-wrap"><table class="e-stats"><thead><tr><th>Statistik</th>${kopfP}${kopfS}</tr></thead><tbody>${zeilen}</tbody></table></div>` +
+      `<p class="hinweis">Aus den Kader-Exporten (kumuliert je Saison): Zeitraum = Differenz zweier Exporte. Zählwerte pro 90, ` +
+      `Quoten aus Zähler/Nenner, Raten gewichtet. Zeiträume unter ${d.min_zeitraum} Min. sind mit dem folgenden zusammengelegt.</p></section>`;
+  }
+  const noten = d.noten.length
+    ? `<section class="karte"><h3>Noten je Spiel (${d.noten.length})</h3><div id="e_noten"></div>` +
+      `<p class="hinweis">SpielLogger, nur erfasste Spiele. Linie: gleitender Schnitt über ${d.gleitend_n} Spiele.</p></section>`
+    : `<section class="karte"><h3>Noten je Spiel</h3><p class="leer">Keine erfassten Spiele (Spiele erfassen bzw. SpielLogger).</p></section>`;
+  return `<div class="e-detail">${kopf}${attr}${noten}${stats}</div>`;
+}
+
+function entwicklungGrossChart(d, attribut) {
+  const ziel = $("#e_gross");
+  if (!ziel) return;
+  let serie, titel;
+  if (attribut) {
+    serie = { name: attribut.name, klasse: "s1", punkte: attribut.verlauf, stufig: true };
+    titel = `${attribut.name}${attribut.key ? " (Key-Attribut)" : ""}`;
+  } else if (d.key_summe.length) {
+    serie = { name: "Summe Key-Attribute", klasse: "s1", punkte: d.key_summe, stufig: true };
+    titel = `Summe der ${d.key.length} Key-Attribute (Slot ${d.spieler.slot})`;
+  } else {
+    ziel.innerHTML = "";
+    return;
+  }
+  ziel.innerHTML = `<div class="e-gross-kopf"><b>${esc(titel)}</b>${attribut && d.key_summe.length ? ' <button id="e_key_summe" class="leise">Key-Summe zeigen</button>' : ""}</div>` +
+    zeitChart([serie], { hoehe: 180, ganzzahl: true });
+  zeitChartVerdrahten(ziel.querySelector(".e-chart"), [serie], (s, p) => `${datumDe(p[0])}: <b>${zahl(p[1])}</b>`);
+  ziel.querySelector("#e_key_summe")?.addEventListener("click", () => entwicklungGrossChart(d, null));
+}
+
+function entwicklungDetailVerdrahten(d) {
+  $("#e_zurueck").addEventListener("click", () => { entwicklungNr++; entwicklungListe(); });
+  $("#e_profil")?.addEventListener("click", () => profilOeffnen(d.spieler.uid, undefined, d.spieler.slot));
+  const erstes = d.key_summe.length ? null
+    : d.attribute.flatMap((g) => g.attribute).find((a) => a.delta) || null;
+  entwicklungGrossChart(d, erstes);
+  document.querySelectorAll(".e-attr").forEach((b) => b.addEventListener("click", () => {
+    const g = d.attribute.find((x) => x.gruppe === b.dataset.g);
+    document.querySelectorAll(".e-attr.aktiv").forEach((x) => x.classList.remove("aktiv"));
+    b.classList.add("aktiv");
+    entwicklungGrossChart(d, g.attribute[Number(b.dataset.i)]);
+  }));
+  const ziel = $("#e_noten");
+  if (ziel && d.noten.length) {
+    const serien = [
+      { name: "Note je Spiel", klasse: "s1", linie: false, r: 4, punkte: d.noten.map((n) => [n.datum, n.note, n]) },
+      { name: `gleitender Schnitt (${d.gleitend_n} Spiele)`, klasse: "s2", marker: false, punkte: d.noten.map((n) => [n.datum, n.gleitend, n]) },
+    ];
+    ziel.innerHTML = zeitChart(serien, { hoehe: 220 });
+    zeitChartVerdrahten(ziel.querySelector(".e-chart"), serien, (s, p) => {
+      const n = p[2];
+      return `<div><b>${datumDe(n.datum)}</b>${n.rolle ? " · " + esc(n.rolle) : ""}${n.position ? " (" + esc(n.position) + ")" : ""}</div>` +
+        `<div>Note <b>${zahl(n.note, 1)}</b> · Schnitt ${zahl(n.gleitend, 2)}</div>` +
+        `<div class="hinweis">${zahl(n.minuten)} Min.${n.tore ? ` · ${n.tore} Tor(e)` : ""}${n.vorlagen ? ` · ${n.vorlagen} Vorlage(n)` : ""}</div>`;
+    });
+  }
+}
+
+function entwicklungVerdrahten() {
+  $("#entwicklung_auf").addEventListener("click", entwicklungOeffnen);
+  $("#entwicklung_zu").addEventListener("click", entwicklungSchliessen);
+  $("#entwicklung").addEventListener("click", (e) => { if (e.target.id === "entwicklung") entwicklungSchliessen(); });
+  $("#e_von").addEventListener("change", entwicklungHolen);
+  $("#e_bis").addEventListener("change", entwicklungHolen);
+  $("#e_team").addEventListener("change", (e) => { E_FILTER.team = e.target.value; if (!entwicklungUid) entwicklungListe(); });
+  $("#e_u23").addEventListener("change", (e) => { E_FILTER.u23 = e.target.checked; if (!entwicklungUid) entwicklungListe(); });
+  $("#e_veraendert").addEventListener("change", (e) => { E_FILTER.veraendert = e.target.checked; if (!entwicklungUid) entwicklungListe(); });
+  document.addEventListener("keydown", (e) => {
+    const tippt = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "");
+    if (e.key === "e" && !tippt && $("#entwicklung").hidden && $("#gespraeche").hidden && $("#suche").hidden && $("#profil").hidden) {
+      e.preventDefault();
+      entwicklungOeffnen();
     }
   });
 }
@@ -1401,6 +1717,7 @@ function init() {
   infoVerdrahten();
   sucheVerdrahten();
   gespraecheVerdrahten();
+  entwicklungVerdrahten();
   themeSetzen(THEMES[zustand.theme] ? zustand.theme : "auto");
   $("#theme").addEventListener("click", () => {
     const folge = Object.keys(THEMES);
@@ -1438,6 +1755,8 @@ function init() {
         anker_min_n: Number($("#anker_min_n").value) || 100,
       });
       await metaHolen();
+      entwicklungDaten = null; // neue Daten: Entwicklungsseite beim nächsten Öffnen neu holen
+      if (!$("#entwicklung").hidden) entwicklungHolen();
     } catch (e) {
       meldung(e.message, true);
       $("#quelle").value = META.einstellungen.quelle;
@@ -1455,6 +1774,7 @@ function init() {
     if (!$("#profil").hidden) profilSchliessen();
     else if (!$("#suche").hidden) sucheSchliessen();
     else if (!$("#gespraeche").hidden) gespraecheSchliessen();
+    else if (!$("#entwicklung").hidden) entwicklungSchliessen();
   });
   metaHolen().catch((e) => meldung(e.message, true));
 }

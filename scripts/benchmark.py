@@ -139,15 +139,19 @@ def load_live(url: str, cfg: dict, derived: dict) -> pd.DataFrame:
     resp = live.api_get(url, "/api/players?scope=competitive&all=1")
     own = live.own_club_uids(resp)
     recs = []
+    eigene_attribute = {}  # uid -> {Attribut: Wert}, nur eigene Spieler (für den Attribut-Verlauf)
     for r in resp.get("rows") or []:
         c = live.convert_row(r, cfg, own, derived)
         k, st = c["core"], c["stats"]
+        if c["own"] and c["attrs"]:
+            eigene_attribute[c["uid"]] = c["attrs"]
         recs.append(
             {"uid": c["uid"], "own": c["own"], "eigen": c["info"].get("eigen"), "team": c["info"]["team"],
              "datenbasis": datenbasis(k["position"], k["minutes"], st), **k, **st}
         )  # fmt: skip
     df = pd.DataFrame(recs)
     df.attrs["date"] = resp.get("date")
+    df.attrs["eigene_attribute"] = eigene_attribute
     return df
 
 

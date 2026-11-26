@@ -106,6 +106,9 @@ CREATE TABLE IF NOT EXISTS spieleinsaetze(  -- scripts/spiele.py: Spiellisten au
   roh TEXT,             -- alle 0x37 Bytes als Hex: noch nicht zugeordnete Felder bleiben erhalten
   erfasst_am TEXT NOT NULL,
   PRIMARY KEY(save, player_uid, datum));
+CREATE TABLE IF NOT EXISTS attribut_verlauf(  -- scripts/live.py: Attribute eigener Spieler live, je In-Game-Tag
+  save TEXT NOT NULL, player_uid TEXT NOT NULL, datum TEXT NOT NULL, attribute TEXT NOT NULL, value REAL,
+  PRIMARY KEY(save, player_uid, datum, attribute));
 """
 
 

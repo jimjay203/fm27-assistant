@@ -37,6 +37,7 @@
       <label title="Mindestanzahl Werte je Statistik im Pool, sonst wird die Statistik verworfen">Pool-Min. <input id="anker_min_n" type="number" min="10" step="10"></label>
       <button id="suche_auf" title="Alle geladenen Spieler für ein Rollenpaar durchsuchen (Taste /)">Spielersuche</button>
       <button id="gespraeche_auf" title="Wen loben, wen kritisieren: Vorschläge aus Noten und Moral (Taste g)">Gespräche</button>
+      <button id="entwicklung_auf" title="Attribut-Zuwachs, Stats je Zeitraum und Noten der eigenen Spieler (Taste e)">Entwicklung</button>
       <button id="neu_laden">Neu laden</button>
       <button id="erfassen" class="leise" title="Spiellisten (letzte 20 Spiele je Spieler) aus FM27 lesen. Danach im Spiel durch die Leistungsbildschirme (Leistung → Spiele) blättern: neue Listen werden mitgelesen.">Spiele erfassen</button>
       <button id="theme" class="leise" title="Design wechseln: Auto (System) → Hell → Dunkel">Design: Auto</button>
@@ -115,6 +116,24 @@ Rollen-Zuordnung ungeprüft (wissen/rollen-kpis.md).">i</span>
         </div>
       </div>
       <div id="gespraeche_ergebnis"></div>
+    </div>
+  </div>
+
+  <div id="entwicklung" class="overlay" hidden>
+    <div class="profil-box entwicklung-box" role="dialog" aria-modal="true" aria-label="Spielerentwicklung">
+      <button id="entwicklung_zu" class="schliessen" title="Schließen (Esc)">×</button>
+      <div class="suche-kopf">
+        <h2>Entwicklung</h2>
+        <div class="suche-form">
+          <label title="Anfang: Stand der Attribute an diesem Stichtag (Default: letzter Kader-Export der Vorsaison)">von <select id="e_von"></select></label>
+          <label title="Ende: Stand der Attribute an diesem Stichtag">bis <select id="e_bis"></select></label>
+          <label title="Team laut FMMT-Reader (nur live)">Team <select id="e_team"></select></label>
+          <label class="check" title="Alter bis 23"><input id="e_u23" type="checkbox"> nur bis 23 J.</label>
+          <label class="check"><input id="e_veraendert" type="checkbox"> nur mit Veränderung</label>
+          <span id="e_info" class="hinweis"></span>
+        </div>
+      </div>
+      <div id="entwicklung_ergebnis"></div>
     </div>
   </div>
 

@@ -181,3 +181,27 @@ def test_gespraeche_ohne_db(client):
     body = {"uid": "../x", "typ": "lob_form", "datum": "2027-10-15"}
     r = client.post("/api/gespraeche/erledigt", json=body)
     assert r.status_code == 422
+
+
+def test_entwicklung_endpoints(tmp_path):
+    conn = common.connect(tmp_path / "t.sqlite")
+    for sid, datum, wert in ((1, "2027-07-01", 10), (2, "2027-09-01", 12)):
+        conn.execute("INSERT INTO snapshots VALUES(?,?,?,?,?,?)", (sid, "t", datum, f"{datum}_kader.csv", "kader", "x"))
+        conn.execute("INSERT INTO players(snapshot_id, player_uid, name, minutes) VALUES(?,?,?,?)", (sid, "A", "Eigen A", 90 * sid))
+        conn.execute("INSERT INTO player_attributes VALUES(?,?,?,?,?,?,?)", (sid, "A", "Passen", wert, 0, wert, wert))
+    conn.commit()
+    conn.close()
+
+    def laden(e):
+        ctx = mini_key_ctx()
+        ctx.save, ctx.db_path, ctx.db = "t", tmp_path / "t.sqlite", True
+        return ctx
+
+    c = TestClient(webapp.create_app(laden, {"quelle": "db", "pool_min_stufe": "Gut", "anker_min_n": 100}))
+    r = c.get("/api/entwicklung")
+    assert r.status_code == 200
+    a = next(z for z in r.json()["spieler"] if z["uid"] == "A")
+    assert a["delta"] == 2 and [t["datum"] for t in r.json()["stichtage"]] == ["2027-07-01", "2027-09-01"]
+    d = c.get("/api/entwicklung/A")
+    assert d.status_code == 200 and d.json()["attribute"][0]["attribute"][0]["delta"] == 2
+    assert c.get("/api/entwicklung/k1").status_code == 404  # kein eigener Spieler

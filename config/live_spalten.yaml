@@ -32,6 +32,10 @@ attribut_skala: 5
 # Marktwert ~1-13 Tsd. GBP, Gehalt unter 1.000 GBP/Woche, in keinem Export). Sie würden Perzentile und
 # Fair-Value-Fit mit Nicht-Profis verfälschen. Profilfelder (Verein, Wert, Vertrag) bleiben erhalten.
 nur_team: [Senior Team]
+# Eigene Spieler, die der Reader keiner Mannschaft zuordnen kann (im Speicher in keiner Teamliste, Vertrag bei
+# Profis oder U19): Anzeige-Name dieser Gruppe auf der Entwicklungsseite. Angabe Jimmy (26.11.2026): im Spiel
+# Werder II / U23. Nicht aus dem Speicher gelesen.
+team_ohne_liste: Werder II
 
 kern:
   uid: UID

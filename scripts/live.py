@@ -152,6 +152,21 @@ def _ingame_date(resp: dict) -> str:
     return d
 
 
+def attribute_mitschreiben(conn, save: str, attrs: dict[str, dict], datum) -> int:
+    """Attribute eigener Spieler als Verlaufspunkt speichern (Tabelle attribut_verlauf), ein Stand je In-Game-Tag:
+    erneutes Laden am selben Tag überschreibt ihn. -> Anzahl Spieler."""
+    tag = fmparse.parse_date(datum)
+    if not tag or not attrs:
+        return 0
+    with conn:
+        for uid, werte in attrs.items():
+            conn.executemany(
+                "INSERT OR REPLACE INTO attribut_verlauf VALUES(?,?,?,?,?)",
+                [(save, str(uid), tag, a, float(v)) for a, v in werte.items() if v is not None],
+            )
+    return len(attrs)
+
+
 def club_countries(conn, save: str) -> dict[str, str]:
     """Verein -> Land des Vereins aus früheren Exporten (live liefert kein Land)."""
     rows = conn.execute(

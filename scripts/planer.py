@@ -15,6 +15,7 @@ Datenquellen:
 from __future__ import annotations
 
 import math
+import sqlite3
 import sys
 import unicodedata
 from dataclasses import dataclass, field
@@ -101,6 +102,10 @@ def daten_live(url: str, conn, save: str, config_dir=None) -> pd.DataFrame:
     )  # fmt: skip
     if df.empty:
         common.die("Keine Spielerdaten vom FMMT-27-Server (Save geladen? Reader läuft?).")
+    try:  # Attribut-Verlauf (Entwicklungsseite): ein Stand je In-Game-Tag; Fehler brechen das Laden nicht ab
+        live.attribute_mitschreiben(conn, save, df.attrs.get("eigene_attribute") or {}, df.attrs.get("date"))
+    except sqlite3.Error as e:
+        print(f"Hinweis: Attribut-Verlauf nicht gespeichert ({e}).", file=sys.stderr)
     suche = per90.letzter_snapshot(conn, save, "suche")
     uids: set[str] = set()
     if suche:
