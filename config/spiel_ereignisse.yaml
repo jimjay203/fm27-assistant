@@ -19,6 +19,7 @@ kategorien:
     - '^(TeamDominateHalf|SpottedKeeperOffHisLine|GoodCounterAttackGoal|TeamMarchOn)'
     - '^(BadPassInOwnArea|DismalMatch)'
     - '^(PlayerConcedesCorner|Equaliser)'
+    - '^(AlmostAFlukeGoal|EntertainingHalf|PpmGetsForwardWheneverPossibleContext|GoodStrike|SubbedOffPlayerOnHattrick|TeamHadBetterOfMatch)'
   lauf: ['^PlayerLooksToLatchOnto']
   zuruf: ['^TouchlineShout']
   konter: ['^TeamOnCounter']

@@ -1,0 +1,100 @@
+# Automatisch aus F9-Export 20261126_110819_207.json und SpielLogger-Mitschnitt 2028-01-08_hertha-bsc.jsonl.gz
+datum: 2028-01-08
+gegner: Hertha BSC
+ort: H
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '2'
+  - '0'
+  ballbesitz:
+  - '47'
+  - '53'
+  schuesse:
+  - '8'
+  - '5'
+  schuesse_aufs_tor:
+  - '5'
+  - '2'
+  xg:
+  - 0,98
+  - 0,12
+  ppda:
+  - 15,71
+  - 16,12
+  grosschancen:
+  - '0'
+  - '0'
+  ecken:
+  - '7'
+  - '1'
+  prog_paesse:
+  - '42'
+  - '41'
+  passquote:
+  - '91'
+  - '89'
+  flankenquote:
+  - '12'
+  - '13'
+  fouls:
+  - '13'
+  - '13'
+  gelb:
+  - '1'
+  - '1'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '128'
+  - '124'
+  notenschnitt:
+  - 7,1
+  - 6,5
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+- slot: RV
+  spieler: Gechter
+  uid: 2000071246
+  rolle: IFV
+- slot: IV r
+  spieler: Pfeiffer
+  uid: 91184447
+  rolle: IV
+- slot: IV l
+  spieler: Córdoba
+  uid: 2000079847
+  rolle: IV
+- slot: LV
+  spieler: N'Diaye
+  uid: 12083698
+  rolle: FV
+- slot: DM r
+  spieler: Stage
+  uid: 27104982
+  rolle: B2B
+  tore: 2
+- slot: DM l
+  spieler: Lynen
+  uid: 18096574
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+- slot: OM z
+  spieler: Chuki
+  uid: 2000139344
+  rolle: VSm
+  vorlagen: 2
+- slot: OM l
+  spieler: Gulliksen
+  uid: 53167331
+- slot: ST
+  spieler: Manneh
+  uid: 2000195393
+  rolle: HRS

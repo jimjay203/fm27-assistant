@@ -252,7 +252,7 @@ def unser_team(spiel: Spiel, conn: sqlite3.Connection, save: str) -> int:
 
 
 def datum_aus_setup(setup: dict) -> str | None:
-    """In-Game-Datum aus Wettbewerbsjahr und Tag im Jahr (Plugin ab 0.2). Tage im 1. Halbjahr: Folgejahr."""
+    """In-Game-Datum aus Jahr (Kalenderjahr des Spiels, auch im Januar) und Tag im Jahr (Plugin ab 0.2)."""
     try:
         jahr = int(setup["info"]["competitionYear"])
         tag = int(setup["wetter"]["day"])
@@ -260,8 +260,6 @@ def datum_aus_setup(setup: dict) -> str | None:
         return None
     if jahr <= 0 or tag <= 0:  # im laufenden Spiel liefert das Setup teils nur Nullen
         return None
-    if tag < 182:
-        jahr += 1
     return (dt.date(jahr, 1, 1) + dt.timedelta(days=tag - 1)).isoformat()
 
 

@@ -73,7 +73,7 @@ def test_goal_has_scorer_assist_trigger_and_distances(mitschnitt):
 
 def test_date_comes_from_setup():
     assert spieldaten.datum_aus_setup({"info": {"competitionYear": "2027"}, "wetter": {"day": "311"}}) == "2027-11-07"
-    assert spieldaten.datum_aus_setup({"info": {"competitionYear": "2027"}, "wetter": {"day": "20"}}) == "2028-01-20"
+    assert spieldaten.datum_aus_setup({"info": {"competitionYear": "2028"}, "wetter": {"day": "8"}}) == "2028-01-08"
     assert spieldaten.datum_aus_setup({}) is None
 
 
