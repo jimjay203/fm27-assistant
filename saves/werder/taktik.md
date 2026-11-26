@@ -123,7 +123,7 @@ Standard-Test, einziger Hebel. Start: Hertha BSC (ca. 08.01.2028). Messkriterium
 
 | Punkt | Inhalt |
 |---|---|
-| Änderung | Ohne Ball 4-4-1-1 statt 4-2-3-1: OM l (Grüll) und OM r (Arthur) stehen ohne Ball in der Mittelfeldreihe auf M l / M r. Rolle ohne Ball Mitarbeitender Außenspieler (FM26-Name für RM/LM laut wissen/rollen.md; FM27-UI-Name noch zu prüfen. Ist auf M l/M r nur Mitarbeitender Flügelspieler möglich, gilt dieser; Key-Attribute in config/rollen_attribute.yaml identisch). OM z (Chuki/Medina) bleibt Mitarbeitender Zehner hinter dem ST, ST unverändert |
+| Änderung | Ohne Ball 4-4-1-1 statt 4-2-3-1: OM l (Grüll) und OM r (Arthur) stehen ohne Ball in der Mittelfeldreihe auf M l / M r. Rolle ohne Ball Mitarbeitender Außenspieler (Rollenname laut FM27-Spieldaten bestätigt (config/rollen_positionen.yaml)). OM z (Chuki/Medina) bleibt Mitarbeitender Zehner hinter dem ST, ST unverändert |
 | Unverändert | Rollen mit Ball, Besetzung, Mentalität, alle Teamanweisungen; config/taktik_slots.yaml. Die Elf vom 01.01.2028 (Screenshot: Schlager, Agu, Pieper/Andrade, Oppie, Stark/Svanberg, Medina, Gulliksen, Kaars) war Rotation/Test, kein neuer Stamm |
 | Risiko / Preis | Flügelspieler stehen bei Ballgewinn tiefer → längerer Umschaltweg; vorne pressen nur ST und Zehner |
 | Rückfall | Kriterium nicht erreicht → zurück auf 4-2-3-1 ohne Ball |
