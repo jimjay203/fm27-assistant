@@ -8,6 +8,8 @@
 **Status:** Die Seiten beschreiben das **FM26**-Rollensystem (laut Quelle seit FM26: jeder Spieler hat zwei Rollen, eine
 mit Ball und eine ohne Ball, keine Aufgaben mehr; 68 Rollen). Ein FM27-Katalog liegt nicht vor. Ob FM27 dieselben Rollen
 und Namen hat, ist **nicht belegt** und im Spiel gegenzuprüfen. Die Quelle nennt weder Schlüsselattribute noch UI-Abkürzungen.
+**Welche Rollen FM27 je Position anbietet, ist jetzt aus Spieldaten belegt:** siehe Abschnitt
+"Rollenauswahl je Position in FM27 (Spieldaten)" am Ende. Er hat Vorrang vor den Positionsangaben aus FM26.
 
 Kombinieren lassen sich Rolle mit Ball und Rolle ohne Ball laut Quelle **beliebig**, es gibt keine Matrix erlaubter oder
 verbotener Paare. Welche Rollen zur Auswahl stehen, hängt von der Position im Slot ab. "Std" = Standardrolle, in
@@ -117,3 +119,42 @@ im Spiel geprüft**:
 
 **Hinweis ZwS:** Der Name "Zwischenraumspieler" kommt in der Quelle nicht vor. "ZwS" passt zum Zweiten Stürmer, der im selben Slot
 wie der Mitarbeitende Zehner steht. Bitte im Spiel bestätigen.
+
+## Rollenauswahl je Position in FM27 (Spieldaten)
+
+**Quelle:** FM27-Spieldaten, nicht FM26. Slot-Tabelle `fm27_role_contexts` aus fm-tactics-lab
+(`native/fm27_tactic_bindings.h`, v1126, Build 27.1.1, MIT; vom Autor aus den UI-Assets und dem nativen Resolver
+generiert). Die Rollen-Bits sind mit den Enums aus `FM.UI.dll` aufgelöst (2026-11-26 real). Die deutschen Namen
+für die Rollen ohne Ball hat Claude über die Enum-Namen zugeordnet. Maschinenlesbar: `config/rollen_positionen.yaml`
+(Kaderplaner).
+
+| Position | Mit Ball | Ohne Ball |
+|---|---|---|
+| TW | Torwart, Ballspielender, Kompromissloser Torhüter | Torwart, Linientorhüter, Libero-Torhüter |
+| AV (V L/R) | AV, Inverser AV, FV, Inverser FV, Spielmachender FV | AV, Abwartender AV, Pressender AV |
+| FV | FV, Vorgeschobener FV, Inverser FV, Spielmachender FV | FV, Abwartender FV, Pressender FV |
+| IV | IV, Spielaufbauender, Aufrückender, Kompromissloser IV | IV, Absichernder, Stoppender IV |
+| DM | DM, Tiefer Spielmacher, Abkippender Sechser | DM, Halbverteidiger, Abschirmender Sechser |
+| ZM | ZM, OM, Vorgeschobener Spielmacher, Halbraumspieler, Spielmacher | ZM, Pressender, Abschirmender Achter |
+| M (L/R) | Äußerer MF, Flügelspieler, Halbraumflügel, Äußerer Spielmacher | Äußerer MF, Mitarbeitender Außenspieler, Äußerer Umschaltspieler |
+| OM (L/R) | Flügelspieler, Halbraumflügel, Inverser Außenstürmer, Außenstürmer, Äußerer Spielmacher | Flügelspieler, Mitarbeitender, Umschalt-, Inverser Umschaltflügelspieler |
+| OM (Z) | OM, Vorgeschobener Spielmacher, Halbraumspieler, Freigeist, Zweiter Stürmer | OM, Mitarbeitender, Zentraler Umschaltzehner |
+| ST | Mittelstürmer, Halbraumstürmer, Hängende Spitze, Falsche Neun, Knipser, Zielspieler | Mittelstürmer, Mitarbeitender, Zentraler Umschaltstürmer |
+
+**Kontextregeln:** Diese Rollen kommen nur in bestimmten Slots dazu. „Seite“ bedeutet: zwei oder mehr Spieler auf
+derselben zentralen Position, und der Slot ist nicht der mittlere.
+
+| Bedingung | Zusätzlich mit Ball | Zusätzlich ohne Ball |
+|---|---|---|
+| Dreierkette, äußerer IV | Halbraumverteidiger, Hinterlaufender HV | Halbraumverteidiger, Absichernder HV, Stoppender HV |
+| DM, Seite | Box-to-Box-Spieler, Box-to-Box-Spielmacher | Flügelsichernder Sechser |
+| mindestens zwei DM | – | Pressender Sechser |
+| ZM, Seite | Weiter Achter | Flügelsichernder Achter |
+| OM (Z) bzw. ST, Seite | – | Ausweichender Umschaltzehner bzw. Ausweichender Umschaltstürmer |
+
+**Weitere Befunde:**
+- Rolle mit Ball und Rolle ohne Ball sind je Slot unabhängig wählbar. Die Tabelle enthält keine Paar-Einschränkung.
+- Es gibt keine Duties mehr. Die Duty-Bits stehen nur noch als Altlast im Enum.
+- Im Enum vorhanden, aber **keinem Slot zugeordnet** (in FM27 nicht wählbar): Anchor, Ball-Winning Midfielder,
+  Complete Forward, Mezzala, Regista, Segundo Volante, Enganche, Defensive Winger, No-Nonsense Full-Back,
+  Wide Target Forward. Das sind die Einträge mit `name: null` in `config/spiel_codes.yaml`.

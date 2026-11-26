@@ -5,65 +5,103 @@
 # mehreren Positionen stehen, z. B. der Offensive Mittelfeldspieler im ZM und im OM.
 # Namen wie im Spiel; FM27-Umbenennungen über alias_rollen in rollen_kpis.yaml.
 #
-# quelle: woher die Liste stammt. Nur ZM ist gegen FM27 abgeglichen (Screenshot), alle anderen stammen aus
-# wissen/rollen.md (FM26) bzw. der bisherigen Ableitung über die Gruppen: aus FM26, für FM27 ungeprüft.
+# Quelle (alle Positionen): FM27-Spieldaten. Slot-Tabelle `fm27_role_contexts` aus fm-tactics-lab
+# (native/fm27_tactic_bindings.h, Release v1126, Build 27.1.1, MIT; github.com/lqf0624/fm-tactics-lab), Rollen-Bits
+# aufgelöst mit den Enums FM.UI.InPossessionRole / OutOfPossessionRole / PositionMask aus BepInEx\interop\FM.UI.dll
+# (2026-11-26). Deutsche Namen über config/spiel_codes.yaml, ohne Ball Zuordnung Claude (Enum-Name -> Rollenkatalog).
+# Gegenprobe: TW mit Ball = Bits 0/12/53 (Torwart, Ballspielender, Kompromissloser Torhüter); Werder-Vorbelegung
+# (taktik_slots.yaml) ist nach dieser Tabelle gültig; ZM mit Ball deckt sich mit Jimmys Screenshot (2026-11-22).
+#
+# bedingt: Rollen, die das Spiel nur in bestimmten Slots anbietet (stehen trotzdem in mit/ohne). Regeln
+# (berechnet in scripts/planer.py, slot_kontext):
+#   seite             = mindestens zwei Slots dieser Position und der Slot ist nicht der mittlere
+#                       (im Spiel: zentrale Position mit Seitenzusatz, z. B. linker von zwei DM)
+#   dreierkette_seite = seite und mindestens drei IV
+#   mehrere_dm        = mindestens zwei DM
 
 positionen:
   TW:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft"
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
     mit: [Torwart, Kompromissloser Torhüter, Ballspielender Torhüter]
     ohne: [Torwart, Linientorhüter, Libero-Torhüter]
 
   IV:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft; Halbraum-Rollen laut FM26 nur RIV/LIV in der Dreierkette"
-    mit: [Innenverteidiger, Spielaufbauender Innenverteidiger, Ballspielender Innenverteidiger,
-          Kompromissloser Innenverteidiger, Aufrückender Innenverteidiger, Halbraumverteidiger,
-          Hinterlaufender Halbraumverteidiger]
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
+    mit: [Innenverteidiger, Spielaufbauender Innenverteidiger, Kompromissloser Innenverteidiger,
+          Aufrückender Innenverteidiger, Halbraumverteidiger, Hinterlaufender Halbraumverteidiger]
     ohne: [Innenverteidiger, Stoppender Innenverteidiger, Absichernder Innenverteidiger, Halbraumverteidiger,
            Stoppender Halbraumverteidiger, Absichernder Halbraumverteidiger]
+    bedingt:
+      mit:
+        Halbraumverteidiger: dreierkette_seite
+        Hinterlaufender Halbraumverteidiger: dreierkette_seite
+      ohne:
+        Halbraumverteidiger: dreierkette_seite
+        Stoppender Halbraumverteidiger: dreierkette_seite
+        Absichernder Halbraumverteidiger: dreierkette_seite
 
   AV:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft"
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
     mit: [Außenverteidiger, Inverser Außenverteidiger, Flügelverteidiger, Inverser Flügelverteidiger,
-          Spielmachender Flügelverteidiger, Vorgeschobener Flügelverteidiger]
-    ohne: [Außenverteidiger, Abwartender Außenverteidiger, Pressender Außenverteidiger, Flügelverteidiger,
-           Abwartender Flügelverteidiger, Pressender Flügelverteidiger]
+          Spielmachender Flügelverteidiger]
+    ohne: [Außenverteidiger, Abwartender Außenverteidiger, Pressender Außenverteidiger]
 
   FV:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft"
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
     mit: [Flügelverteidiger, Inverser Flügelverteidiger, Spielmachender Flügelverteidiger,
           Vorgeschobener Flügelverteidiger]
     ohne: [Flügelverteidiger, Abwartender Flügelverteidiger, Pressender Flügelverteidiger]
 
   DM:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft"
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
     mit: [Defensiver Mittelfeldspieler, Tiefer Spielmacher, Abkippender Sechser, Box-to-Box-Spieler,
           Box-to-Box-Spielmacher]
     ohne: [Defensiver Mittelfeldspieler, Halbverteidiger, Abschirmender Sechser, Pressender Sechser,
            Flügelsichernder Sechser]
+    bedingt:
+      mit:
+        Box-to-Box-Spieler: seite
+        Box-to-Box-Spielmacher: seite
+      ohne:
+        Pressender Sechser: mehrere_dm
+        Flügelsichernder Sechser: seite
 
   ZM:
-    quelle: >-
-      Mit Ball: FM27-Screenshot von Jimmy (M (Z), 2026-11-22), Reihenfolge wie im Spiel; die Liste war nach
-      "Spielmacher" abgeschnitten, weitere Rollen möglich. Ohne Ball: wissen/rollen.md (FM26), für FM27 ungeprüft.
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll); mit Ball deckungsgleich mit Screenshot M (Z), Jimmy 2026-11-22"
     mit: [Zentraler Mittelfeldspieler, Offensiver Mittelfeldspieler, Vorgeschobener Spielmacher, Weiter Achter,
           Halbraumspieler, Spielmacher]
     ohne: [Zentraler Mittelfeldspieler, Abschirmender Achter, Pressender Achter, Flügelsichernder Achter]
+    bedingt:
+      mit:
+        Weiter Achter: seite
+      ohne:
+        Flügelsichernder Achter: seite
 
   OM:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft"
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
     mit: [Offensiver Mittelfeldspieler, Vorgeschobener Spielmacher, Freigeist, Halbraumspieler, Zweiter Stürmer]
     ohne: [Offensiver Mittelfeldspieler, Mitarbeitender Zehner, Zentraler Umschaltzehner,
            Ausweichender Umschaltzehner]
+    bedingt:
+      ohne:
+        Ausweichender Umschaltzehner: seite
 
+  # M (L/R): äußeres Mittelfeld (z. B. 4-4-2, 4-1-4-1)
+  M:
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
+    mit: [Äußerer Mittelfeldspieler, Flügelspieler, Halbraumflügel, Äußerer Spielmacher]
+    ohne: [Äußerer Mittelfeldspieler, Mitarbeitender Außenspieler, Äußerer Umschaltspieler]
+
+  # FL = OM (L/R): offensive Flügel (z. B. 4-2-3-1, 4-3-3)
   FL:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft; FM26 trennt RM/LM und OMR/OML, hier noch eine Liste"
-    mit: [Äußerer Mittelfeldspieler, Flügelspieler, Halbraumflügel, Äußerer Spielmacher, Inverser Außenstürmer,
-          Außenstürmer]
-    ohne: [Äußerer Mittelfeldspieler, Flügelspieler, Mitarbeitender Außenspieler, Mitarbeitender Flügelspieler,
-           Äußerer Umschaltspieler, Umschaltflügelspieler, Inverser Umschaltflügelspieler]
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
+    mit: [Flügelspieler, Halbraumflügel, Inverser Außenstürmer, Außenstürmer, Äußerer Spielmacher]
+    ohne: [Flügelspieler, Mitarbeitender Flügelspieler, Umschaltflügelspieler, Inverser Umschaltflügelspieler]
 
   ST:
-    quelle: "wissen/rollen.md (FM26), für FM27 ungeprüft"
+    quelle: "FM27-Spieldaten (Slot-Tabelle fm-tactics-lab + FM.UI.dll)"
     mit: [Mittelstürmer, Hängende Spitze, Falsche Neun, Zielspieler, Knipser, Halbraumstürmer]
     ohne: [Mittelstürmer, Mitarbeitender Mittelstürmer, Zentraler Umschaltstürmer, Ausweichender Umschaltstürmer]
+    bedingt:
+      ohne:
+        Ausweichender Umschaltstürmer: seite

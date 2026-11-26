@@ -272,8 +272,37 @@ def rollen_optionen(rk: dict, gruppen: list[str]) -> dict[str, list[str]]:
     return out
 
 
-def slot_optionen(rk: dict, positionen: dict, slot: dict) -> dict[str, list[str]]:
-    """Wählbare Rollen eines Slots: Liste der FM-Position (rollen_positionen.yaml), sonst aus den Gruppen."""
+def slot_kontext(slots: dict) -> dict[str, set[str]]:
+    """Je Slot die erfüllten Regeln für `bedingt` in rollen_positionen.yaml.
+
+    seite: mindestens zwei Slots derselben Position und der Slot ist nicht der mittlere (ungerade Anzahl, nach x);
+    dreierkette_seite: seite und mindestens drei IV; mehrere_dm: mindestens zwei DM."""
+    je_pos: dict[str, list[str]] = {}
+    for sn, s in slots.items():
+        if s.get("position"):
+            je_pos.setdefault(s["position"], []).append(sn)
+    n_iv, n_dm = len(je_pos.get("IV", [])), len(je_pos.get("DM", []))
+    out: dict[str, set[str]] = {}
+    for pos, namen in je_pos.items():
+        mitte = None
+        if len(namen) % 2 == 1:
+            mitte = sorted(namen, key=lambda sn: slots[sn]["x"])[len(namen) // 2]
+        for sn in namen:
+            regeln = set()
+            if len(namen) >= 2 and sn != mitte:
+                regeln.add("seite")
+                if n_iv >= 3:
+                    regeln.add("dreierkette_seite")
+            if n_dm >= 2:
+                regeln.add("mehrere_dm")
+            out[sn] = regeln
+    return out
+
+
+def slot_optionen(rk: dict, positionen: dict, slot: dict, regeln: set[str] | None = None) -> dict[str, list[str]]:
+    """Wählbare Rollen eines Slots: Liste der FM-Position (rollen_positionen.yaml), sonst aus den Gruppen.
+
+    `regeln` (aus slot_kontext): Rollen unter `bedingt` nur, wenn ihre Regel erfüllt ist; None = ungefiltert."""
     if "position" not in slot:
         return rollen_optionen(rk, slot["gruppen"])
     pos = positionen.get(slot["position"])
@@ -286,7 +315,12 @@ def slot_optionen(rk: dict, positionen: dict, slot: dict) -> dict[str, list[str]
                     f"Rolle '{n}' (Position {slot['position']}) fehlt in config/rollen_kpis.yaml "
                     "(auch nicht als alias_rollen)."
                 )
-    return {"mit": list(pos["mit"]), "ohne": list(pos["ohne"])}
+    bedingt = pos.get("bedingt") or {}
+    out = {}
+    for phase in ("mit", "ohne"):
+        b = bedingt.get(phase) or {}
+        out[phase] = [n for n in pos[phase] if regeln is None or n not in b or b[n] in regeln]
+    return out
 
 
 def _standardrolle(rk: dict, optionen: list[str]) -> str | None:
@@ -301,8 +335,9 @@ def formationen_meta(ctx: Kontext) -> dict:
     for name, f in (ctx.formationen.get("formationen") or {}).items():
         vorbel = ctx.slots_taktik if f.get("vorbelegung_aus") else {}
         slots = {}
+        kontext = slot_kontext(f["slots"])
         for sn, s in f["slots"].items():
-            opt = slot_optionen(rk, ctx.positionen, s)
+            opt = slot_optionen(rk, ctx.positionen, s, kontext.get(sn, set()))
             v = vorbel.get(sn) or s.get("vorbelegung") or {}
             slots[sn] = {
                 "position": s.get("position"), "label": s.get("label") or sn,

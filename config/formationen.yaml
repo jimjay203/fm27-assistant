@@ -1,6 +1,8 @@
 # Formationen für den Kaderplaner (scripts/webapp.py).
 #
-# Je Slot: position = FM-Position aus rollen_positionen.yaml (bestimmt die wählbaren Rollen wie im Spiel).
+# Je Slot: position = FM-Position aus rollen_positionen.yaml (bestimmt die wählbaren Rollen wie im Spiel;
+#   Rollen unter `bedingt` nur, wenn der Slot die Regel erfüllt, z. B. Halbraumverteidiger nur außen in der
+#   Dreierkette. Seite/Mitte ergibt sich aus Anzahl und x der Slots derselben Position). M = M (L/R), FL = OM (L/R).
 # Welche Spieler in Frage kommen, bestimmt die Gruppe der Rolle mit Ball (rollen_kpis.yaml).
 # label = Anzeige auf dem Spielfeld (Default: Schlüssel). Die 4-2-3-1-Schlüssel kommen aus taktik_slots.yaml und
 #   sind nach Spielern benannt; gesetzt wird aber der beste Spieler, daher die neutrale Anzeige "DM r"/"DM l".
@@ -48,10 +50,10 @@ formationen:
       "IV r": {position: IV, x: 63, y: 78}
       "IV l": {position: IV, x: 37, y: 78}
       LV:     {position: AV, x: 12, y: 72}
-      RM:     {position: FL, x: 88, y: 42}
+      RM:     {position: M,  x: 88, y: 42}
       "ZM r": {position: ZM, x: 62, y: 48}
       "ZM l": {position: ZM, x: 38, y: 48}
-      LM:     {position: FL, x: 12, y: 42}
+      LM:     {position: M,  x: 12, y: 42}
       "ST r": {position: ST, x: 62, y: 12}
       "ST l": {position: ST, x: 38, y: 12}
 
@@ -63,10 +65,10 @@ formationen:
       "IV l": {position: IV, x: 37, y: 78}
       LV:     {position: AV, x: 12, y: 72}
       DM:     {position: DM, x: 50, y: 60}
-      RM:     {position: FL, x: 88, y: 38}
+      RM:     {position: M,  x: 88, y: 38}
       "ZM r": {position: ZM, x: 62, y: 42}
       "ZM l": {position: ZM, x: 38, y: 42}
-      LM:     {position: FL, x: 12, y: 38}
+      LM:     {position: M,  x: 12, y: 38}
       ST:     {position: ST, x: 50, y: 10}
 
   "4-3-1-2":

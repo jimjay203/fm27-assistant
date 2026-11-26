@@ -68,6 +68,51 @@ def test_vorbelegung_4231_kommt_aus_taktik_slots():
     assert meta["4-3-3"]["slots"]["ZM r"]["mit"] == "Zentraler Mittelfeldspieler"
 
 
+def test_bedingte_rollen_stehen_in_den_listen():
+    regeln = {"seite", "dreierkette_seite", "mehrere_dm"}
+    for pos, e in POS.items():
+        for phase, b in (e.get("bedingt") or {}).items():
+            for n, regel in b.items():
+                assert n in e[phase], (pos, phase, n)
+                assert regel in regeln, (pos, phase, n, regel)
+
+
+def _meta_optionen():
+    ctx = SimpleNamespace(rk=RK, formationen=FORM, slots_taktik=SLOTS, positionen=POS)
+    meta = planer.formationen_meta(ctx)
+    return lambda form, slot, phase: meta[form]["slots"][slot]["optionen"][phase]
+
+
+def test_rollen_je_slot_wie_im_spiel():
+    # FM27-Slot-Tabelle (fm-tactics-lab fm27_role_contexts): Kontextregeln
+    opt = _meta_optionen()
+    hv = "Halbraumverteidiger"
+    assert hv not in opt("4-4-2", "IV r", "mit") and hv not in opt("4-4-2", "IV r", "ohne")
+    assert hv in opt("3-5-2", "IV r", "mit") and "Stoppender Halbraumverteidiger" in opt("3-5-2", "IV l", "ohne")
+    assert hv not in opt("3-5-2", "IV z", "mit")
+    assert "Pressender Sechser" not in opt("4-3-3", "DM", "ohne")
+    assert "Box-to-Box-Spieler" not in opt("4-3-3", "DM", "mit")
+    assert "Pressender Sechser" in opt("4-2-3-1", "DM Svanberg", "ohne")
+    assert "Box-to-Box-Spieler" in opt("4-2-3-1", "DM Svanberg", "mit")
+    assert "Inverser Außenstürmer" not in opt("4-4-2", "RM", "mit")
+    assert "Äußerer Mittelfeldspieler" not in opt("4-3-3", "AS r", "mit")
+    assert "Ausweichender Umschaltstürmer" not in opt("4-3-3", "ST", "ohne")
+    assert "Ausweichender Umschaltstürmer" in opt("4-4-2", "ST r", "ohne")
+    assert "Weiter Achter" in opt("4-3-3", "ZM r", "mit")
+    assert "Weiter Achter" not in opt("5-3-2", "ZM z", "mit")
+
+
+def test_slot_kontext_mitte_und_seite():
+    slots = {
+        "a": {"position": "IV", "x": 26}, "b": {"position": "IV", "x": 50}, "c": {"position": "IV", "x": 74},
+        "d": {"position": "DM", "x": 50}, "e": {"position": "ST", "x": 40}, "f": {"position": "ST", "x": 60},
+    }  # fmt: skip
+    k = planer.slot_kontext(slots)
+    assert k["a"] == k["c"] == {"seite", "dreierkette_seite"}
+    assert k["b"] == set() and k["d"] == set()
+    assert k["e"] == k["f"] == {"seite", "dreierkette_seite"}
+
+
 def test_unbekannte_position_wird_gemeldet():
     with pytest.raises(SystemExit, match="fehlt in config/rollen_positionen.yaml"):
         planer.slot_optionen(RK, POS, {"position": "XY"})

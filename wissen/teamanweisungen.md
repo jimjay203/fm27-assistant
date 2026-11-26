@@ -4,6 +4,13 @@ Quelle: Screenshots aus dem FM27-UI (Save werder, 03.07.2027, Taktik 4-2-3-1). S
 Texte gekürzt aus den UI-Beschreibungen und dem "Mitarbeiter-Feedback". Das sind Aussagen des Spiels,
 keine Match-Engine-Tests. Fett = Ist-Stand Werder, 03.07.2027.
 
+**Strukturabgleich mit FM27-Spieldaten** (fm-tactics-lab `fm27_tactic_bindings.h`, Build 27.1.1; nur Codes, keine
+Namen, 26.11.2026 real): **Ohne Ball** hat 9 Gruppen, die Stufenzahlen (5,5,3,3,3,3,3,3,2) passen genau zu dieser
+Tabelle. **Mit Ball** hat 20 Gruppen statt 19 hier (Stufen 5×4, 4×3, 3×10, 2×2, 7×1). Es fehlt also eine Anweisung
+mit 2 Stufen, und eine Gruppe hat 7 Stufen, wo hier 9 stehen (TW-Ziel?). Ob TW-Ziel anders gespeichert wird, ist
+offen: Screenshot des Aufbau-Panels mit allen Stufen nötig. Die Mentalität ist ein eigener Wert (1–7).
+Spieleranweisungen: 17 Gruppen, 54 Optionen (hier nicht erfasst).
+
 # Mit Ball
 
 ## Gruppen im UI
