@@ -3,11 +3,11 @@
 ## Formation je Slot
 | Slot | Formation |
 |---|---|
-| Standard | 4-2-3-1 (neuer Standard ab Vorbereitung 2027/28, Entscheidung Jimmy 03.07.2027; siehe Rollentabelle und Team-Instruktionen) |
+| Standard | 4-2-3-1 (neuer Standard ab Vorbereitung 2027/28, Entscheidung Jimmy 03.07.2027; siehe Rollentabelle und Team-Instruktionen). Test seit 07.01.2028 (Entscheidung Jimmy): ohne Ball 4-4-1-1 (OM l/OM r auf M l/M r), mit Ball unverändert 4-2-3-1; siehe "Test: 4-4-1-1 ohne Ball" |
 | Heim | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter. Mentalität Kontrolliert-offensiv nicht pauschal, sondern bei Bedarf im Spiel (Entscheidung Jimmy 09.10.2027; siehe Mentalität und Spickzettel "Im Spiel") |
 | Auswärts | Noch keine eigene Taktik: wie Standard, Abweichungen siehe Gegner-Schalter |
 
-Form (bis 2026/27; für die Rollen ab 2027/28 im UI neu ablesen): Mit Ball 4-2-3-1. Ohne Ball zeigt das UI 4-3-2-1 (Lynen, Hack, Svanberg/Reis in einer Reihe; davor Grüll und Dinkçi; vorne Füllkrug). Korrigiert nach UI-Screenshot, Slot 3 "4-2-3-1 Standard", 24.10.2026.
+Historisch – Form (bis 2026/27; für die Rollen ab 2027/28 im UI neu ablesen): Mit Ball 4-2-3-1. Ohne Ball zeigt das UI 4-3-2-1 (Lynen, Hack, Svanberg/Reis in einer Reihe; davor Grüll und Dinkçi; vorne Füllkrug). Korrigiert nach UI-Screenshot, Slot 3 "4-2-3-1 Standard", 24.10.2026.
 
 ## Rollen (In / Out of Possession)
 FM27: keine Aufgaben mehr, jeder Spieler hat eine Rolle mit Ball und eine ohne Ball. Rollennamen laut Zweierkette-Rollenliste (Stand 17.11.2026; dort FM26-System, FM27 nicht ausdrücklich genannt) -> im Spiel gegenprüfen.
@@ -23,9 +23,9 @@ Slot Standard, NEUER STANDARD ab Saisonvorbereitung 2027/28 (Entscheidung Jimmy 
 | LV | Ndiaye (Oppie 1. Backup seit 04.09.2027, dann Agu; Deman nicht mehr im Kader. EL-Rotation: Oppie spielte LV gegen Rapid Wien H 20.10.2027, Note 6,8, Ndiaye geschont) | Flügelverteidiger | Pressender Außenverteidiger |
 | DM l | Lynen (Stamm; Backups: 1. Amatucci, dann Keidel/Stark. Amatucci seit 09.10.2027 erste Wechseloption für Lynen allgemein, mit Ball Tiefer Spielmacher (Entscheidung Jimmy; vorher seit 04.09.2027 nur Spielkontroll-Option bei Gegner tief/in Unterzahl). Doppelrolle Keidel seit 06.07.2027: Stamm-RV, als DM-Backup nur wenn RV anders besetzt, sonst Stark) | Defensiver Mittelfeldspieler | Abschirmender Sechser |
 | DM r | Stage (Svanberg, Reis) | Box-to-Box-Spieler | Pressender Sechser |
-| OM r | Arthur (Backups Guliashvili, dann Chuki als Plan E) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; kein Transfer OM r nötig. Stand 17.07.2027: Erevbenagie verliehen bis 29.06.2028, Mbangula nicht mehr im Kader-Export 17.07.2027; Backup OM r damit Chuki (Plan E, Medina auf die Zehn) oder Grüll. Stand 04.09.2027 (Entscheidung Jimmy): Backups Guliashvili (neu, OM (RL)/ST), dann Chuki (Plan E). Stand 03.11.2027: Arthur fit seit 03.11.2027 (EL Tromsø H, Startelf, 9,2), wieder Stamm OM r; vom 16.10. (Freiburg A) bis 03.11.2027 verletzt, vertreten von Guliashvili (erster Backup, unverändert). Agu als OM r getestet (EL Rapid Wien H 20.10.2027, 1:1, Note 6,5): Test/zusätzliche offensive Wechseloption neben Guliashvili, keine beschlossene Backup-Reihenfolge) |
+| OM r | Arthur (Backups Guliashvili, dann Chuki als Plan E) | Flügelspieler | Mitarbeitender Flügelspieler (Entscheidung Jimmy 06.07.2027: Arthur von RV auf OM r, im Spiel auf OM R "passabel", laut Jimmy bald "gut"; kein Transfer OM r nötig. Stand 17.07.2027: Erevbenagie verliehen bis 29.06.2028, Mbangula nicht mehr im Kader-Export 17.07.2027; Backup OM r damit Chuki (Plan E, Medina auf die Zehn) oder Grüll. Stand 04.09.2027 (Entscheidung Jimmy): Backups Guliashvili (neu, OM (RL)/ST), dann Chuki (Plan E). Stand 03.11.2027: Arthur fit seit 03.11.2027 (EL Tromsø H, Startelf, 9,2), wieder Stamm OM r; vom 16.10. (Freiburg A) bis 03.11.2027 verletzt, vertreten von Guliashvili (erster Backup, unverändert). Agu als OM r getestet (EL Rapid Wien H 20.10.2027, 1:1, Note 6,5): Test/zusätzliche offensive Wechseloption neben Guliashvili, keine beschlossene Backup-Reihenfolge). Test seit 07.01.2028: M r, Mitarbeitender Außenspieler (siehe "Test: 4-4-1-1 ohne Ball") |
 | OM z | Chuki (Medina, Svanberg) | Vorgeschobener Spielmacher | Mitarbeitender Zehner (Medina seit 17.07.2027 Rotation/Backup hinter Chuki, Entscheidung Jimmy; nicht als Option auf der Sechs. "Medina verletzt seit 23.08.2027, Knöchel" ÜBERHOLT, Datenstand 31.10.2027: Start OM z in Meppen 27.10.2027; Genesungsdatum nicht erfasst) |
-| OM l | Grüll (Backups Guliashvili, Erevbenagie; Solange Arthur fehlt und Guliashvili OM r spielt, ist Erevbenagie erster Backup OM l (Entscheidung Jimmy, Datenstand 31.10.2027). ÜBERHOLT (Datenstand 31.10.2027): "verletzt seit 14.08.2027, Muskelanriss Oberschenkelrückseite" – Grüll steht in den 6 Spielen 09.10.–30.10.2027 wieder auf OM l; Genesungsdatum nicht erfasst) | Inverser Außenstürmer | Mitarbeitender Flügelspieler |
+| OM l | Grüll (Backups Guliashvili, Erevbenagie; Solange Arthur fehlt und Guliashvili OM r spielt, ist Erevbenagie erster Backup OM l (Entscheidung Jimmy, Datenstand 31.10.2027). ÜBERHOLT (Datenstand 31.10.2027): "verletzt seit 14.08.2027, Muskelanriss Oberschenkelrückseite" – Grüll steht in den 6 Spielen 09.10.–30.10.2027 wieder auf OM l; Genesungsdatum nicht erfasst) | Inverser Außenstürmer | Mitarbeitender Flügelspieler. Test seit 07.01.2028: M l, Mitarbeitender Außenspieler (siehe "Test: 4-4-1-1 ohne Ball") |
 | ST | Manneh (Kaars Backup/Joker; seit 04.09.2027, Entscheidung Jimmy. EL: Kaars nicht für die UEFA Europa League registriert (Stand 20.10.2027) → dort kein Kaars-Joker; ST-Option hinter Manneh ist Topp, für die EL registriert) | Halbraumstürmer | Mittelstürmer (Standard) |
 
 Idee mit Ball: links Überladung (Grüll innen, Ndiaye außen), rechts Breite über den Flügelspieler (Arthur), Keidel rückt innen neben Lynen; Seitenwechsel auf den freien rechten Flügel. Chuki kommt kurz, der Stürmer (seit 04.09.2027 Manneh, vorher Kaars) läuft in die Schnittstelle, Stage spät in den Strafraum.
@@ -117,6 +117,37 @@ Begründung Defensivlinie Höher (01.07.2027): IV Córdoba 15/15 und Pfeiffer 16
 | Eigene Spieler werden im Aufbau in der eigenen Hälfte angelaufen und halten den Ball zu lange, knappe Ballverluste (Herkunft: Paderborn 24.10.2027, BL, 2:0; Jimmy stellte bei 0:0 ca. 60' um; Auslöser Keidel, zuvor auch Pfeiffer u. a. Aufbau-Attribute der Reihe 10–13 (Ballannahme/Technik/Entscheidungen/Nervenstärke; Pfeiffer 10/10/11/11, Keidel 12/12/12/12; einzig Córdoba Nervenstärke 16; DB-Snapshot 04.09.2027). Zusammenhang "geringeres Tempo → mehr Zeit für gegnerisches Anlaufen" aus Vorversionen, für FM27 ungeprüft) | Tempo auf Standard (Entscheidung Jimmy 24.10.2027); Auslösungen zählen, siehe Tempo-Zeile unter Mit Ball |
 
 Hinweis: Das Feld (Spitzen-Taktiken im FM-Arena-Aggregator) pressen hoch und spielen Attacking; die Top 23 liegen statistisch gleichauf (66-71 Punkte), der mittlere Block ist weder widerlegt noch belegt.
+
+### Test: 4-4-1-1 ohne Ball (Entscheidung Jimmy 07.01.2028)
+Standard-Test, einziger Hebel. Start: Hertha BSC (ca. 08.01.2028). Messkriterium und Prüftermin: log.md, Eintrag 2028-01-07 (Taktik).
+
+| Punkt | Inhalt |
+|---|---|
+| Änderung | Ohne Ball 4-4-1-1 statt 4-2-3-1: OM l (Grüll) und OM r (Arthur) stehen ohne Ball in der Mittelfeldreihe auf M l / M r. Rolle ohne Ball Mitarbeitender Außenspieler (FM26-Name für RM/LM laut wissen/rollen.md; FM27-UI-Name noch zu prüfen. Ist auf M l/M r nur Mitarbeitender Flügelspieler möglich, gilt dieser; Key-Attribute in config/rollen_attribute.yaml identisch). OM z (Chuki/Medina) bleibt Mitarbeitender Zehner hinter dem ST, ST unverändert |
+| Unverändert | Rollen mit Ball, Besetzung, Mentalität, alle Teamanweisungen; config/taktik_slots.yaml. Die Elf vom 01.01.2028 (Screenshot: Schlager, Agu, Pieper/Andrade, Oppie, Stark/Svanberg, Medina, Gulliksen, Kaars) war Rotation/Test, kein neuer Stamm |
+| Risiko / Preis | Flügelspieler stehen bei Ballgewinn tiefer → längerer Umschaltweg; vorne pressen nur ST und Zehner |
+| Rückfall | Kriterium nicht erreicht → zurück auf 4-2-3-1 ohne Ball |
+
+Begründung (scripts/gegenball.py, 8 SpielLogger-Mitschnitte 07.11.–12.12.2027: Frankfurt, Union, Braga, Leverkusen, Paderborn, Bayern, Juventus, Stuttgart; alles eigene Ableitungen):
+
+| Befund | Wert |
+|---|---|
+| Mittlere Position ohne Ball (m vor dem eigenen Tor) | Kette 32–36 (AV ±15–16 m neben der Mitte), Sechser 40/42 (±5 m), Flügel Grüll 50 / Arthur 48 (±14–15 m), Zehner 48, ST 57. Außen in der Mittelfeldreihe niemand |
+| Flügelmomente (Gegner am Ball in unserer Hälfte, ≥ 15 m neben der Mitte) | Flügelspieler hinter dem Ball links 28 % / rechts 32 % (Einzelspiele 17–44 %), Median 4–5 m vor dem Ball; eigene Spieler ≤ 10 m vom Ball Ø 1,6 (Spiele 1,4–2,1); Abstand AV 9 m (l) / 11 m (r). In allen 8 Spielen, gegen Dreier- und Viereraufbau |
+| Gegenschüsse (102 eigene Zählung, Spielbericht 101), Seite beim Eintritt in unser Drittel (Ballbesitz/Konter/Standard) | Flügel rechts 44 (21/5/18), Flügel links 20 (8/0/12), Halbraum links 19 (9/6/4), Halbraum rechts 12 (3/4/5), Mitte 7. Aus Ballbesitz über Flügel und Halbraum 41 = 5,1 pro Spiel. Großchancen gegen: Flügel rechts 3 |
+| Zentrum | Zu: nur 4–9 % der angekommenen Gegnerpässe zentral zwischen Kette und Sechsern |
+| Lesart Jimmy ("rechts offen, Arthur zu hoch, Keidel allein") | Arthur steht nicht höher als Grüll, beide Seiten gleich offen. Rechts wird die Lage öfter zum Gegenschuss (24 zu 17 aus Ballbesitz, obwohl der Gegner rechts kürzer am Ball ist: 2482 s zu 2816 s) → Formänderung statt Rollentausch nur für Arthur. Was rechts nach dem Ballkontakt passiert (1-gegen-1 Keidel, Flanke, Absicherung): offen, Beobachtung, kein weiterer Hebel |
+| Personal (rollen.py, live 07.01.2028, Mitarbeitender Flügelspieler ohne Ball) | Arthur 84,1, Guliashvili 81,7, Grüll 76,8 (Key-Ø 14,1), Erevbenagie 75,6 → kein Hindernis |
+
+Messkriterium (gegenball.py --seit <Datum 1. Spiel> --reihen 4-4-1-1; Abschnitte "Flügelmomente", "Gegenschüsse", "Form ohne Ball", "Zugriff"; eigene Zählung). Prüftermin: nach 3 Pflichtspielen mit der Variante ab Hertha BSC.
+
+| Kennzahl | Basis | Ziel |
+|---|---|---|
+| Flügelspieler hinter dem Ball | 28 % links / 32 % rechts | ≥ 50 % |
+| Eigene Spieler ≤ 10 m vom Ball | 1,6 | ≥ 2,2 |
+| Gegenschüsse über Flügel und Halbraum aus Ballbesitz | 5,1 pro Spiel | ≤ 3,0 |
+| Wächter: Gegnerpässe zwischen den Linien | 4–9 % | ≤ 9 % |
+| Wächter: Ballgewinne im vorderen Drittel | Ø 12 (8–23) | nicht unter 8 |
 
 ### Hebel-Optionen (Auswahl im Spiel)
 | Hebel | Optionen |

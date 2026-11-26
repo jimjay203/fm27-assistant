@@ -78,6 +78,20 @@ def wechsel_des_ballbesitzes(spiel: Spiel, team: int, halb: int | None = None):
     return gewinne, verluste
 
 
+def schuss_binnen(spiel: Spiel, e: Ereignis, wessen: int, schuesse: list, sekunden: int = 15) -> bool:
+    """Schießt `wessen` binnen `sekunden` nach dem Ereignis e?"""
+    return any(spiel.team(s.uids[0]) == wessen and 0 <= s.ts - e.ts <= sekunden * JE_SEKUNDE for s in schuesse)
+
+
+def abspiele_nach_seite(spiel: Spiel, team: int, halb: int | None = None) -> Counter:
+    """Pässe/Flanken des Teams im vorderen Drittel nach Seite aus Sicht des Teams (links/Mitte/rechts)."""
+    eintritte: Counter = Counter()
+    for e, _ in paesse(spiel, team, halb):
+        o = _ort(spiel, team, e.ts)
+        if o and o[1] > 17.5:
+            eintritte["Mitte" if abs(o[0]) < 11 else "rechts" if o[0] > 0 else "links"] += 1
+    return eintritte
+
 def drittel(laengs: float) -> str:
     return "eigenes Drittel" if laengs < -17.5 else "Mitte" if laengs <= 17.5 else "vorderes Drittel"
 
@@ -383,7 +397,7 @@ def team_text(spiel: Spiel, team: int, wir: int, halb: int | None, ziel: Path | 
     schuesse = spielimport.schuesse(spiel)
 
     def folgt_schuss(e: Ereignis, wessen: int) -> bool:
-        return any(spiel.team(s.uids[0]) == wessen and 0 <= s.ts - e.ts <= 15 * JE_SEKUNDE for s in schuesse)
+        return schuss_binnen(spiel, e, wessen, schuesse)
 
     z.append("\n### Ballbesitzwechsel")
     zeilen = []
@@ -397,12 +411,7 @@ def team_text(spiel: Spiel, team: int, wir: int, halb: int | None, ziel: Path | 
     angekommen = sum(an is not None for _, an in alle)
     if alle:
         z.append(f"\nPässe und Flanken angekommen: {angekommen}/{len(alle)} ({100 * angekommen / len(alle):.0f} %)")
-    eintritte = Counter()
-    for e, an in alle:
-        o = _ort(spiel, team, e.ts)
-        if o and o[1] > 17.5:
-            seite = "Mitte" if abs(o[0]) < 11 else "rechts" if o[0] > 0 else "links"
-            eintritte[seite] += 1
+    eintritte = abspiele_nach_seite(spiel, team, halb)
     gesamt = sum(eintritte.values())
     if gesamt:
         z.append("Abspiele im vorderen Drittel: " + ", ".join(
