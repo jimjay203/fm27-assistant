@@ -51,12 +51,17 @@ def test_role_lookup_uses_alias_in_both_directions_and_reports_missing_phase():
     assert rollen_attr.rolle_def("Ballspielender Innenverteidiger", "mit", RA, RK)[0] == (
         "Spielaufbauender Innenverteidiger|mit"
     )
-    assert rollen_attr.rolle_def("Mittelstürmer", "ohne", RA, RK) is None
+    # FM27-roles.json: auch Standardrollen ohne Ball haben einen Eintrag
+    assert rollen_attr.rolle_def("Mittelstürmer", "ohne", RA, RK)[0] == "Mittelstürmer|ohne"
 
 
-def test_every_tactic_slot_has_attributes_with_ball_and_names_match_the_export():
+def test_every_tactic_slot_has_attributes_in_both_phases_and_names_match_the_export():
     for slot, s in SLOTS.items():
         assert rollen_attr.rolle_def(s["mit"], "mit", RA, RK), slot
+        assert rollen_attr.rolle_def(s["ohne"], "ohne", RA, RK), slot
+    assert len(RA["rollen"]) == 79  # 40 mit, 39 ohne Ball (fm27-roles-1)
+    for k, r in RA["rollen"].items():
+        assert r.get("key") and r.get("preferred"), k
     bekannt = {a for g in spielerprofil.ATTRIBUT_GRUPPEN.values() for a in g}
     for k, r in RA["rollen"].items():
         for liste in ("key", "preferred", "unnecessary"):

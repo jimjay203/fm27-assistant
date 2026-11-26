@@ -16,6 +16,11 @@ Regel: **FM27 > Vorwissen.** Nur FM27-bezogene Inhalte übernehmen; ältere Vers
   (26.11.2026 real) -> [rollen.md](rollen.md) Abschnitt "Rollenauswahl je Position", `config/rollen_positionen.yaml`.
   Beschriftungen der Team-/Spieleranweisungen liegen nur im nicht öffentlichen `catalog.json` der EXE (nicht genutzt).
   Das Tool selbst (Batch-Simulation mit der Original-Engine) ist nicht im Einsatz (Entscheidung Jimmy, 26.11.2026 real).
+- FM27 Tactic Builder (github.com/Dixnnn/FM27-System-and-Tactic-Designer, GPLv3), `data/roles.json`: key/preferred
+  für 79 FM27-Rollen, aus dem Spiel transkribiert von FM Player Analyzer (ElectroHugin). Kopie:
+  [quellen/fm27-tactic-builder-roles.json](quellen/fm27-tactic-builder-roles.json), geladen 25.11.2026 (real);
+  maßgeblich für `config/rollen_attribute.yaml` (Entscheidung Jimmy, 25.11.2026 real). Das Tool selbst lädt keine
+  Taktik ins Spiel, es erzeugt nur einen Bericht zum Abtippen; Heuristiken (`tuning.json`) nicht übernommen.
 - Erfolgsmessung je Rolle (Vorschlag von Claude, ungeprüft): [rollen-kpis.md](rollen-kpis.md), maschinenlesbar `config/rollen_kpis.yaml`
 - FM Stag "What does Good look like in FM24?": Benchmarks, siehe [benchmarks-fm24.md](benchmarks-fm24.md) (Anker für FM27 neu berechnet: `config/anker_fm27.yaml`)
 - Teamanweisungen mit Ball, alle Stufen und UI-Texte (FM27-Screenshots 03.07.2027): [teamanweisungen.md](teamanweisungen.md)

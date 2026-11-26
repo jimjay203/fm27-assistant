@@ -1,8 +1,11 @@
 # Schlüsselattribute je FM-Rolle (key / preferred / unnecessary)
-# Quelle: sortitoutsi.net, 'FM26: Important Attributes for Every Role' (edgardavids8, 08.11.2025),
-# https://sortitoutsi.net/content/75078 . Aus FM26; laut Jimmy (24.11.2026 real) 1:1 auf FM27 übertragbar.
-# Ohne-Ball-Rollen: nur 'key' (3 Attribute) veröffentlicht. Standard-Rollen ohne Ball (z. B. Mittelstürmer,
-# Innenverteidiger, Außenverteidiger, Flügelspieler, Offensiver Mittelfeldspieler ohne Ball) fehlen in der Quelle.
+# Quelle key/preferred (seit 25.11.2026 real, Entscheidung Jimmy): FM27, aus dem Spiel transkribiert vom Projekt
+# FM Player Analyzer (ElectroHugin), übernommen aus FM27 Tactic Builder data/roles.json (GPLv3, Version
+# "fm27-roles-1"), Kopie: wissen/quellen/fm27-tactic-builder-roles.json. 79 Rollen (40 mit, 39 ohne Ball).
+# Vorher: sortitoutsi.net, 'FM26: Important Attributes for Every Role' (edgardavids8, 08.11.2025),
+# https://sortitoutsi.net/content/75078 – 36 von 40 Mit-Ball-Rollen identisch; ohne Ball nur 3 key-Attribute,
+# Standardrollen ohne Ball fehlten. Ersetzte FM26-Listen stehen als Kommentar an der Rolle.
+# 'unnecessary' gibt es nur in der FM26-Quelle (unverändert übernommen).
 # Deutsche Rollennamen nach wissen/rollen.md; Attributnamen wie in player_attributes.
 # Verwendung: scripts/rollen_attr.py (Spalten key_mit/key_ohne/key_fehlt in rollen.py). Der Filter weist Ausfälle
 # aus, verwirft aber nicht (außer mit --key-max-fehlt); die Entscheidung trifft Scouting.
@@ -25,32 +28,42 @@ rollen:
     englisch: "Goalkeeper"
     bereich: "TW"
     phase: mit
-    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Beweglichkeit", "Konzentration", "Stellungsspiel"]
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Konzentration", "Stellungsspiel", "Beweglichkeit"]
     preferred: ["Abschlag", "Eins gegen Eins", "Abwurf", "Antizipation", "Entscheidungen"]
     unnecessary: ["Exzentrizität"]
+  "Torwart|ohne":
+    englisch: "Goalkeeper"
+    bereich: "TW"
+    phase: ohne
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Konzentration", "Stellungsspiel", "Beweglichkeit"]
+    preferred: ["Eins gegen Eins", "Herauslaufen (Tendenz)", "Antizipation", "Entscheidungen"]
   "Ballspielender Torhüter|mit":
     englisch: "Ball-Playing Goalkeeper"
     bereich: "TW"
     phase: mit
-    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Abschlag", "Reflexe", "Beweglichkeit", "Konzentration", "Stellungsspiel"]
-    preferred: ["Exzentrizität", "Eins gegen Eins", "Abwurf", "Antizipation", "Nervenstärke", "Entscheidungen", "Passen"]
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Abschlag", "Reflexe", "Konzentration", "Stellungsspiel", "Beweglichkeit"]
+    preferred: ["Exzentrizität", "Eins gegen Eins", "Passen", "Abwurf", "Antizipation", "Nervenstärke", "Entscheidungen"]
   "Kompromissloser Torhüter|mit":
     englisch: "No-Nonsense Goalkeeper"
     bereich: "TW"
     phase: mit
-    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Beweglichkeit", "Konzentration", "Stellungsspiel"]
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Konzentration", "Stellungsspiel", "Beweglichkeit"]
     preferred: ["Eins gegen Eins", "Antizipation", "Entscheidungen"]
     unnecessary: ["Exzentrizität", "Passen"]
   "Linientorhüter|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Stellungsspiel", "Konzentration"]
     englisch: "Line-Holding Keeper"
     bereich: "TW"
     phase: ohne
-    key: ["Stellungsspiel", "Konzentration"]
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Reflexe", "Konzentration", "Stellungsspiel", "Beweglichkeit"]
+    preferred: ["Eins gegen Eins", "Antizipation", "Entscheidungen"]
   "Libero-Torhüter|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Herauslaufen (Tendenz)", "Antizipation", "Entscheidungen"]
     englisch: "Sweeper Keeper"
     bereich: "TW"
     phase: ohne
-    key: ["Herauslaufen (Tendenz)", "Antizipation", "Entscheidungen"]
+    key: ["Hohe Bälle", "Strafraumkontrolle", "Kommunikation", "Halten", "Eins gegen Eins", "Reflexe", "Herauslaufen (Tendenz)", "Antizipation", "Entscheidungen", "Beweglichkeit"]
+    preferred: ["Exzentrizität", "Konzentration", "Stellungsspiel", "Antritt"]
   "Innenverteidiger|mit":
     englisch: "Centre-Back"
     bereich: "IV"
@@ -58,6 +71,12 @@ rollen:
     key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
     preferred: ["Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Schnelligkeit"]
     unnecessary: ["Passen"]
+  "Innenverteidiger|ohne":
+    englisch: "Centre-Back"
+    bereich: "IV"
+    phase: ohne
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Schnelligkeit"]
   "Spielaufbauender Innenverteidiger|mit":
     englisch: "Ball-Playing Centre-Back"
     bereich: "IV"
@@ -78,6 +97,12 @@ rollen:
     key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
     preferred: ["Dribbling", "Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Einsatzfreude", "Antritt", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
     unnecessary: ["Passen"]
+  "Halbraumverteidiger|ohne":
+    englisch: "Wide Centre-Back"
+    bereich: "IV"
+    phase: ohne
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Aggressivität", "Mut", "Konzentration", "Entscheidungen", "Antritt", "Beweglichkeit", "Schnelligkeit"]
   "Aufrückender Innenverteidiger|mit":
     englisch: "Advanced Centre-Back"
     bereich: "IV"
@@ -91,31 +116,45 @@ rollen:
     key: ["Flanken", "Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Einsatzfreude", "Sprunghöhe", "Schnelligkeit", "Ausdauer", "Kraft"]
     preferred: ["Dribbling", "Technik", "Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Ohne Ball", "Stellungsspiel", "Antritt", "Beweglichkeit"]
   "Absichernder Innenverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Antizipation", "Schnelligkeit", "Deckung"]
     englisch: "Covering Centre-Back"
     bereich: "IV"
     phase: ohne
-    key: ["Antizipation", "Schnelligkeit", "Deckung"]
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Konzentration", "Entscheidungen", "Stellungsspiel", "Sprunghöhe", "Schnelligkeit", "Kraft"]
+    preferred: ["Mut", "Antritt"]
   "Stoppender Innenverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Aggressivität", "Tackling", "Kraft"]
     englisch: "Stopping Centre-Back"
     bereich: "IV"
     phase: ohne
-    key: ["Aggressivität", "Tackling", "Kraft"]
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Aggressivität", "Antizipation", "Mut", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Konzentration", "Entscheidungen", "Schnelligkeit"]
   "Absichernder Halbraumverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Antizipation", "Schnelligkeit", "Deckung"]
     englisch: "Covering Wide Centre-Back"
     bereich: "IV"
     phase: ohne
-    key: ["Antizipation", "Schnelligkeit", "Deckung"]
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Konzentration", "Entscheidungen", "Stellungsspiel", "Sprunghöhe", "Schnelligkeit", "Kraft"]
+    preferred: ["Mut", "Antritt", "Beweglichkeit"]
   "Stoppender Halbraumverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Aggressivität", "Tackling", "Kraft"]
     englisch: "Stopping Wide Centre-Back"
     bereich: "IV"
     phase: ohne
-    key: ["Aggressivität", "Tackling", "Kraft"]
+    key: ["Kopfballtechnik", "Deckung", "Tackling", "Aggressivität", "Antizipation", "Mut", "Stellungsspiel", "Sprunghöhe", "Kraft"]
+    preferred: ["Konzentration", "Entscheidungen", "Antritt", "Beweglichkeit", "Schnelligkeit"]
   "Außenverteidiger|mit":
     englisch: "Full-Back"
     bereich: "AV"
     phase: mit
     key: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Teamwork", "Antritt"]
     preferred: ["Flanken", "Dribbling", "Passen", "Technik", "Entscheidungen", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+  "Außenverteidiger|ohne":
+    englisch: "Full-Back"
+    bereich: "AV"
+    phase: ohne
+    key: ["Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Teamwork", "Antritt"]
+    preferred: ["Aggressivität", "Konzentration", "Entscheidungen", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Inverser Außenverteidiger|mit":
     englisch: "Inside Full-Back"
     bereich: "AV"
@@ -123,15 +162,19 @@ rollen:
     key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Kraft"]
     preferred: ["Dribbling", "Aggressivität", "Mut", "Nervenstärke", "Konzentration", "Entscheidungen", "Einsatzfreude", "Antritt", "Beweglichkeit", "Sprunghöhe", "Schnelligkeit", "Ausdauer"]
   "Abwartender Außenverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Stellungsspiel", "Konzentration", "Deckung"]
     englisch: "Holding Full-Back"
     bereich: "AV"
     phase: ohne
-    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+    key: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Entscheidungen", "Stellungsspiel", "Antritt"]
+    preferred: ["Teamwork", "Beweglichkeit", "Schnelligkeit"]
   "Pressender Außenverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Aggressivität", "Einsatzfreude", "Antizipation"]
     englisch: "Pressing Full-Back"
     bereich: "AV"
     phase: ohne
-    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+    key: ["Deckung", "Tackling", "Aggressivität", "Antizipation", "Stellungsspiel", "Teamwork", "Einsatzfreude", "Antritt"]
+    preferred: ["Mut", "Konzentration", "Entscheidungen", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Inverser Flügelverteidiger|mit":
     englisch: "Inside Wing-Back"
     bereich: "AV/FV"
@@ -139,17 +182,24 @@ rollen:
     key: ["Passen", "Tackling", "Antizipation", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Teamwork", "Antritt"]
     preferred: ["Ballannahme", "Deckung", "Technik", "Konzentration", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Spielmachender Flügelverteidiger|mit":
+    # FM26 (sortitoutsi), ersetzt: key ["Ballannahme", "Passen", "Tackling", "Technik", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Teamwork", "Übersicht", "Antritt"], preferred ["Flanken", "Dribbling", "Deckung", "Antizipation", "Konzentration", "Ohne Ball", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
     englisch: "Playmaking Wing-Back"
     bereich: "AV/FV"
     phase: mit
-    key: ["Ballannahme", "Passen", "Tackling", "Technik", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Teamwork", "Übersicht", "Antritt"]
-    preferred: ["Flanken", "Dribbling", "Deckung", "Antizipation", "Konzentration", "Ohne Ball", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
+    key: ["Ballannahme", "Passen", "Tackling", "Technik", "Nervenstärke", "Entscheidungen", "Teamwork", "Übersicht", "Antritt"]
+    preferred: ["Flanken", "Dribbling", "Deckung", "Antizipation", "Konzentration", "Ohne Ball", "Stellungsspiel", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Flügelverteidiger|mit":
     englisch: "Wing-Back"
     bereich: "AV/FV"
     phase: mit
     key: ["Flanken", "Deckung", "Tackling", "Teamwork", "Einsatzfreude", "Antritt", "Schnelligkeit", "Ausdauer"]
     preferred: ["Dribbling", "Ballannahme", "Passen", "Technik", "Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Stellungsspiel", "Beweglichkeit", "Balance"]
+  "Flügelverteidiger|ohne":
+    englisch: "Wing-Back"
+    bereich: "AV/FV"
+    phase: ohne
+    key: ["Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Teamwork", "Antritt", "Ausdauer"]
+    preferred: ["Aggressivität", "Konzentration", "Entscheidungen", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit"]
   "Vorgeschobener Flügelverteidiger|mit":
     englisch: "Advanced Wing-Back"
     bereich: "FV"
@@ -157,21 +207,31 @@ rollen:
     key: ["Flanken", "Dribbling", "Technik", "Ohne Ball", "Teamwork", "Einsatzfreude", "Antritt", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
     preferred: ["Ballannahme", "Deckung", "Passen", "Tackling", "Antizipation", "Entscheidungen", "Kreativität", "Stellungsspiel", "Balance"]
   "Abwartender Flügelverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Stellungsspiel", "Konzentration", "Deckung"]
     englisch: "Holding Wing-Back"
     bereich: "FV"
     phase: ohne
-    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+    key: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Entscheidungen", "Stellungsspiel", "Antritt"]
+    preferred: ["Teamwork", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Pressender Flügelverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Aggressivität", "Einsatzfreude", "Antizipation"]
     englisch: "Pressing Wing-Back"
     bereich: "FV"
     phase: ohne
-    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+    key: ["Deckung", "Tackling", "Aggressivität", "Antizipation", "Stellungsspiel", "Teamwork", "Einsatzfreude", "Antritt", "Ausdauer"]
+    preferred: ["Mut", "Konzentration", "Entscheidungen", "Beweglichkeit", "Schnelligkeit"]
   "Defensiver Mittelfeldspieler|mit":
     englisch: "Defensive Midfielder"
     bereich: "DM"
     phase: mit
     key: ["Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Teamwork"]
     preferred: ["Ballannahme", "Deckung", "Passen", "Aggressivität", "Nervenstärke", "Entscheidungen", "Einsatzfreude", "Ausdauer", "Kraft"]
+  "Defensiver Mittelfeldspieler|ohne":
+    englisch: "Defensive Midfielder"
+    bereich: "DM"
+    phase: ohne
+    key: ["Tackling", "Antizipation", "Entscheidungen", "Stellungsspiel", "Teamwork", "Einsatzfreude"]
+    preferred: ["Deckung", "Aggressivität", "Konzentration", "Ausdauer", "Kraft"]
   "Box-to-Box-Spieler|mit":
     englisch: "Box-to-Box Midfielder"
     bereich: "DM"
@@ -179,17 +239,19 @@ rollen:
     key: ["Passen", "Tackling", "Ohne Ball", "Teamwork", "Einsatzfreude", "Ausdauer"]
     preferred: ["Dribbling", "Abschluss", "Ballannahme", "Weitschüsse", "Technik", "Aggressivität", "Antizipation", "Nervenstärke", "Entscheidungen", "Stellungsspiel", "Antritt", "Balance", "Schnelligkeit", "Kraft"]
   "Box-to-Box-Spielmacher|mit":
+    # FM26 (sortitoutsi), ersetzt: key ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht", "Einsatzfreude", "Ausdauer"], preferred ["Dribbling", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Antritt", "Beweglichkeit", "Balance", "Schnelligkeit"]
     englisch: "Box-to-Box Playmaker"
     bereich: "DM"
     phase: mit
     key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht", "Einsatzfreude", "Ausdauer"]
-    preferred: ["Dribbling", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Antritt", "Beweglichkeit", "Balance", "Schnelligkeit"]
+    preferred: ["Dribbling", "Weitschüsse", "Deckung", "Tackling", "Antizipation", "Stellungsspiel", "Antritt", "Beweglichkeit", "Balance", "Schnelligkeit"]
   "Tiefer Spielmacher|mit":
+    # FM26 (sortitoutsi), ersetzt: key ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht"], preferred ["Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Einsatzfreude", "Balance", "Ausdauer"]
     englisch: "Deep-Lying Playmaker"
     bereich: "DM"
     phase: mit
-    key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Ohne Ball", "Teamwork", "Übersicht"]
-    preferred: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Einsatzfreude", "Balance", "Ausdauer"]
+    key: ["Ballannahme", "Passen", "Technik", "Nervenstärke", "Entscheidungen", "Teamwork", "Übersicht"]
+    preferred: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Ohne Ball", "Stellungsspiel", "Einsatzfreude", "Beweglichkeit", "Balance", "Ausdauer"]
   "Abkippender Sechser|mit":
     englisch: "Half-Back"
     bereich: "DM"
@@ -197,31 +259,45 @@ rollen:
     key: ["Kopfballtechnik", "Deckung", "Tackling", "Antizipation", "Konzentration", "Stellungsspiel", "Teamwork", "Sprunghöhe", "Kraft"]
     preferred: ["Ballannahme", "Passen", "Aggressivität", "Mut", "Nervenstärke", "Entscheidungen", "Einsatzfreude", "Ausdauer"]
   "Halbverteidiger|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Stellungsspiel", "Entscheidungen", "Antizipation"]
     englisch: "Dropping Defensive Midfielder"
     bereich: "DM"
     phase: ohne
-    key: ["Stellungsspiel", "Entscheidungen", "Antizipation"]
+    key: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Entscheidungen", "Stellungsspiel", "Teamwork", "Einsatzfreude", "Sprunghöhe", "Kraft"]
+    preferred: ["Aggressivität", "Ausdauer"]
   "Pressender Sechser|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Aggressivität", "Einsatzfreude", "Antizipation"]
     englisch: "Pressing Defensive Midfielder"
     bereich: "DM"
     phase: ohne
-    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+    key: ["Tackling", "Aggressivität", "Antizipation", "Entscheidungen", "Stellungsspiel", "Teamwork", "Einsatzfreude", "Ausdauer"]
+    preferred: ["Deckung", "Konzentration", "Schnelligkeit", "Kraft"]
   "Abschirmender Sechser|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Stellungsspiel", "Konzentration", "Deckung"]
     englisch: "Screening Defensive Midfielder"
     bereich: "DM"
     phase: ohne
-    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+    key: ["Deckung", "Tackling", "Antizipation", "Konzentration", "Entscheidungen", "Stellungsspiel"]
+    preferred: ["Teamwork", "Einsatzfreude", "Ausdauer", "Kraft"]
   "Flügelsichernder Sechser|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Antizipation", "Schnelligkeit", "Einsatzfreude"]
     englisch: "Wide Covering Defensive Midfielder"
     bereich: "DM"
     phase: ohne
-    key: ["Antizipation", "Schnelligkeit", "Einsatzfreude"]
+    key: ["Deckung", "Tackling", "Antizipation", "Entscheidungen", "Stellungsspiel", "Teamwork", "Einsatzfreude", "Beweglichkeit", "Ausdauer"]
+    preferred: ["Aggressivität", "Konzentration", "Schnelligkeit", "Kraft"]
   "Zentraler Mittelfeldspieler|mit":
     englisch: "Central Midfielder"
     bereich: "ZM"
     phase: mit
     key: ["Ballannahme", "Passen", "Tackling", "Entscheidungen", "Teamwork"]
     preferred: ["Technik", "Antizipation", "Nervenstärke", "Konzentration", "Ohne Ball", "Stellungsspiel", "Übersicht", "Einsatzfreude", "Ausdauer"]
+  "Zentraler Mittelfeldspieler|ohne":
+    englisch: "Central Midfielder"
+    bereich: "ZM"
+    phase: ohne
+    key: ["Tackling", "Entscheidungen", "Teamwork", "Einsatzfreude"]
+    preferred: ["Deckung", "Aggressivität", "Antizipation", "Konzentration", "Stellungsspiel", "Ausdauer"]
   "Vorgeschobener Spielmacher|mit":
     englisch: "Advanced Playmaker"
     bereich: "ZM"
@@ -241,36 +317,53 @@ rollen:
     key: ["Ballannahme", "Passen", "Tackling", "Entscheidungen", "Teamwork"]
     preferred: ["Flanken", "Dribbling", "Technik", "Antizipation", "Nervenstärke", "Konzentration", "Ohne Ball", "Stellungsspiel", "Übersicht", "Einsatzfreude", "Beweglichkeit", "Ausdauer"]
   "Pressender Achter|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Aggressivität", "Einsatzfreude", "Antizipation"]
     englisch: "Pressing Central Midfielder"
     bereich: "ZM"
     phase: ohne
-    key: ["Aggressivität", "Einsatzfreude", "Antizipation"]
+    key: ["Tackling", "Aggressivität", "Antizipation", "Entscheidungen", "Teamwork", "Einsatzfreude", "Ausdauer"]
+    preferred: ["Deckung", "Konzentration", "Stellungsspiel", "Schnelligkeit", "Kraft"]
   "Abschirmender Achter|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Stellungsspiel", "Konzentration", "Deckung"]
     englisch: "Screening Central Midfielder"
     bereich: "ZM"
     phase: ohne
-    key: ["Stellungsspiel", "Konzentration", "Deckung"]
+    key: ["Deckung", "Tackling", "Konzentration", "Entscheidungen", "Stellungsspiel"]
+    preferred: ["Antizipation", "Teamwork", "Einsatzfreude", "Ausdauer"]
   "Flügelsichernder Achter|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Antizipation", "Schnelligkeit", "Einsatzfreude"]
     englisch: "Wide Covering Central Midfielder"
     bereich: "ZM"
     phase: ohne
-    key: ["Antizipation", "Schnelligkeit", "Einsatzfreude"]
+    key: ["Deckung", "Tackling", "Entscheidungen", "Teamwork", "Einsatzfreude", "Beweglichkeit", "Ausdauer"]
+    preferred: ["Aggressivität", "Antizipation", "Konzentration", "Stellungsspiel", "Schnelligkeit"]
   "Äußerer Mittelfeldspieler|mit":
+    # FM26 (sortitoutsi), ersetzt: key ["Flanken", "Passen", "Technik", "Teamwork", "Einsatzfreude", "Schnelligkeit", "Ausdauer"], preferred ["Dribbling", "Ballannahme", "Antizipation", "Nervenstärke", "Ohne Ball", "Übersicht", "Antritt", "Beweglichkeit"]
     englisch: "Wide Midfielder"
     bereich: "M außen"
     phase: mit
-    key: ["Flanken", "Passen", "Technik", "Teamwork", "Einsatzfreude", "Schnelligkeit", "Ausdauer"]
+    key: ["Flanken", "Passen", "Technik", "Entscheidungen", "Teamwork", "Einsatzfreude", "Schnelligkeit", "Ausdauer"]
     preferred: ["Dribbling", "Ballannahme", "Antizipation", "Nervenstärke", "Ohne Ball", "Übersicht", "Antritt", "Beweglichkeit"]
+  "Äußerer Mittelfeldspieler|ohne":
+    englisch: "Wide Midfielder"
+    bereich: "M außen"
+    phase: ohne
+    key: ["Entscheidungen", "Teamwork", "Einsatzfreude", "Antritt"]
+    preferred: ["Deckung", "Aggressivität", "Antizipation", "Ohne Ball", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Mitarbeitender Außenspieler|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Deckung", "Einsatzfreude", "Ausdauer"]
     englisch: "Tracking Wide Midfielder"
     bereich: "M außen"
     phase: ohne
-    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+    key: ["Aggressivität", "Antizipation", "Entscheidungen", "Teamwork", "Einsatzfreude", "Antritt", "Ausdauer"]
+    preferred: ["Deckung", "Tackling", "Ohne Ball", "Stellungsspiel", "Beweglichkeit", "Schnelligkeit"]
   "Äußerer Umschaltspieler|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Schnelligkeit", "Antizipation"]
     englisch: "Wide Outlet Wide Midfielder"
     bereich: "M außen"
     phase: ohne
-    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Schnelligkeit"]
+    preferred: ["Dribbling", "Ballannahme", "Deckung", "Nervenstärke", "Antritt", "Beweglichkeit"]
   "Halbraumflügel|mit":
     englisch: "Inside Winger"
     bereich: "Flügel (M/OM R/L)"
@@ -289,6 +382,12 @@ rollen:
     phase: mit
     key: ["Flanken", "Dribbling", "Technik", "Teamwork", "Antritt", "Beweglichkeit", "Schnelligkeit"]
     preferred: ["Ballannahme", "Passen", "Antizipation", "Kreativität", "Ohne Ball", "Einsatzfreude", "Balance", "Ausdauer"]
+  "Flügelspieler|ohne":
+    englisch: "Winger"
+    bereich: "Flügel (M/OM R/L)"
+    phase: ohne
+    key: ["Antizipation", "Entscheidungen", "Teamwork", "Einsatzfreude", "Antritt"]
+    preferred: ["Deckung", "Aggressivität", "Ohne Ball", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Außenstürmer|mit":
     englisch: "Wide Forward"
     bereich: "Flügel (M/OM R/L)"
@@ -302,26 +401,38 @@ rollen:
     key: ["Dribbling", "Ballannahme", "Technik", "Antizipation", "Nervenstärke", "Ohne Ball", "Antritt", "Beweglichkeit"]
     preferred: ["Flanken", "Abschluss", "Weitschüsse", "Passen", "Kreativität", "Übersicht", "Einsatzfreude", "Balance", "Schnelligkeit", "Ausdauer"]
   "Inverser Umschaltflügelspieler|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Entscheidungen", "Antizipation"]
     englisch: "Inside Outlet Winger"
     bereich: "Flügel (M/OM R/L)"
     phase: ohne
-    key: ["Ohne Ball", "Entscheidungen", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Balance"]
+    preferred: ["Dribbling", "Ballannahme", "Deckung", "Nervenstärke", "Antritt", "Kraft"]
   "Mitarbeitender Flügelspieler|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Deckung", "Einsatzfreude", "Ausdauer"]
     englisch: "Tracking Winger"
     bereich: "Flügel (M/OM R/L)"
     phase: ohne
-    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+    key: ["Aggressivität", "Antizipation", "Entscheidungen", "Teamwork", "Einsatzfreude", "Antritt", "Ausdauer"]
+    preferred: ["Deckung", "Tackling", "Ohne Ball", "Stellungsspiel", "Beweglichkeit", "Schnelligkeit"]
   "Umschaltflügelspieler|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Schnelligkeit", "Antizipation"]
     englisch: "Wide Outlet Winger"
     bereich: "Flügel (M/OM R/L)"
     phase: ohne
-    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Schnelligkeit"]
+    preferred: ["Dribbling", "Ballannahme", "Deckung", "Nervenstärke", "Antritt", "Beweglichkeit"]
   "Offensiver Mittelfeldspieler|mit":
     englisch: "Attacking Midfielder"
     bereich: "OM zentral"
     phase: mit
     key: ["Ballannahme", "Weitschüsse", "Passen", "Technik", "Nervenstärke", "Kreativität", "Ohne Ball"]
     preferred: ["Flanken", "Dribbling", "Abschluss", "Antizipation", "Entscheidungen", "Übersicht", "Antritt", "Beweglichkeit"]
+  "Offensiver Mittelfeldspieler|ohne":
+    englisch: "Attacking Midfielder"
+    bereich: "OM zentral"
+    phase: ohne
+    key: ["Antizipation", "Entscheidungen", "Einsatzfreude"]
+    preferred: ["Deckung", "Aggressivität", "Ohne Ball", "Teamwork", "Ausdauer"]
   "Halbraumspieler|mit":
     englisch: "Channel Midfielder"
     bereich: "OM zentral"
@@ -341,26 +452,38 @@ rollen:
     key: ["Abschluss", "Ballannahme", "Antizipation", "Nervenstärke", "Ohne Ball", "Antritt"]
     preferred: ["Dribbling", "Weitschüsse", "Passen", "Technik", "Konzentration", "Entscheidungen", "Einsatzfreude", "Beweglichkeit", "Schnelligkeit", "Ausdauer"]
   "Zentraler Umschaltzehner|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Entscheidungen", "Antizipation"]
     englisch: "Central Outlet Attacking Midfielder"
     bereich: "OM zentral"
     phase: ohne
-    key: ["Ohne Ball", "Entscheidungen", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Balance"]
+    preferred: ["Ballannahme", "Deckung", "Nervenstärke", "Kraft"]
   "Ausweichender Umschaltzehner|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Schnelligkeit", "Antizipation"]
     englisch: "Splitting Outlet Attacking Midfielder"
     bereich: "OM zentral"
     phase: ohne
-    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Schnelligkeit"]
+    preferred: ["Ballannahme", "Deckung", "Nervenstärke", "Antritt"]
   "Mitarbeitender Zehner|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Deckung", "Einsatzfreude", "Ausdauer"]
     englisch: "Tracking Attacking Midfielder"
     bereich: "OM zentral"
     phase: ohne
-    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+    key: ["Aggressivität", "Antizipation", "Entscheidungen", "Teamwork", "Einsatzfreude", "Ausdauer"]
+    preferred: ["Deckung", "Ohne Ball", "Stellungsspiel"]
   "Mittelstürmer|mit":
     englisch: "Centre Forward"
     bereich: "ST"
     phase: mit
     key: ["Abschluss", "Ballannahme", "Kopfballtechnik", "Technik", "Nervenstärke", "Ohne Ball", "Antritt", "Kraft"]
     preferred: ["Dribbling", "Passen", "Antizipation", "Entscheidungen", "Beweglichkeit", "Balance", "Sprunghöhe", "Schnelligkeit"]
+  "Mittelstürmer|ohne":
+    englisch: "Centre Forward"
+    bereich: "ST"
+    phase: ohne
+    key: ["Antizipation", "Entscheidungen", "Einsatzfreude"]
+    preferred: ["Deckung", "Aggressivität", "Ohne Ball", "Teamwork", "Ausdauer"]
   "Halbraumstürmer|mit":
     englisch: "Channel Forward"
     bereich: "ST"
@@ -392,17 +515,23 @@ rollen:
     key: ["Abschluss", "Kopfballtechnik", "Aggressivität", "Mut", "Nervenstärke", "Ohne Ball", "Balance", "Sprunghöhe", "Kraft"]
     preferred: ["Ballannahme", "Antizipation", "Entscheidungen", "Teamwork"]
   "Zentraler Umschaltstürmer|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Entscheidungen", "Antizipation"]
     englisch: "Central Outlet Centre Forward"
     bereich: "ST"
     phase: ohne
-    key: ["Ohne Ball", "Entscheidungen", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Balance"]
+    preferred: ["Ballannahme", "Deckung", "Nervenstärke", "Kraft"]
   "Ausweichender Umschaltstürmer|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Ohne Ball", "Schnelligkeit", "Antizipation"]
     englisch: "Splitting Outlet Centre Forward"
     bereich: "ST"
     phase: ohne
-    key: ["Ohne Ball", "Schnelligkeit", "Antizipation"]
+    key: ["Antizipation", "Konzentration", "Entscheidungen", "Ohne Ball", "Teamwork", "Schnelligkeit"]
+    preferred: ["Ballannahme", "Deckung", "Nervenstärke", "Antritt"]
   "Mitarbeitender Mittelstürmer|ohne":
+    # FM26 (sortitoutsi), ersetzt: key ["Deckung", "Einsatzfreude", "Ausdauer"]
     englisch: "Tracking Centre Forward"
     bereich: "ST"
     phase: ohne
-    key: ["Deckung", "Einsatzfreude", "Ausdauer"]
+    key: ["Aggressivität", "Antizipation", "Entscheidungen", "Teamwork", "Einsatzfreude", "Ausdauer"]
+    preferred: ["Deckung", "Ohne Ball", "Stellungsspiel"]

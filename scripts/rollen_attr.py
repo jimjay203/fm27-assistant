@@ -3,11 +3,11 @@ Liga-Schwelle des Zielvereins.
 
 Je Spieler und Rollenpaar (mit/ohne Ball):
   key_mit / key_ohne  Ø der key-Attribute der Rolle (Mitte der Scouting-Spanne, eigene Spieler exakt)
-  pref_mit            Ø der preferred-Attribute der Rolle mit Ball (ohne Ball hat die Quelle keine)
+  pref_mit            Ø der preferred-Attribute der Rolle mit Ball
   key_fehlt / key_n   key-Attribute (beider Rollen, ohne Doppelte) mit Mitte < Schwelle / Anzahl bekannter
   key_unsicher        key-Attribute, die nicht SICHER über der Schwelle liegen (lo < Schwelle; enthält key_fehlt)
   ausfaelle           Liste der Ausfälle mit Wert bzw. Spanne
-Ohne Eintrag in der Quelle (z. B. "Mittelstürmer|ohne") gibt es für diese Phase keinen Filter; das wird
+Ohne Eintrag in der Quelle (seit FM27-roles.json haben alle 79 Rollen einen) gibt es für diese Phase keinen Filter; das wird
 ausgewiesen, nicht ersetzt. Der Filter verwirft nichts, er weist aus.
 
 Schwelle: Liga-Stufe des Zielvereins (wir) -> liga_schwelle in rollen_attribute.yaml (Zuordnung bestätigt: Jimmy, 07.07.2027).
