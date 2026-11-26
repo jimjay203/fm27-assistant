@@ -1,0 +1,102 @@
+# Automatisch aus F9-Export 20261126_020816_220.json und SpielLogger-Mitschnitt 2027-12-12_stuttgart.jsonl.gz
+datum: 2027-12-12
+gegner: Stuttgart
+ort: H
+wettbewerb: Bundesliga
+taktik_slot: Standard 2027/28
+werte:
+  tore:
+  - '2'
+  - '1'
+  ballbesitz:
+  - '36'
+  - '64'
+  schuesse:
+  - '7'
+  - '12'
+  schuesse_aufs_tor:
+  - '3'
+  - '7'
+  xg:
+  - 0,67
+  - 1,32
+  ppda:
+  - 18,00
+  - 10,44
+  grosschancen:
+  - '0'
+  - '1'
+  ecken:
+  - '4'
+  - '4'
+  prog_paesse:
+  - '23'
+  - '62'
+  passquote:
+  - '87'
+  - '92'
+  flankenquote:
+  - '5'
+  - '12'
+  fouls:
+  - '6'
+  - '7'
+  gelb:
+  - '0'
+  - '3'
+  rot:
+  - '0'
+  - '0'
+  laufleistung:
+  - '128'
+  - '131'
+  notenschnitt:
+  - 6,9
+  - 6,8
+aufstellung:
+- slot: TW
+  spieler: Hein
+  uid: 28121290
+  rolle: TW
+- slot: RV
+  spieler: Keidel
+  uid: 2000069240
+  rolle: IFV
+- slot: IV r
+  spieler: Pfeiffer
+  uid: 91184447
+  rolle: IV
+- slot: IV l
+  spieler: Andrade
+  uid: 80030203
+  rolle: IV
+- slot: LV
+  spieler: Oppie
+  uid: 91204749
+  rolle: FV
+- slot: DM r
+  spieler: Stage
+  uid: 27104982
+  rolle: B2B
+- slot: DM l
+  spieler: Amatucci
+  uid: 2000025303
+  rolle: DM
+- slot: OM r
+  spieler: Arthur
+  uid: 2000073449
+  rolle: FL
+- slot: OM z
+  spieler: Chuki
+  uid: 2000139344
+  rolle: VSm
+  vorlagen: 1
+- slot: OM l
+  spieler: Erevbenagie
+  uid: 2000327141
+  rolle: IAS
+- slot: ST
+  spieler: Topp
+  uid: 2000085414
+  rolle: HRS
+  tore: 1

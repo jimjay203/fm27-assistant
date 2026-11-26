@@ -23,13 +23,14 @@ slots:
     hinweis: "Seit 03.07.2027: rückt mit Ball neben den DM (Lynen). Bis 2026/27 mit Ball Außenverteidiger. Seit 06.07.2027 Keidel vor Gechter (Entscheidung Jimmy, entgegen Rollen-Score)."
   "IV r":
     mit: "Innenverteidiger"
-    ohne: "Absichernder Innenverteidiger"
+    ohne: "Innenverteidiger"
     stamm: [Pfeiffer, Gechter, Stark, Pieper]
+    hinweis: "Ohne Ball Innenverteidiger (Entscheidung Jimmy, bestätigt 12.12.2027, Umstellungsdatum nicht genannt; F9-Export 28.11. und 12.12.2027). Überholt: Absichernder IV (ab 03.07.2027)."
   "IV l":
     mit: "Innenverteidiger"
-    ohne: "Absichernder Innenverteidiger"
+    ohne: "Innenverteidiger"
     stamm: [Córdoba, Andrade, Ndiaye]
-    hinweis: "Seit 03.07.2027 IV/Absichernder IV. Bis 2026/27: Spielaufbauender IV (SpIV) / Stoppender IV. Córdoba ist Linksfuß."
+    hinweis: "Ohne Ball Innenverteidiger wie IV r (bestätigt 12.12.2027); überholt: Absichernder IV (ab 03.07.2027). Bis 2026/27: Spielaufbauender IV (SpIV) / Stoppender IV. Córdoba ist Linksfuß."
   LV:
     mit: "Flügelverteidiger"
     ohne: "Pressender Außenverteidiger"
